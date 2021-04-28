@@ -36,7 +36,6 @@ struct StubAllocator g_stub_allocator = {
 struct Test * g_tests = NULL;
 
 void _run(int * result, struct Test * test) {
-  printf("Running test %s - %s\n", test->ident, test->description);
   int success = 1;
 
   g_stub_allocator_reset();
