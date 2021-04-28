@@ -1,6 +1,7 @@
 #ifndef _ALIAS_ECS_LOCAL_H_
 #define _ALIAS_ECS_LOCAL_H_
 
+#include "utils_local.h"
 #include <alias/ecs.h>
 
 #include <stdlib.h>
@@ -159,7 +160,7 @@ static inline void * alias_ecs_write(
 // ============================================================================
 #define return_if_ERROR(C) do { alias_ecs_Result __r = C; if(__r < ALIAS_ECS_SUCCESS) return __r; } while(0)
 #define return_ERROR_INVALID_ARGUMENT_if(X) do { if(X) { return ALIAS_ECS_ERROR_INVALID_ARGUMENT; } } while(0)
-#define ASSERT(X) do { if(X) { return ALIAS_ECS_ERROR_INVALID_ARGUMENT; } } while(0)
+#define ASSERT(X) do { if(!(X)) { return ALIAS_ECS_ERROR_INVALID_ARGUMENT; } } while(0)
 
 #if 1
 int printf(const char *, ...);
