@@ -1,0 +1,6 @@
+# common build dir for cmake
+build
+
+# personal files
+.local*
+

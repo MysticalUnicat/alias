@@ -1,0 +1,88 @@
+cmake_minimum_required(VERSION 3.1)
+# - 3.1 for C_STANDARD
+
+project(Alias
+  VERSION 0.1.0
+  DESCRIPTION "various systems to use for game development"
+  HOMEPAGE_URL "https://github.com/MysticalUnicat/alias"
+  LANGUAGES C
+)
+
+option(ALIAS_BUILD_DOCS "Build documents if Doxygen is found" ON)
+option(ALIAS_BUILD_TESTS "Build tests for Alias" ON)
+option(ALIAS_COVERAGE "Build tests and generate reports for coverage" ON)
+
+add_library(coverage_config INTERFACE)
+if(ALIAS_COVERAGE AND CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
+  target_compile_options(coverage_config INTERFACE -O0 -g --coverage)
+  if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.13)
+    target_link_options(coverage_config INTERFACE --coverage)
+  else()
+    target_link_libraries(coverage_config INTERFACE --coverage)
+  endif()
+endif()
+
+if(MSVC)
+  add_compile_options(/W4 /WX)
+else()
+  add_compile_options(-Wall -Wextra -pedantic -Werror)
+endif()
+
+add_library(alias STATIC
+  src/ecs_archetype.c
+  src/ecs_component.c
+  src/ecs_entity.c
+  src/ecs_instance.c
+  src/ecs_layer.c
+  src/ecs_memory.c
+  src/ecs_query.c
+)
+
+set_property(TARGET alias PROPERTY C_STANDARD 11)
+target_include_directories(alias
+  PUBLIC SYSTEM ${CMAKE_CURRENT_SOURCE_DIR}/include
+)
+target_link_libraries(alias PUBLIC coverage_config)
+
+if(ALIAS_BUILD_TESTS)
+  set(TEST_SOURCES test/main.c)
+
+  enable_testing()
+  macro(alias_test NAME)
+    add_test(NAME ${NAME} COMMAND alias-test --test "${NAME}")
+    list(APPEND TEST_SOURCES "test/${NAME}.c")
+  endmacro()
+
+  alias_test(ecs_create_instance)
+  alias_test(ecs_create_layer)
+  alias_test(ecs_create_component)
+  alias_test(ecs_component_set)
+  alias_test(ecs_internal_sort)
+  alias_test(ecs_internal_bsearch)
+  alias_test(ecs_internal_archetype)
+  alias_test(ecs_spawn)
+  alias_test(ecs_query)
+  alias_test(ecs_add_component)
+  alias_test(ecs_remove_component)
+
+  list(REVERSE TEST_SOURCES)
+
+  add_executable(alias-test ${TEST_SOURCES})
+  target_link_libraries(alias-test alias)
+endif()
+
+if(ALIAS_BUILD_DOCS)
+  find_package(Doxygen)
+
+  if(DOXYGEN_FOUND)
+    set(DOXYGEN_OPTIMIZE_OUTPUT_FOR_C YES)
+    set(DOXYGEN_GENERATE_MAN YES)
+    set(DOXYGEN_QUIET YES)
+
+    doxygen_add_docs(alias-docs
+      include/alias/ecs.h
+      ALL
+    )
+  endif()
+endif()
+
