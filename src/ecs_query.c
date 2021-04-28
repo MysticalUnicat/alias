@@ -33,8 +33,6 @@ alias_ecs_Result alias_ecs_create_query(
   return ALIAS_ECS_SUCCESS;
 }
 
-int printf(const char *, ...);
-
 alias_ecs_Result alias_ecs_execute_query(
     alias_ecs_Instance * instance
   , alias_ecs_Query    * query
@@ -47,15 +45,11 @@ alias_ecs_Result alias_ecs_execute_query(
   for(; query->last_archetype_tested < instance->archetype.length; query->last_archetype_tested++) {
     alias_ecs_Archetype * archetype = &instance->archetype.data[query->last_archetype_tested];
 
-    printf("testing archetype index %u\n", query->last_archetype_tested);
     if(!alias_ecs_ComponentSet_is_subset(&archetype->components, &query->component_set)) {
-      printf("  failed\n");
       continue;
     }
-    printf("  success\n");
 
     if(query->archetype_length + 1 >= query->archetype_capacity) {
-      printf("  adding capacity\n");
       uint32_t old_capacity = query->archetype_capacity;
       uint32_t new_capacity = query->archetype_length + 1;
       new_capacity += new_capacity >> 1;
@@ -67,12 +61,9 @@ alias_ecs_Result alias_ecs_execute_query(
     uint32_t index = query->archetype_length++;
     query->archetype[index] = query->last_archetype_tested;
 
-    printf("  set archetype[%u] to %u\n", index, query->last_archetype_tested);
-
     for(uint32_t k = 0; k < query->component_count; k++) {
       uint32_t archetype_component_index = alias_ecs_ComponentSet_order_of(&archetype->components, query->component[k]);
-      printf("  archetype_component_index %u\n", archetype_component_index);
-      //ASSERT(archetype_component_index != UINT32_MAX);
+      ASSERT(archetype_component_index != UINT32_MAX);
       query->offset[index * query->component_count + k] = archetype->offset_size[archetype_component_index] >> 16;
     }
   }
@@ -86,24 +77,17 @@ alias_ecs_Result alias_ecs_execute_query(
   for(uint32_t i = 0; i < query->archetype_length; i++) {
     const alias_ecs_Archetype * archetype = &instance->archetype.data[*archetype_handle];
 
-    printf("  running query callback on archetype %u\n", *archetype_handle);
-    printf("    %u block(s)\n", archetype->blocks.length);
-
     for(uint32_t j = 0; j < archetype->blocks.length; j++) {
       alias_ecs_DataBlock * block = (alias_ecs_DataBlock *)archetype->blocks.data[j];
-      printf("      block %p\n", (void *)block);
       if(block == NULL) {
         break;
       }
-      printf("      setting up offsets\n");
       const uint32_t * entity = (const uint32_t *)block->data;
       for(uint32_t k = 0; k < query->component_count; ++k) {
         runtime[k] = block->data + offset[k];
       }
-      printf("      scanning for entities (%u per block)\n", archetype->entities_per_block);
       for(uint32_t k = 0; k < archetype->entities_per_block; k++) {
         if(*entity) {
-          printf("      running callback on %u(th) entity in block\n", k);
           alias_Closure_call(&cb, instance, *entity, (void **)runtime);
         }
         entity++;
