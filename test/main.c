@@ -47,10 +47,10 @@ void _run(int * result, struct Test * test) {
   }
   
   if(success == 0) {
-    fprintf(stdout, "ERR - %s", test->ident);
+    fprintf(stdout, "ERR - %s\n", test->ident);
     *result = 1;
   } else {
-    fprintf(stdout, " OK - %s", test->ident);
+    fprintf(stdout, " OK - %s\n", test->ident);
   }
 }
 
