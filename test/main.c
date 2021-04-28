@@ -44,12 +44,14 @@ void _run(int * result, struct Test * test) {
   test->fn(&success);
 
   if(g_stub_allocator.num_allocations != g_stub_allocator.num_frees || g_stub_allocator.bytes_allocated != g_stub_allocator.bytes_freed) {
-    fprintf(stderr, "  test %s did not cleanup it's memory (or it was leaked internally)", test->ident);
     success = 0;
   }
   
   if(success == 0) {
+    fprintf(stdout, "ERR - %s", test->ident);
     *result = 1;
+  } else {
+    fprintf(stdout, " OK - %s", test->ident);
   }
 }
 
