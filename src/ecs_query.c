@@ -68,8 +68,6 @@ alias_ecs_Result alias_ecs_execute_query(
     }
   }
 
-  printf("running query on %u archetype(s)\n", query->archetype_length);
-
   uint8_t ** runtime = query->runtime;
   const uint16_t * offset = query->offset;
   const uint16_t * size = query->size;
