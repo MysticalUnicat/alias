@@ -34,8 +34,15 @@ alias_ecs_Result alias_ecs_create_instance(
   memset(instance, 0, sizeof(*instance));
   instance->memory_allocation_cb = *memory_callback;
 
-  alias_ecs_EntityHandle dummy_entity;
-  alias_ecs_create_entity(instance, &dummy_entity);
+  {
+    alias_ecs_EntityHandle e;
+    alias_ecs_create_entity(instance, &e);
+    alias_ecs_ComponentSet cs;
+    alias_ecs_ComponentSet_init(instance, &cs, 0, NULL);
+    alias_ecs_ArchetypeHandle a;
+    alias_ecs_resolve_archetype(instance, cs, &a);
+    alias_ecs_set_entity_archetype(instance, e, a);
+  }
 
   *instance_ptr = instance;
 

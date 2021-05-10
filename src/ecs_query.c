@@ -16,14 +16,17 @@ alias_ecs_Result alias_ecs_create_query(
   ALLOC(instance, query->component_count, query->size);
   ALLOC(instance, query->component_count, query->runtime);
 
+  uint32_t ci = 0;
   for(uint32_t i = 0; i < create_info->num_write_components; i++) {
-    query->component[i] = create_info->write_components[i];
-    query->size[i] = instance->component.data[create_info->write_components[i]].size;
+    query->component[ci] = create_info->write_components[i];
+    query->size[ci] = instance->component.data[create_info->write_components[i]].size;
+    ci++;
   }
 
   for(uint32_t i = 0; i < create_info->num_read_components; i++) {
-    query->component[i] = create_info->read_components[i];
-    query->size[i] = instance->component.data[create_info->read_components[i]].size;
+    query->component[ci] = create_info->read_components[i];
+    query->size[ci] = instance->component.data[create_info->read_components[i]].size;
+    ci++;
   }
 
   return_if_ERROR(alias_ecs_ComponentSet_init(instance, &query->component_set, query->component_count, query->component));

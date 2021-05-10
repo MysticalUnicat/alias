@@ -189,9 +189,11 @@ alias_ecs_Result alias_ecs_set_entity_archetype(
     return ALIAS_ECS_SUCCESS;
   }
 
+  ENTITY_DATA_ENTITY_INDEX(instance, entity_index) = 0;
+
   uint32_t old_archetype_index = ENTITY_ARCHETYPE_INDEX(instance, entity_index);
-  alias_ecs_Archetype * old_archetype = ENTITY_ARCHETYPE_DATA(instance, entity_index);
   uint32_t old_code = ENTITY_ARCHETYPE_CODE(instance, entity_index);
+  alias_ecs_Archetype * old_archetype = &instance->archetype.data[old_archetype_index];
   uint32_t old_block_index = old_code >> 16;
   uint32_t old_block_offset = old_code & 0xFFFF;
 
@@ -220,6 +222,7 @@ alias_ecs_Result alias_ecs_set_entity_archetype(
       void * old_data = alias_ecs_raw_access(instance, old_archetype_index, r, old_block_index, old_block_offset);
       void *     data = alias_ecs_raw_access(instance,     archetype_index, w,     block_index,     block_offset);
       memcpy(data, old_data, archetype->offset_size[w] & 0xFFFF);
+      
       r++;
     }
 

@@ -180,10 +180,10 @@ alias_ecs_Result alias_ecs_add_component_to_entity(
     // alias_ecs_resolve_archetype 'consumes' new components
   }
 
-  alias_ecs_set_entity_archetype(instance, entity, new_archetype);
+  return_if_ERROR(alias_ecs_set_entity_archetype(instance, entity, new_archetype));
 
   component_index = alias_ecs_ComponentSet_order_of(&instance->archetype.data[new_archetype].components, component_handle);
-
+  
   if(data != NULL) {
     memcpy(alias_ecs_write(instance, entity_index, component_index), data, component->size);
   } else {
