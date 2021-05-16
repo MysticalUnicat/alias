@@ -255,3 +255,52 @@ alias_ecs_Result alias_ecs_read_entity_component(
   return ALIAS_ECS_SUCCESS;
 }
 
+// -------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+alias_ecs_Result alias_ecs_write_entity_component(
+    alias_ecs_Instance        * instance
+  , alias_ecs_EntityHandle      entity
+  , alias_ecs_ComponentHandle   component_handle
+  , void ** ptr
+) {
+  uint32_t entity_index;
+
+  return_ERROR_INVALID_ARGUMENT_if(instance == NULL);
+  return_if_ERROR(alias_ecs_validate_entity_handle(instance, entity, &entity_index));
+  return_ERROR_INVALID_ARGUMENT_if(component_handle >= instance->component.length);
+
+  alias_ecs_Archetype * archetype = ENTITY_ARCHETYPE_DATA(instance, entity_index);
+
+  uint32_t component_index = alias_ecs_ComponentSet_order_of(&archetype->components, component_handle);
+  if(component_index == UINT32_MAX) {
+    return ALIAS_ECS_ERROR_COMPONENT_DOES_NOT_EXIST;
+  }
+
+  *ptr = alias_ecs_write(instance, entity_index, component_index);
+
+  return ALIAS_ECS_SUCCESS;
+}
+
+// -------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+alias_ecs_Result alias_ecs_despawn(
+    alias_ecs_Instance           * instance
+  , uint32_t                       count
+  , const alias_ecs_EntityHandle * entity
+) {
+  uint32_t entity_index;
+  
+  return_ERROR_INVALID_ARGUMENT_if(instance == NULL);
+  return_ERROR_INVALID_ARGUMENT_if(count > instance->entity.length);
+  return_ERROR_INVALID_ARGUMENT_if(entity == NULL);
+
+  for(uint32_t i = 0; i < count; i++) {
+    return_if_ERROR(alias_ecs_validate_entity_handle(instance, entity[i], &entity_index));
+
+    alias_ecs_unset_entity_layer(instance, entity_index);
+    alias_ecs_unset_entity_archetype(instance, entity_index);
+    alias_ecs_free_entity(instance, entity_index);
+  }
+
+  return ALIAS_ECS_SUCCESS;
+}

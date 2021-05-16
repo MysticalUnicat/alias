@@ -263,6 +263,7 @@ typedef void (* alias_ecs_QueryFN)(void * ud, alias_ecs_Instance * instance, ali
 typedef alias_Closure(alias_ecs_QueryFN) alias_ecs_QueryCB;
 
 typedef enum alias_ecs_Filter {
+  ALIAS_ECS_FILTER_EXCLUDE,
   ALIAS_ECS_FILTER_MODIFIED
 } alias_ecs_Filter;
 
