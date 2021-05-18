@@ -103,12 +103,14 @@ struct alias_ecs_Query {
   alias_ecs_ComponentSet component_set;
   uint32_t last_archetype_tested;
 
+  alias_ecs_ComponentSet require_component_set;
+  alias_ecs_ComponentSet exclude_component_set;
+
   uint32_t component_count;
 
   uint32_t first_component_read;
 
   alias_ecs_ComponentHandle * component;
-  uint16_t * size;
   uint8_t ** runtime;
 
   uint32_t archetype_capacity;
@@ -116,7 +118,7 @@ struct alias_ecs_Query {
 
   alias_ecs_ArchetypeHandle * archetype;
 
-  uint16_t * offset;
+  uint32_t * offset_size;
 };
 
 // ============================================================================
