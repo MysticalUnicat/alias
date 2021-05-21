@@ -36,6 +36,8 @@ add_library(alias STATIC
   src/ecs_layer.c
   src/ecs_memory.c
   src/ecs_query.c
+
+  src/log.c
 )
 
 set_property(TARGET alias PROPERTY C_STANDARD 11)

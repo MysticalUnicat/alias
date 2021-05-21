@@ -256,6 +256,11 @@ int alias_ecs_ComponentSet_is_subset(
   , const alias_ecs_ComponentSet * b
 );
 
+int alias_ecs_ComponentSet_intersects(
+    const alias_ecs_ComponentSet * a
+  , const alias_ecs_ComponentSet * b
+);
+
 void alias_ecs_ComponentSet_free(
     alias_ecs_Instance *     instance
   , alias_ecs_ComponentSet * set

@@ -138,6 +138,23 @@ int alias_ecs_ComponentSet_is_subset(
   return 1;
 }
 
+int alias_ecs_ComponentSet_intersects(
+    const alias_ecs_ComponentSet * aset
+  , const alias_ecs_ComponentSet * bset
+) {
+  uint32_t
+      ai = 0
+    , bi = 0
+    ;
+  for(; ai < aset->count; ai++) {
+    while(bi < bset->count && bset->index[bi] < aset->index[ai]) bi++;
+    if(bset->index[bi] == aset->index[ai]) {
+      return 1;
+    }
+  }
+  return 0;
+}
+
 void alias_ecs_ComponentSet_free(
     alias_ecs_Instance     * instance
   , alias_ecs_ComponentSet * set

@@ -1,6 +1,9 @@
 #include "ecs_local.h"
 
+#include <alias/log.h>
 #include <stdbool.h>
+
+#define MAX(A, B) ((A) > (B) ? (A) : (B))
 
 alias_ecs_Result alias_ecs_create_query(
     alias_ecs_Instance              * instance
@@ -31,7 +34,7 @@ alias_ecs_Result alias_ecs_create_query(
   return_if_ERROR(alias_ecs_ComponentSet_init(instance, &query->component_set, query->component_count, query->component));
 
   alias_ecs_Vector(uint32_t) other={0};
-  alias_ecs_Vector_set_capacity(instance, &other, query->component_count);
+  alias_ecs_Vector_set_capacity(instance, &other, MAX(query->component_count, create_info->num_filters));
 
   for(uint32_t i = 0; i < query->component_count; i++) {
     bool optional = false;
@@ -77,7 +80,7 @@ static alias_ecs_Result alias_ecs_update_query(
       continue;
     }
 
-    if(query->exclude_component_set.count > 0 && alias_ecs_ComponentSet_is_subset(&archetype->components, &query->exclude_component_set)) {
+    if(query->exclude_component_set.count > 0 && alias_ecs_ComponentSet_intersects(&archetype->components, &query->exclude_component_set)) {
       continue;
     }
 
