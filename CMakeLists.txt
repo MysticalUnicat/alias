@@ -38,6 +38,8 @@ add_library(alias STATIC
   src/ecs_query.c
 
   src/log.c
+
+  src/transform.c
 )
 
 set_property(TARGET alias PROPERTY C_STANDARD 11)
