@@ -1,12 +1,14 @@
 #include "ecs_local.h"
 
+#include <alias/log.h>
+
 alias_ecs_Result alias_ecs_validate_entity_handle(
     const alias_ecs_Instance * instance
   , alias_ecs_EntityHandle     entity
   , uint32_t                 * index_ptr
 ) {
   uint32_t index = (uint32_t)(entity & 0xFFFFFFFF);
-  uint32_t generation = (uint32_t)(entity >> 31);
+  uint32_t generation = (uint32_t)(entity >> 32);
   if(index >= instance->entity.length) {
     return ALIAS_ECS_ERROR_INVALID_ENTITY;
   }
@@ -104,7 +106,9 @@ alias_ecs_Result alias_ecs_spawn(
     uint32_t entity_index;
 
     return_if_ERROR(alias_ecs_create_entity(instance, &entity));
+
     return_if_ERROR(alias_ecs_validate_entity_handle(instance, entity, &entity_index));
+
     if(layer_index != UINT32_MAX) {
       return_if_ERROR(alias_ecs_set_entity_layer(instance, entity_index, layer_index));
     }
