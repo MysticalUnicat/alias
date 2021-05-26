@@ -2,6 +2,7 @@
 
 #include <alias/log.h>
 #include <stdbool.h>
+#include <stdio.h>
 
 #define MAX(A, B) ((A) > (B) ? (A) : (B))
 
@@ -33,7 +34,7 @@ alias_ecs_Result alias_ecs_create_query(
 
   return_if_ERROR(alias_ecs_ComponentSet_init(instance, &query->component_set, query->component_count, query->component));
 
-  alias_ecs_Vector(uint32_t) other={0};
+  alias_ecs_Vector(uint32_t) other = { 0 };
   alias_ecs_Vector_set_capacity(instance, &other, MAX(query->component_count, create_info->num_filters));
 
   for(uint32_t i = 0; i < query->component_count; i++) {
@@ -66,10 +67,19 @@ alias_ecs_Result alias_ecs_create_query(
   return ALIAS_ECS_SUCCESS;
 }
 
+#if 0
+static void _print_component_set(alias_ecs_ComponentSet * set) {
+  for(uint32_t i = 0; i < set->count; i++) {
+    printf("%c%u", i == 0 ? '{' : ',', set->index[i]);
+  }
+  putchar('}');
+}
+#endif
+
 static alias_ecs_Result alias_ecs_update_query(
     alias_ecs_Instance * instance
   , alias_ecs_Query * query
-  ) {
+) {
   return_ERROR_INVALID_ARGUMENT_if(instance == NULL);
   return_ERROR_INVALID_ARGUMENT_if(query == NULL);
 

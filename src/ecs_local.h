@@ -261,6 +261,11 @@ int alias_ecs_ComponentSet_intersects(
   , const alias_ecs_ComponentSet * b
 );
 
+alias_ecs_Result alias_ecs_ComponentSet_expand_required(
+    alias_ecs_Instance     * instance
+  , alias_ecs_ComponentSet * set
+);
+
 void alias_ecs_ComponentSet_free(
     alias_ecs_Instance *     instance
   , alias_ecs_ComponentSet * set

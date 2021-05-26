@@ -148,11 +148,38 @@ int alias_ecs_ComponentSet_intersects(
     ;
   for(; ai < aset->count; ai++) {
     while(bi < bset->count && bset->index[bi] < aset->index[ai]) bi++;
-    if(bset->index[bi] == aset->index[ai]) {
+    if(bi < bset->count && bset->index[bi] == aset->index[ai]) {
       return 1;
     }
   }
   return 0;
+}
+
+alias_ecs_Result alias_ecs_ComponentSet_expand_required(
+    alias_ecs_Instance     * instance
+  , alias_ecs_ComponentSet * set
+) {
+  top:
+    
+  for(uint32_t i = 0; i < set->count; i++) {
+    alias_ecs_ComponentHandle c = set->index[i];
+    
+    if(instance->component.data[c].num_required_components > 0) {
+      for(uint32_t j = 0; j < instance->component.data[c].num_required_components; j++) {
+        alias_ecs_ComponentHandle r = instance->component.data[c].required_components[j];
+        
+        if(!alias_ecs_ComponentSet_contains(set, r)) {
+          alias_ecs_ComponentSet new_set;
+          return_if_ERROR(alias_ecs_ComponentSet_add(instance, &new_set, set, r));
+          alias_ecs_ComponentSet_free(instance, set);
+          *set = new_set;
+          goto top;
+        }
+      }
+    }
+  }
+
+  return ALIAS_ECS_SUCCESS;
 }
 
 void alias_ecs_ComponentSet_free(

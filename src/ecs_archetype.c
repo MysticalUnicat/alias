@@ -38,6 +38,8 @@ alias_ecs_Result alias_ecs_resolve_archetype(
   , alias_ecs_ComponentSet      components
   , alias_ecs_ArchetypeHandle * out_ptr
 ) {
+  return_if_ERROR(alias_ecs_ComponentSet_expand_required(instance, &components));
+  
   uint32_t * index_ptr = alias_ecs_bsearch(
       &components
     , instance->archetype.components_index
