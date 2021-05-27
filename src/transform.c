@@ -177,9 +177,9 @@ static void _construct_local_from_rotation(void * ud, alias_ecs_Instance * insta
   const float s = sin(angle);
   const float c = cos(angle);
   local_to_world->value._11 = c;
-  local_to_world->value._12 = s;
+  local_to_world->value._12 = -s;
   local_to_world->value._13 = 0.0f;
-  local_to_world->value._21 = -s;
+  local_to_world->value._21 = s;
   local_to_world->value._22 = c;
   local_to_world->value._23 = 0.0f;
 }
@@ -200,9 +200,9 @@ static void _construct_local_from_rotation_translation(void * ud, alias_ecs_Inst
   const float s = sin(angle);
   const float c = cos(angle);
   local_to_world->value._11 = c;
-  local_to_world->value._12 = s;
+  local_to_world->value._12 = -s;
   local_to_world->value._13 = translation->value.x;
-  local_to_world->value._21 = -s;
+  local_to_world->value._21 = s;
   local_to_world->value._22 = c;
   local_to_world->value._23 = translation->value.y;
 }
@@ -270,9 +270,9 @@ static void _construct_parent_from_rotation(void * ud, alias_ecs_Instance * inst
   const float s = sin(angle);
   const float c = cos(angle);
   local_to_parent->value._11 = c;
-  local_to_parent->value._12 = s;
+  local_to_parent->value._12 = -s;
   local_to_parent->value._13 = 0.0f;
-  local_to_parent->value._21 = -s;
+  local_to_parent->value._21 = s;
   local_to_parent->value._22 = c;
   local_to_parent->value._23 = 0.0f;
 }
@@ -293,9 +293,9 @@ static void _construct_parent_from_rotation_translation(void * ud, alias_ecs_Ins
   const float s = sin(angle);
   const float c = cos(angle);
   local_to_parent->value._11 = c;
-  local_to_parent->value._12 = s;
+  local_to_parent->value._12 = -s;
   local_to_parent->value._13 = translation->value.x;
-  local_to_parent->value._21 = -s;
+  local_to_parent->value._21 = s;
   local_to_parent->value._22 = c;
   local_to_parent->value._23 = translation->value.y;
 }
@@ -342,8 +342,6 @@ static void _construct_local_from_parent(void * ud, alias_ecs_Instance * instanc
   alias_ecs_read_entity_component(instance, parent->value, bundle->LocalToWorld2D_component, (const void **)&parent_local_to_world);
 
   local_to_world->value = alias_multiply_Affine2D_Affine2D(parent_local_to_world->value, local_to_parent->value);
-
-  ALIAS_TRACE("wtf");
 }
 
 void alias_transform_update2d_construct_local_from_parent(alias_ecs_Instance * instance, alias_TransformBundle * bundle) {

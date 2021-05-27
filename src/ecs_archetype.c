@@ -138,6 +138,7 @@ static alias_ecs_Result _allocate_code(
     ALLOC(instance, 1, archetype->blocks.data[block_index]);
   }
 
+  archetype->blocks.data[block_index]->live_count++;
   *archetype_code = (block_index << 16) | block_offset;
 
   return ALIAS_ECS_SUCCESS;
@@ -157,6 +158,9 @@ static alias_ecs_Result _free_code(
   uint32_t index = block_index * archetype->entities_per_block + block_offset;
 
   *alias_ecs_Vector_push(&archetype->free_indexes) = index;
+
+  ASSERT(archetype->blocks.data[block_index]->live_count > 0);
+  archetype->blocks.data[block_index]->live_count--;
 
   return ALIAS_ECS_SUCCESS;
 }

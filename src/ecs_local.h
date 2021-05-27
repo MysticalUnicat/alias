@@ -41,11 +41,10 @@ typedef struct alias_ecs_ComponentSet {
 } alias_ecs_ComponentSet;
 
 #define TOTAL_BLOCK_SIZE (1 << 16)
-#define BLOCK_DATA_SIZE (TOTAL_BLOCK_SIZE /* - (sizeof(uint16_t) * 2) */)
+#define BLOCK_DATA_SIZE (TOTAL_BLOCK_SIZE - (sizeof(uint32_t) * 2))
 
 typedef struct alias_ecs_DataBlock {
-  //uint16_t live_count;
-  //uint16_t fill_count;
+  uint32_t live_count;
   uint8_t data[BLOCK_DATA_SIZE];
 } alias_ecs_DataBlock;
 
