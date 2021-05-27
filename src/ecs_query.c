@@ -75,7 +75,7 @@ alias_ecs_Result alias_ecs_create_query(
   return ALIAS_ECS_SUCCESS;
 }
 
-#if 0
+#if 1
 static void _print_component_set(alias_ecs_ComponentSet * set) {
   for(uint32_t i = 0; i < set->count; i++) {
     printf("%c%u", i == 0 ? '{' : ',', set->index[i]);
@@ -101,6 +101,11 @@ static alias_ecs_Result alias_ecs_update_query(
     if(query->exclude_component_set.count > 0 && alias_ecs_ComponentSet_intersects(&archetype->components, &query->exclude_component_set)) {
       continue;
     }
+
+    ALIAS_TRACE(/*(ecs, query), */ "query %p accepts archetype %i", (void *)query, query->last_archetype_tested);
+    _print_component_set(&query->require_component_set);
+    _print_component_set(&query->exclude_component_set);
+    _print_component_set(&archetype->components);    
 
     if(query->archetype_length + 1 >= query->archetype_capacity) {
       uint32_t old_capacity = query->archetype_capacity;
