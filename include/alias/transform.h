@@ -17,9 +17,9 @@ typedef struct alias_Rotation2D {
 } alias_Rotation2D;
 
 #if ALIAS_TRANSFORM_ENABLE_SCALE
-typedef struct alias_UniformScale {
+typedef struct alias_UniformScale2D {
   float value;
-} alias_UniformScale;
+} alias_UniformScale2D;
 #endif
 
 #if ALIAS_TRANSFORM_ENABLE_NON_UNIFORM_SCALE
@@ -38,12 +38,12 @@ typedef struct alias_WorldToLocal2D {
 
 #if ALIAS_TRANSFORM_ENABLE_HEIRARCHY
 typedef struct alias_LocalToParent2D {
-  alias_Matrix23 value;
+  alias_Affine2D value;
 } alias_LocalToParent2D;
 
-typedef struct alias_Parent {
+typedef struct alias_Parent2D {
   alias_ecs_EntityHandle value;
-} alias_Parent;
+} alias_Parent2D;
 #endif
 
 typedef struct alias_TransformBundle {
@@ -60,7 +60,7 @@ typedef struct alias_TransformBundle {
   alias_ecs_ComponentHandle WorldToLocal2D_component;
 
 #if ALIAS_TRANSFORM_ENABLE_HEIRARCHY
-  alias_ecs_ComponentHandle Parent_component;
+  alias_ecs_ComponentHandle Parent2D_component;
   alias_ecs_ComponentHandle LocalToParent2D_component;
 #endif
 
