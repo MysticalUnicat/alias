@@ -27,32 +27,45 @@ alias_ecs_Result alias_Physics2DBundle_initialize(alias_ecs_Instance * instance,
 
 // =============================================================================================================================================================
 struct _update2d_particles_data {
-  alias_R duration;
+  alias_R t;
+  alias_R half_t;
 };
 
 static void _update2d_particles(void * ud, alias_ecs_Instance * instance, alias_ecs_EntityHandle entity, void ** data) {
-  struct _update2d_particles_data * udata = (struct _update2d_particles_data *)ud;
   (void)instance;
   (void)entity;
-  alias_R duration = udata->duration;
+
+  struct _update2d_particles_data * udata = (struct _update2d_particles_data *)ud;
+  alias_R t = udata->t;
+  alias_R half_t = udata->half_t;
+
   alias_Translation2D * translation = (alias_Translation2D *)data[0];
   alias_Physics2DParticle * particle = (alias_Physics2DParticle *)data[1];
-  translation->value.x = alias_fma(particle->velocity.x, duration, translation->value.x);
-  translation->value.y = alias_fma(particle->velocity.y, duration, translation->value.y);
+
+  translation->value.x = alias_fma(particle->velocity.x, t, translation->value.x);
+  translation->value.y = alias_fma(particle->velocity.y, t, translation->value.y);
+
   alias_Vector2D total_acceleration = {
-      .x = alias_fma(particle->accumulated_force.x, particle->inverse_mass, particle->acceleration.x
-    , .y = alias_fma(particle->accumulated_force.y, particle->inverse_mass, particle->acceleration.y
+      .x = alias_fma(particle->accumulated_force.x, particle->inverse_mass, particle->acceleration.x)
+    , .y = alias_fma(particle->accumulated_force.y, particle->inverse_mass, particle->acceleration.y)
     };
+  alias_R damping_pow_t = alias_pow(particle->damping, t);
+  particle->velocity.x = alias_fma(total_acceleration.x, half_t, particle->velocity.x) * damping_pow_t;
+  particle->velocity.y = alias_fma(total_acceleration.y, half_t, particle->velocity.y) * damping_pow_t;
+
+  particle->accumulated_force.x = 0.0f;
+  particle->accumulated_force.y = 0.0f;
 }
 
 void alias_physics_update2d_particles(alias_ecs_Instance * instance, alias_Physics2DBundle * bundle, alias_R duration) {
-  struct _update2d_particles_data udata = { .duration = duration };
+  struct _update2d_particles_data udata = { .t = duration, .half_t = duration / 2.0f };
   alias_ecs_execute_query(instance, bundle->particle_query, (alias_ecs_QueryCB) { _update2d_particles, &udata});
 }
 
 // =============================================================================================================================================================
 
 void alias_physics_update2d_serial(alias_ecs_Instance * instance, alias_Physics2DBundle * bundle, alias_R duration) {
+  // TODO events
   alias_physics_update2d_particles(instance, bundle, duration);
 }
 
