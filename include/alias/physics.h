@@ -9,6 +9,8 @@ typedef struct alias_Physics2DParticle {
   alias_Vector2D velocity;
   alias_Vector2D acceleration;
 
+  alias_Vector2D accumulated_force;
+
   alias_R damping;
   alias_R mass;
 } alias_Physics2DParticle;
