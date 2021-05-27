@@ -10,8 +10,7 @@ typedef struct alias_Physics2DParticle {
   alias_Vector2D acceleration;
 
   alias_R damping;
-
-  alias_R inverse_mass;
+  alias_R mass;
 } alias_Physics2DParticle;
 
 typedef struct alias_Physics2DBundle {
@@ -23,7 +22,7 @@ typedef struct alias_Physics2DBundle {
 } alias_Physics2DBundle;
 
 alias_ecs_Result alias_Physics2DBundle_initialize(alias_ecs_Instance * instance, alias_Physics2DBundle * bundle, alias_TransformBundle * transform_bundle);
-void alias_Physics2DBundle_update2d_serial(alias_ecs_Instance * instance, alias_Physics2DBundle * bundle, alias_R duration);
+void alias_physics_update2d_serial(alias_ecs_Instance * instance, alias_Physics2DBundle * bundle, alias_R duration);
 
 #endif
 
