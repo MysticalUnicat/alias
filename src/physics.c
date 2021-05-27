@@ -18,7 +18,28 @@ alias_ecs_Result alias_Physics2DBundle_initialize(alias_ecs_Instance * instance,
   return ALIAS_ECS_SUCCESS;
 }
 
-void alias_Physics2DBundle_update2d_serial(alias_ecs_Instance * instance, alias_Physics2DBundle * bundle, alias_R duration) {
+// =============================================================================================================================================================
+struct _update2d_particles_data {
+  alias_R duration;
+};
 
+static void _update2d_particles(void * ud, alias_ecs_Instance * instance, alias_ecs_EntityHandle entity, void ** data) {
+  struct _update2d_particles_data * udata = (struct _update2d_particles_data *)ud;
+  (void)instance;
+  (void)entity;
+  alias_R duration = udata->duration;
+  alias_Translation2D * translation = (alias_Translation2D *)data[0];
+  alias_Physics2DParticle * particle = (alias_Physics2DParticle *)data[1];
+
+}
+
+void alias_physics_update2d_particles(alias_ecs_Instance * instance, alias_Physics2DBundle * bundle, alias_R duration) {
+  alias_ecs_execute_query(instance, bundle->particle_query, (alias_ecs_QueryCB) { _construct_local_from_translation, bundle });
+}
+
+// =============================================================================================================================================================
+
+void alias_physics_update2d_serial(alias_ecs_Instance * instance, alias_Physics2DBundle * bundle, alias_R duration) {
+  alias_physics_update2d_particles(instance, bundle, duration);
 }
 
