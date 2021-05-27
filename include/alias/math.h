@@ -18,6 +18,7 @@ typedef double alias_R;
 
 #define alias_sin sin
 #define alias_cos cos
+#define alias_fma fma
 #else
 #error "invalid Alias real precision"
 #endif
