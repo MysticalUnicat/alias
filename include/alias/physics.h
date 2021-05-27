@@ -12,7 +12,7 @@ typedef struct alias_Physics2DParticle {
   alias_Vector2D accumulated_force;
 
   alias_R damping;
-  alias_R mass;
+  alias_R inverse_mass;
 } alias_Physics2DParticle;
 
 typedef struct alias_Physics2DBundle {
