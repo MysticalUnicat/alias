@@ -13,12 +13,14 @@ typedef float alias_R;
 #define alias_sin sinf
 #define alias_cos cosf
 #define alias_fma fmaf
+#define alias_pow powf
 #elif ALIAS_REAL_PRECISION == 64
 typedef double alias_R;
 
 #define alias_sin sin
 #define alias_cos cos
 #define alias_fma fma
+#define alias_pow pow
 #else
 #error "invalid Alias real precision"
 #endif
