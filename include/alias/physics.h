@@ -9,6 +9,9 @@
 typedef struct alias_Physics2DLinearMotion {
   alias_Vector2D velocity;
   alias_R damping; // required to be between 0.0 inclusive and 1.0 exclusive
+
+  alias_R speed;
+  alias_Vector2D direction;
 } alias_Physics2DLinearMotion;
 
 // an Entity without mass is not movable by physics (kinematic)
