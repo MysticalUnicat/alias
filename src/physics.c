@@ -88,6 +88,7 @@ struct _update_data {
 };
 
 void _fill_update_data(struct _update_data * data, alias_ecs_Instance * instance, alias_Physics2DBundle * bundle, alias_R duration) {
+  (void)instance;
   data->t = duration;
   data->half_t = 1.0f / duration;
   data->gravity = bundle->gravity;
