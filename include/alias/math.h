@@ -14,6 +14,7 @@ typedef float alias_R;
 #define alias_cos cosf
 #define alias_fma fmaf
 #define alias_pow powf
+#define alias_sqrt sqrtf
 #elif ALIAS_REAL_PRECISION == 64
 typedef double alias_R;
 
@@ -34,6 +35,18 @@ typedef struct alias_Vector2D {
   alias_R x;
   alias_R y;
 } alias_Vector2D;
+
+static inline alias_R alias_Vector2D_dot_product(alias_Vector2D a, alias_Vector2D b) {
+  return (a.x*b.x + a.y*b.y);
+}
+
+static inline alias_R alias_Vector2D_length(alias_Vector2D v) {
+  return alias_sqrt(alias_Vector2D_dot_product(v, v));
+}
+
+static inline alias_Vector2D alias_Vector2D_scale(alias_Vector2D v, alias_R s) {
+  return (alias_Vector2D) { v.x * s, v.y * s };
+}
 
 typedef struct alias_Angle2D {
   alias_R angle;
