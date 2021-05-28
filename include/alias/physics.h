@@ -8,20 +8,18 @@
 typedef struct alias_Physics2DParticle {
   alias_Vector2D velocity;
   alias_Vector2D acceleration;
-  alias_R damping;
-} alias_Physics2DParticle;
 
-typedef struct alias_Physics2DMass {
+  alias_R damping;
   alias_Vector2D accumulated_force;
+
   alias_R mass;
   alias_R inverse_mass;
-} alias_Physics2DMass;
+} alias_Physics2DParticle;
 
 typedef struct alias_Physics2DBundle {
   alias_TransformBundle * transform_bundle;
 
   alias_ecs_ComponentHandle Physics2DParticle_component;
-  alias_ecs_ComponentHandle Physics2DMass_component;
 
   alias_ecs_Query * particle_query;
   alias_ecs_Query * particle_mass_query;
