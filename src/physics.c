@@ -1,15 +1,5 @@
 #include <alias/physics.h>
 
-typedef struct alias_Physics2DRigidBodyData {
-  alias_R mass;
-  alias_R one_over_mass;
-
-  alias_R moment_of_inertia;
-  alias_R one_over_moment_of_inertia;
-
-  alias_Point2D center_of_gravity;
-} alias_Physics2DRigidBodyData;
-
 alias_ecs_Result alias_Physics2DBundle_initialize(alias_ecs_Instance * instance, alias_Physics2DBundle * bundle, alias_TransformBundle * transform_bundle) {
   alias_ecs_register_component(instance, &(alias_ecs_ComponentCreateInfo) {
       .size = sizeof(alias_Physics2DParticle)
