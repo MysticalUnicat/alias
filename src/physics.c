@@ -143,7 +143,6 @@ static void _update2d_apply_drag(void * ud, alias_ecs_Instance * instance, alias
   (void)instance;
   (void)entity;
 
-  struct _update_data * udata = (struct _update_data *)ud;
   alias_Physics2DLinearMass * mass = (alias_Physics2DLinearMass *)data[0];
   const alias_Physics2DLinearMotion * motion = (const alias_Physics2DLinearMotion *)data[1];
   const alias_Physics2DDrag * drag = (const alias_Physics2DDrag *)data[2];
@@ -172,6 +171,7 @@ static void _update2d_integrate_velocity(void * ud, alias_ecs_Instance * instanc
   alias_Physics2DLinearMass * mass = (alias_Physics2DLinearMass *)data[1];
 
   alias_R scale = mass->inverse_mass * udata->t;
+
   motion->velocity.x = alias_fma(mass->force.x, scale, motion->velocity.x);
   motion->velocity.y = alias_fma(mass->force.y, scale, motion->velocity.y);
   mass->force.x = 0.0f;
