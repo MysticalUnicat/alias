@@ -148,7 +148,10 @@ int alias_ecs_ComponentSet_intersects(
     ;
   for(; ai < aset->count; ai++) {
     while(bi < bset->count && bset->index[bi] < aset->index[ai]) bi++;
-    if(bi < bset->count && bset->index[bi] == aset->index[ai]) {
+    if(bi >= bset->count) {
+      return 0;
+    }
+    if(bset->index[bi] == aset->index[ai]) {
       return 1;
     }
   }
