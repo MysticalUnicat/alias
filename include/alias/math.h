@@ -71,6 +71,9 @@ static inline bool alias_Vector2D_normalize(alias_Vector2D v, alias_R * length, 
     normal->y = v.y * scale;
     return true;
   }
+  normal->x = alias_nan("0 = |v|");
+  normal->y = alias_nan("0 = |v|");
+  return false;
 }
 
 typedef struct alias_Angle2D {
