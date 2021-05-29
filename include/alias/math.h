@@ -2,6 +2,8 @@
 #define _ALIAS_MATH_H_
 
 #include <math.h>
+#include <stdbool.h>
+#include <float.h>
 
 #ifndef ALIAS_REAL_PRECISION
 #define ALIAS_REAL_PRECISION 32
@@ -15,6 +17,14 @@ typedef float alias_R;
 #define alias_fma fmaf
 #define alias_pow powf
 #define alias_sqrt sqrtf
+#define alias_nan nanf
+
+#define alias_R_EPSILON FLT_EPSILON
+#define alias_R_MIN     FLT_MIN
+#define alias_R_ZERO    0.0f
+#define alias_R_ONE     1.0f
+#define alias_R_NAN     alias_nan("")
+
 #elif ALIAS_REAL_PRECISION == 64
 typedef double alias_R;
 
@@ -46,6 +56,21 @@ static inline alias_R alias_Vector2D_length(alias_Vector2D v) {
 
 static inline alias_Vector2D alias_Vector2D_scale(alias_Vector2D v, alias_R s) {
   return (alias_Vector2D) { v.x * s, v.y * s };
+}
+
+typedef struct alias_Normal2D {
+  alias_R x;
+  alias_R y;
+} alias_Normal2D;
+
+static inline bool alias_Vector2D_normalize(alias_Vector2D v, alias_R * length, alias_Normal2D * normal) {
+  *length = alias_Vector2D_length(v);
+  if(*length > alias_R_MIN) {
+    alias_R scale = alias_R_ONE / *length; 
+    normal->x = v.x * scale;
+    normal->y = v.y * scale;
+    return true;
+  }
 }
 
 typedef struct alias_Angle2D {
