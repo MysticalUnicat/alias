@@ -55,11 +55,15 @@ typedef struct alias_Physics2DBundle {
   alias_ecs_ComponentHandle Physics2DRotationalMass_component;
   #endif
 
+  // internal cached data
+  alias_ecs_ComponentHandle Physics2DLinearSpeed_component;
+
   // force generators
   alias_ecs_ComponentHandle Physics2DGravity_component;
   alias_ecs_ComponentHandle Physics2DDrag_component;
 
   alias_ecs_Query * integrate_position_query;
+  alias_ecs_Query * cache_linear_speed_query;
   alias_ecs_Query * gravity_query;
   alias_ecs_Query * drag_query;
   alias_ecs_Query * integrate_velocity_query;
