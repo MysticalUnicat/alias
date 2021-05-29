@@ -32,9 +32,16 @@ typedef double alias_R;
 #define alias_cos cos
 #define alias_fma fma
 #define alias_pow pow
+
 #else
 #error "invalid Alias real precision"
 #endif
+
+#define ALIAS_MIN_PAIR(A, B) ({ typeof((A)) _a = (A), _b = (B); _a < _b ? _a : _b; })
+#define ALIAS_MAX_PAIR(A, B) ({ typeof((A)) _a = (A), _b = (B); _a > _b ? _a : _b; })
+
+#define alias_min(A, B) ALIAS_MIN_PAIR(A, B)
+#define alias_max(A, B) ALIAS_MAX_PAIR(A, B)
 
 typedef struct alias_Point2D {
   alias_R x;
