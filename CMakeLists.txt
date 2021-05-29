@@ -40,6 +40,7 @@ add_library(alias STATIC
   src/log.c
 
   src/transform.c
+  src/physics.c
 )
 
 set_property(TARGET alias PROPERTY C_STANDARD 11)

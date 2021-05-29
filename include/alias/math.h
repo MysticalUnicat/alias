@@ -37,8 +37,8 @@ typedef double alias_R;
 #error "invalid Alias real precision"
 #endif
 
-#define ALIAS_MIN_PAIR(A, B) ({ typeof((A)) _a = (A), _b = (B); _a < _b ? _a : _b; })
-#define ALIAS_MAX_PAIR(A, B) ({ typeof((A)) _a = (A), _b = (B); _a > _b ? _a : _b; })
+#define ALIAS_MIN_PAIR(A, B) ((A) < (B) ? (A) : (B))
+#define ALIAS_MAX_PAIR(A, B) ((A) > (B) ? (A) : (B))
 
 #define alias_min(A, B) ALIAS_MIN_PAIR(A, B)
 #define alias_max(A, B) ALIAS_MAX_PAIR(A, B)

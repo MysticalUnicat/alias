@@ -19,15 +19,21 @@ alias_ecs_Result alias_Physics2DBundle_initialize(alias_ecs_Instance * instance,
   }, &bundle->Physics2DLinearMass_component);
 
   alias_ecs_register_component(instance, &(alias_ecs_ComponentCreateInfo) {
+      .size = sizeof(alias_Physics2DLinearSpeed)
+    , .num_required_components = 1
+    , .required_components = &bundle->Physics2DLinearMotion_component
+  }, &bundle->Physics2DLinearSpeed_component);
+
+  alias_ecs_register_component(instance, &(alias_ecs_ComponentCreateInfo) {
       .size = sizeof(alias_Physics2DLinearMass)
     , .num_required_components = 1
     , .required_components = &bundle->Physics2DLinearMass_component
   }, &bundle->Physics2DGravity_component);
 
   alias_ecs_register_component(instance, &(alias_ecs_ComponentCreateInfo) {
-      .size = sizeof(alias_Physics2DLinearMass)
-    , .num_required_components = 1
-    , .required_components = &bundle->Physics2DLinearMass_component
+      .size = sizeof(alias_Physics2DDrag)
+    , .num_required_components = 2
+    , .required_components = (alias_ecs_ComponentHandle[]) { bundle->Physics2DLinearMass_component, bundle->Physics2DLinearSpeed_component }
   }, &bundle->Physics2DDrag_component);
 
   alias_ecs_create_query(instance, &(alias_ecs_QueryCreateInfo) {
@@ -41,6 +47,20 @@ alias_ecs_Result alias_Physics2DBundle_initialize(alias_ecs_Instance * instance,
       }
 #endif
   }, &bundle->integrate_position_query);
+
+  alias_ecs_create_query(instance, &(alias_ecs_QueryCreateInfo) {
+      .num_write_components = 1
+    , .write_components = &bundle->Physics2DLinearSpeed_component
+    , .num_read_components = 1
+    , .read_components = &bundle->Physics2DLinearMotion_component
+#if ALIAS_TRANSFORM_ENABLE_HEIRARCHY
+    , .num_filters = 1
+    , .filters = &(alias_ecs_QueryFilterCreateInfo) {
+        .filter = ALIAS_ECS_FILTER_EXCLUDE
+      , .component = transform_bundle->Parent2D_component
+      }
+#endif
+  }, &bundle->cache_linear_speed_query);
 
   alias_ecs_create_query(instance, &(alias_ecs_QueryCreateInfo) {
       .num_write_components = 1
@@ -59,8 +79,12 @@ alias_ecs_Result alias_Physics2DBundle_initialize(alias_ecs_Instance * instance,
   alias_ecs_create_query(instance, &(alias_ecs_QueryCreateInfo) {
       .num_write_components = 1
     , .write_components = &bundle->Physics2DLinearMass_component
-    , .num_read_components = 2
-    , .read_components = (alias_ecs_ComponentHandle[]) { bundle->Physics2DLinearMotion_component, bundle->Physics2DDrag_component }
+    , .num_read_components = 3
+    , .read_components = (alias_ecs_ComponentHandle[]) {
+        bundle->Physics2DLinearMotion_component
+      , bundle->Physics2DLinearSpeed_component
+      , bundle->Physics2DDrag_component
+      }
 #if ALIAS_TRANSFORM_ENABLE_HEIRARCHY
     , .num_filters = 1
     , .filters = &(alias_ecs_QueryFilterCreateInfo) {
@@ -114,15 +138,29 @@ static void _update2d_integrate_position(void * ud, alias_ecs_Instance * instanc
   translation->value.y = alias_fma(motion->velocity.y, scale, translation->value.y);
   motion->velocity.x *= motion->damping;
   motion->velocity.y *= motion->damping;
-
-  motion->speed = alias_Vector2D_length(motion->velocity);
-  motion->direction = alias_Vector2D_scale(motion->velocity, motion->speed > 0.0f ? 1.0f / motion->speed : 0.0f);
 }
 
 void alias_physics_update2d_integrate_position(alias_ecs_Instance * instance, alias_Physics2DBundle * bundle, alias_R duration) {
   struct _update_data udata;
   _fill_update_data(&udata, instance, bundle, duration);
   alias_ecs_execute_query(instance, bundle->integrate_position_query, (alias_ecs_QueryCB) { _update2d_integrate_position, &udata });
+}
+
+// =============================================================================================================================================================
+static void _update2d_cache_linear_speed(void * ud, alias_ecs_Instance * instance, alias_ecs_EntityHandle entity, void ** data) {
+  (void)ud;
+  (void)instance;
+  (void)entity;
+
+  alias_Physics2DLinearSpeed * speed = (alias_Physics2DLinearSpeed *)data[0];
+  const alias_Physics2DLinearMotion * motion = (const alias_Physics2DLinearMotion *)data[1];
+
+  alias_Vector2D_normalize(motion->velocity, &speed->speed, &speed->direction);
+}
+
+void alias_physics_update2d_cache_linear_speed(alias_ecs_Instance * instance, alias_Physics2DBundle * bundle, alias_R duration) {
+  (void)duration;
+  alias_ecs_execute_query(instance, bundle->cache_linear_speed_query, (alias_ecs_QueryCB) { _update2d_cache_linear_speed, NULL });
 }
 
 // =============================================================================================================================================================
@@ -154,9 +192,10 @@ static void _update2d_apply_drag(void * ud, alias_ecs_Instance * instance, alias
 
   alias_Physics2DLinearMass * mass = (alias_Physics2DLinearMass *)data[0];
   const alias_Physics2DLinearMotion * motion = (const alias_Physics2DLinearMotion *)data[1];
-  const alias_Physics2DDrag * drag = (const alias_Physics2DDrag *)data[2];
+  const alias_Physics2DLinearSpeed * speed = (const alias_Physics2DLinearSpeed *)data[2];
+  const alias_Physics2DDrag * drag = (const alias_Physics2DDrag *)data[3];
 
-  alias_R length = alias_Vector2D_length(motion->velocity);
+  alias_R length = speed->speed;
   alias_R scale = -(drag->velocity_drag_coefficient + drag->velocity_squared_drag_coefficient * length);
 
   mass->force.x = alias_fma(motion->velocity.x, scale, mass->force.x);
@@ -196,6 +235,7 @@ void alias_physics_update2d_integrate_velocity(alias_ecs_Instance * instance, al
 
 void alias_physics_update2d_serial_pre_transform(alias_ecs_Instance * instance, alias_Physics2DBundle * bundle, alias_R duration) {
   alias_physics_update2d_integrate_position(instance, bundle, duration);
+  alias_physics_update2d_cache_linear_speed(instance, bundle, duration);
 }
 
 void alias_physics_update2d_serial_post_transform(alias_ecs_Instance * instance, alias_Physics2DBundle * bundle, alias_R duration) {
