@@ -1,5 +1,10 @@
 #include <alias/physics.h>
 
+typedef struct alias_Physics2DLinearSpeed {
+  alias_R speed;
+  alias_Normal2D direction;
+} alias_Physics2DLinearSpeed;
+
 alias_ecs_Result alias_Physics2DBundle_initialize(alias_ecs_Instance * instance, alias_Physics2DBundle * bundle, alias_TransformBundle * transform_bundle) {
   alias_ecs_register_component(instance, &(alias_ecs_ComponentCreateInfo) {
       .size = sizeof(alias_Physics2DLinearMotion)
@@ -109,6 +114,9 @@ static void _update2d_integrate_position(void * ud, alias_ecs_Instance * instanc
   translation->value.y = alias_fma(motion->velocity.y, scale, translation->value.y);
   motion->velocity.x *= motion->damping;
   motion->velocity.y *= motion->damping;
+
+  motion->speed = alias_Vector2D_length(motion->velocity);
+  motion->direction = alias_Vector2D_scale(motion->velocity, motion->speed > 0.0f ? 1.0f / motion->speed : 0.0f);
 }
 
 void alias_physics_update2d_integrate_position(alias_ecs_Instance * instance, alias_Physics2DBundle * bundle, alias_R duration) {
@@ -140,6 +148,7 @@ void alias_physics_update2d_apply_gravity(alias_ecs_Instance * instance, alias_P
 
 // =============================================================================================================================================================
 static void _update2d_apply_drag(void * ud, alias_ecs_Instance * instance, alias_ecs_EntityHandle entity, void ** data) {
+  (void)ud;
   (void)instance;
   (void)entity;
 
@@ -155,9 +164,8 @@ static void _update2d_apply_drag(void * ud, alias_ecs_Instance * instance, alias
 }
 
 void alias_physics_update2d_apply_drag(alias_ecs_Instance * instance, alias_Physics2DBundle * bundle, alias_R duration) {
-  struct _update_data udata;
-  _fill_update_data(&udata, instance, bundle, duration);
-  alias_ecs_execute_query(instance, bundle->drag_query, (alias_ecs_QueryCB) { _update2d_apply_drag, &udata });
+  (void)duration;
+  alias_ecs_execute_query(instance, bundle->drag_query, (alias_ecs_QueryCB) { _update2d_apply_drag, NULL });
 }
 
 // =============================================================================================================================================================
