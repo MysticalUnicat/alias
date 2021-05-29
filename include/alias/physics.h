@@ -5,6 +5,20 @@
 #include <alias/transform.h>
 #include <alias/ecs.h>
 
+typedef struct alias_AABB2D {
+  alias_Vector2D min;
+  alias_Vector2D max;
+} alias_AABB2D;
+
+static inline alias_AABB2D alias_AABB2D_union(alias_AABB2D a, alias_AABB2D b) {
+  return (alias_AABB2D) {
+      .min.x = alias_min(a.min.x, b.min.x)
+    , .min.y = alias_min(a.min.y, b.min.y)
+    , .max.x = alias_max(a.max.x, b.max.x)
+    , .max.y = alias_max(a.max.y, b.max.y)
+  };
+}
+
 // an Entity without linear motion is not movable (static)
 typedef struct alias_Physics2DLinearMotion {
   alias_Vector2D velocity;
