@@ -74,7 +74,7 @@ typedef struct alias_Physics2DBundle {
   alias_ecs_ComponentHandle Physics2DRotationalMass_component;
   #endif
 
-  // internal cached data
+  // internal data
   alias_ecs_ComponentHandle Physics2DLinearSpeed_component;
 
   // force generators
