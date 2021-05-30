@@ -41,6 +41,7 @@ add_library(alias STATIC
 
   src/transform.c
   src/physics.c
+  src/physics_bvh_2d.c
 )
 
 set_property(TARGET alias PROPERTY C_STANDARD 11)
