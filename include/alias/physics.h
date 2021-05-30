@@ -78,6 +78,7 @@ typedef struct alias_Physics2DBundle {
 
   // internal data
   alias_ecs_ComponentHandle Physics2DLinearSpeed_component;
+  alias_ecs_ComponentHandle Physics2DBoundingBox_component;
   alias_ecs_ComponentHandle Physics2DBVHNode_component;
 
   // force generators
