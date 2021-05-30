@@ -23,6 +23,7 @@ typedef float alias_R;
 #define alias_R_MIN     FLT_MIN
 #define alias_R_ZERO    0.0f
 #define alias_R_ONE     1.0f
+#define alias_R_TWO     2.0f
 #define alias_R_NAN     alias_nan("")
 
 #elif ALIAS_REAL_PRECISION == 64
@@ -59,6 +60,13 @@ static inline alias_R alias_Vector2D_dot_product(alias_Vector2D a, alias_Vector2
 
 static inline alias_R alias_Vector2D_length(alias_Vector2D v) {
   return alias_sqrt(alias_Vector2D_dot_product(v, v));
+}
+
+static inline alias_Vector2D alias_subtract_Vector2D_Vector2D(alias_Vector2D a, alias_Vector2D b) {
+  return (alias_Vector2D) {
+      a.x - b.x
+    , a.y - b.y
+  };
 }
 
 static inline alias_Vector2D alias_Vector2D_scale(alias_Vector2D v, alias_R s) {

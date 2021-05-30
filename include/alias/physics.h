@@ -19,6 +19,11 @@ static inline alias_AABB2D alias_AABB2D_union(alias_AABB2D a, alias_AABB2D b) {
   };
 }
 
+static inline alias_R alias_AABB2D_surface_area(alias_AABB2D aabb) {
+  alias_Vector2D d = alias_subtract_Vector2D_Vector2D(aabb.max, aabb.min);
+  return alias_R_TWO * (d.x + d.y);
+}
+
 // an Entity without linear motion is not movable (static)
 typedef struct alias_Physics2DLinearMotion {
   alias_Vector2D velocity;
