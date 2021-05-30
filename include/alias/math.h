@@ -76,7 +76,7 @@ static inline alias_Vector2D alias_subtract_Vector2D_Vector2D(alias_Vector2D a, 
   };
 }
 
-static inline alias_Vector2D alias_Vector2D_scale(alias_Vector2D v, alias_R s) {
+static inline alias_Vector2D alias_multiply_Vector2D_R(alias_Vector2D v, alias_R s) {
   return (alias_Vector2D) { v.x * s, v.y * s };
 }
 
