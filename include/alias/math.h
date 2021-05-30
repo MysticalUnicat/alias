@@ -83,7 +83,7 @@ static inline alias_Vector2D alias_multiply_Vector2D_R(alias_Vector2D v, alias_R
 
 static inline alias_Vector2D alias_divide_Vector2D_R(alias_Vector2D v, alias_R s) {
   if(alias_abs(s) < alias_R_MIN) {
-    return (alias_Vector2D) { alias_nan("/0"), alias_nan("/0") };
+    return (alias_Vector2D) { alias_nan("_ / 0"), alias_nan("_ / 0") };
   }
   s = alias_R_ONE / s;
   return (alias_Vector2D) { v.x * s, v.y * s };
