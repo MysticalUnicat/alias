@@ -22,6 +22,11 @@ static inline alias_R alias_AABB2D_surface_area(alias_AABB2D aabb) {
   return alias_R_TWO * (d.x + d.y);
 }
 
+typedef struct alias_Physics2DLinearSpeed {
+  alias_R speed;
+  alias_Normal2D direction;
+} alias_Physics2DLinearSpeed;
+
 typedef struct alias_BoundingVolumeHierarchy2D_Node {
   alias_AABB2D bounding_box;
 
