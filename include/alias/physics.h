@@ -5,6 +5,10 @@
 #include <alias/transform.h>
 #include <alias/ecs.h>
 
+#ifndef ALIAS_PHYSICS_2D_MAX_POLYGON_POINTS
+#define ALIAS_PHYSICS_2D_MAX_POLYGON_POINTS 32
+#endif
+
 // an Entity without linear motion is not movable (static)
 typedef struct alias_Physics2DLinearMotion {
   alias_Vector2D velocity;
@@ -33,6 +37,23 @@ typedef struct alias_Physics2DRotationalMass {
   alias_R inverse_inertia;
 } alias_Physics2DRotationalMass;
 #endif
+
+typedef struct alias_Physics2DCollisionCircle {
+  alias_R radius;
+} alias_Physics2DCollisionCircle;
+
+typedef struct alias_Physics2DCollisionLine {
+  alias_R radius;
+  alias_Point2D p1;
+  alias_Point2D p2;
+} alias_Physics2DCollisionLine;
+
+typedef struct alias_Physics2DCollisionPolygon {
+  alias_Point2D centroid;
+  uint32_t num_points;
+  alias_Point2D points[ALIAS_PHYSICS_2D_MAX_POLYGON_POINTS];
+  alias_Normal2D normals[ALIAS_PHYSICS_2D_MAX_POLYGON_POINTS];
+} alias_Physics2DCollisionPolygon;
 
 typedef struct alias_Physics2DGravity {
   alias_R global_gravity_scale;
@@ -63,6 +84,10 @@ typedef struct alias_Physics2DBundle {
   alias_ecs_ComponentHandle Physics2DDrag_component;
 
   alias_ecs_Query * integrate_position_query;
+  alias_ecs_Query * cache_aabb_circle_query;
+  alias_ecs_Query * cache_aabb_line_query;
+  alias_ecs_Query * cache_aabb_polygon_query;
+  alias_ecs_Query * build_bvh_query;
   alias_ecs_Query * cache_linear_speed_query;
   alias_ecs_Query * gravity_query;
   alias_ecs_Query * drag_query;
@@ -77,7 +102,16 @@ void alias_physics_update2d_serial_post_transform(alias_ecs_Instance * instance,
 // Physics2DLinearMotion.velocity *= Physics2DLinearMotion.damping
 // 
 // <transform>
-// 
+//
+// Physics2DBoundingBox.value = <shape> + transform
+//
+// if !Physics2DBoundingBox.inserted:
+//   insert
+//   Physics2DBoundingBox.inserted = true
+// else if moved outside enlarged bvh area:
+//   remove
+//   insert
+//  
 // Physics2DLinearMass.force += <global gravity> * Phsyics2DGravity.global_gravity_scale
 // 
 // Physics2DLinearMass.force += v := Physics2DLinearMotion.velocity; m := mag(Physics2DLinearMotion.velocity); -v * (k1 + k2 * m)

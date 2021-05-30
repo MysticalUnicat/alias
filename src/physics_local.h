@@ -27,7 +27,11 @@ typedef struct alias_Physics2DLinearSpeed {
   alias_Normal2D direction;
 } alias_Physics2DLinearSpeed;
 
-typedef struct alias_BoundingVolumeHierarchy2D_Node {
+typedef struct alias_Physics2DBoundingBox {
+  alias_AABB2D value;
+} alias_Physics2DBoundingBox;
+
+typedef struct alias_Physics2DBVHNode {
   alias_AABB2D bounding_box;
 
   alias_ecs_EntityHandle parent;
@@ -41,10 +45,48 @@ typedef struct alias_BoundingVolumeHierarchy2D_Node {
       alias_ecs_EntityHandle child_2;
     } node;
   };
-} alias_BoundingVolumeHierarchy2D_Node;
 
-typedef struct alias_BoundingVolumeHierarchy2D {
-  alias_ecs_EntityHandle root;
-} alias_BoundingVolumeHierarchy2D;
+  bool inserted;
+} alias_Physics2DBVHNode;
+
+static inline void _cache_aabb_circle(void * ud, alias_ecs_Instance * instance, alias_ecs_EntityHandle entity, void ** data) {
+  (void)ud;
+  (void)instance;
+  (void)entity;
+  (void)data;
+
+  alias_Physics2DBoundingBox * aabb = (alias_Physics2DBoundingBox *)data[0];
+  const alias_LocalToWorld2D * local_to_world = (const alias_LocalToWorld2D *)data[1];
+  const alias_Physics2DCollisionCircle * circle = (const alias_Physics2DCollisionCircle *)data[2];
+
+  aabb->value.min.x = local_to_world->value._13 - circle->radius;
+  aabb->value.min.y = local_to_world->value._23 - circle->radius;
+  aabb->value.max.x = local_to_world->value._13 + circle->radius;
+  aabb->value.max.y = local_to_world->value._23 + circle->radius;
+}
+
+static inline void _cache_aabb_line(void * ud, alias_ecs_Instance * instance, alias_ecs_EntityHandle entity, void ** data) {
+  (void)ud;
+  (void)instance;
+  (void)entity;
+  (void)data;
+
+  
+}
+
+static inline void _cache_aabb_polygon(void * ud, alias_ecs_Instance * instance, alias_ecs_EntityHandle entity, void ** data) {
+  (void)ud;
+  (void)instance;
+  (void)entity;
+  (void)data;
+
+
+}
+
+static inline void alias_ecs_cache_aabb(alias_ecs_Instance * instance, alias_Physics2DBundle * bundle) {
+  alias_ecs_execute_query(instance, bundle->cache_aabb_circle_query, (alias_ecs_QueryCB) { _cache_aabb_circle, NULL });
+  alias_ecs_execute_query(instance, bundle->cache_aabb_line_query, (alias_ecs_QueryCB) { _cache_aabb_line, NULL });
+  alias_ecs_execute_query(instance, bundle->cache_aabb_polygon_query, (alias_ecs_QueryCB) { _cache_aabb_polygon, NULL });
+}
 
 #endif
