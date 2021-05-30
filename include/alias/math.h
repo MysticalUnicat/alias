@@ -62,6 +62,13 @@ static inline alias_R alias_Vector2D_length(alias_Vector2D v) {
   return alias_sqrt(alias_Vector2D_dot_product(v, v));
 }
 
+static inline alias_Vector2D alias_add_Vector2D_Vector2D(alias_Vector2D a, alias_Vector2D b) {
+  return (alias_Vector2D) {
+      a.x + b.x
+    , a.y + b.y
+  };
+}
+
 static inline alias_Vector2D alias_subtract_Vector2D_Vector2D(alias_Vector2D a, alias_Vector2D b) {
   return (alias_Vector2D) {
       a.x - b.x
