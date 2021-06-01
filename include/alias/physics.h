@@ -69,6 +69,8 @@ typedef struct alias_Physics2DBundle {
 
   alias_Vector2D gravity;
 
+  alias_ecs_EntityHandle bvh_root;
+
   alias_ecs_ComponentHandle Physics2DLinearMotion_component;
   alias_ecs_ComponentHandle Physics2DLinearMass_component;
   #if 0
