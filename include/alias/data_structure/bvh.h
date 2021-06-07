@@ -1,6 +1,7 @@
 #ifndef _ALIAS_DATA_STRUCTURE_BVH_H_
 #define _ALIAS_DATA_STRUCTURE_BVH_H_
 
+#if 0
 struct extracted_node {
   alias_ecs_EntityHandle   entity;
   alias_Physics2DBVHNode * node;
@@ -213,5 +214,7 @@ static inline void _insert(
     }
   }
 }
+#endif
+
 #endif // include/alias/data_structure/bvh_h_INCLUDED
 
