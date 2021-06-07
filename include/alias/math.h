@@ -22,6 +22,7 @@ typedef float alias_R;
 
 #define alias_R_EPSILON FLT_EPSILON
 #define alias_R_MIN     FLT_MIN
+#define alias_R_MAX     FLT_MAX
 #define alias_R_ZERO    0.0f
 #define alias_R_ONE     1.0f
 #define alias_R_TWO     2.0f
