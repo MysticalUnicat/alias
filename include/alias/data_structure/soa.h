@@ -5,6 +5,10 @@
 #include <stdalign.h>
 #include <alias/utils.h>
 
+#ifndef ALIAS_SOA_PAGE_SIZE
+#define ALIAS_SOA_PAGE_SIZE (1 << 16)
+#endif
+
 // per-page structure of arrays
 typedef struct alias_SOA {
   uint16_t   num_columns;
@@ -43,9 +47,10 @@ static inline uint32_t alias_SOA_allocate_row(alias_SOA * soa, alias_MemoryAlloc
   uint32_t new_num_pages = soa->num_rows / soa->rows_per_page;
 
   if(new_num_pages > cur_num_pages) {
-    alias_realloc(cb, cur_num_pages * sizeof(*soa->pages), new_num_pages * sizeof(*soa->pages), alignof(*soa->pages));
+    soa->pages = alias_realloc(cb, soa->pages, cur_num_pages * sizeof(*soa->pages), new_num_pages * sizeof(*soa->pages), alignof(*soa->pages));
+    soa->pages[cur_num_pages] = alias_malloc(cb, ALIAS_SOA_PAGE_SIZE, ALIAS_SOA_PAGE_SIZE);
   }
-  
+
   return row;
 }
 

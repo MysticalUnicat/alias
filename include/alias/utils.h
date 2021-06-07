@@ -14,17 +14,14 @@
 ALIAS_DECLARE_CLOSURE(alias_MemoryAllocationCallback, void *, void * ptr, size_t old_size, size_t new_size, size_t alignment)
 
 static inline void * alias__system_allocator_function(void * ud, void * ptr, size_t old_size, size_t new_size, size_t alignment) {
-  extern void * malloc(size_t size);
+  extern void * aligned_alloc(size_t alignemnt, size_t size);
   extern void * realloc(void * ptr, size_t size);
   extern void free(void * ptr);
-
   (void)ud;
-  (void)alignment;
-
   return
-    (old_size == 0 && new_size > 0) ? malloc(new_size)       :
-    (new_size == 0)                 ? (free(ptr), NULL)      :
-    (old_size != new_size)          ? realloc(ptr, new_size) :
+    (old_size == 0 && new_size > 0) ? aligned_alloc(alignment, new_size) :
+    (new_size == 0)                 ? (free(ptr), NULL)                  :
+    (old_size != new_size)          ? realloc(ptr, new_size)             :
                                       ptr;
 }
 

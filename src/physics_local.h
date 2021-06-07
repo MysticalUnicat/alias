@@ -2,7 +2,7 @@
 #define _ALIAS_PHYSICS_LOCAL_H_
 
 #include <alias/physics.h>
-#include <alias/data_structure/aabb.h>
+#include <alias/data_structure/bvh.h>
 
 typedef struct alias_Physics2DLinearSpeed {
   alias_R speed;

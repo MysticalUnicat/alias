@@ -1,6 +1,9 @@
 #ifndef _ALIAS_DATA_STRUCTURE_BVH_H_
 #define _ALIAS_DATA_STRUCTURE_BVH_H_
 
+#include <alias/data_structure/aabb.h>
+#include <alias/data_structure/soa.h>
+
 #if 0
 struct extracted_node {
   alias_ecs_EntityHandle   entity;
@@ -110,11 +113,11 @@ static inline void _insert(
   //   walk back up the tree refitting AABBs
   //   in addition - we are balancing the tree as we go
   // 
-  //           (A)
-  //        /      \
-  //     (B)       (C)
-  //    /  \      /  \
-  // (D)   (E) (F)    (G)
+  //           (A)        |
+  //        /      \      |
+  //     (B)       (C)    |
+  //    /  \      /  \    |
+  // (D)   (E) (F)    (G) |
   // four possible rotations: B <-> F , B <-> G , C <-> D , C <-> E
   struct extracted_node
       A = parent
