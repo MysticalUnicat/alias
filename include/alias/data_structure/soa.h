@@ -15,7 +15,7 @@ typedef struct alias_SOA {
   uint16_t   rows_per_page;
   uint32_t   num_rows;
   uint32_t * columns;
-  void *   * pages;
+  uint8_t ** pages;
 } alias_SOA;
 
 static inline void alias_SOA_create(alias_SOA * soa, alias_MemoryAllocationCallback * cb, uint16_t num_columns, size_t * column_sizes, size_t header_size) {
@@ -40,7 +40,7 @@ static inline void alias_SOA_create(alias_SOA * soa, alias_MemoryAllocationCallb
   soa->pages = NULL;
 }
 
-static inline uint32_t alias_SOA_allocate_row(alias_SOA * soa, alias_MemoryAllocationCallback * cb) {
+static inline uint32_t alias_SOA_allocate(alias_SOA * soa, alias_MemoryAllocationCallback * cb) {
   uint32_t row = soa->num_rows++;
 
   uint32_t cur_num_pages = row / soa->rows_per_page;
@@ -51,7 +51,20 @@ static inline uint32_t alias_SOA_allocate_row(alias_SOA * soa, alias_MemoryAlloc
     soa->pages[cur_num_pages] = alias_malloc(cb, ALIAS_SOA_PAGE_SIZE, ALIAS_SOA_PAGE_SIZE);
   }
 
-  return row;
+  uint32_t page = cur_num_pages;
+  uint32_t index = row % soa->rows_per_page;
+
+  return (page << 16) | index;
+}
+
+static inline const void * alias_SOA_read(alias_SOA * soa, uint32_t code, uint16_t column) {
+  uint32_t col = soa->columns[column];
+  return soa->pages[code >> 16] + ((col >> 16) + (col & 0xFFFF) * (code & 0xFFFF));
+}
+
+static inline void * alias_SOA_write(alias_SOA * soa, uint32_t code, uint16_t column) {
+  uint32_t col = soa->columns[column];
+  return soa->pages[code >> 16] + ((col >> 16) + (col & 0xFFFF) * (code & 0xFFFF));
 }
 
 #endif

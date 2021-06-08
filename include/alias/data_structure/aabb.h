@@ -23,7 +23,6 @@ typedef struct alias_AABB2D {
       alias_R bottom;
     };
   };
-  alias_R surface_area;
 } alias_AABB2D;
 
 static inline alias_AABB2D alias__construct_AABB2D(alias_R minx, alias_R miny, alias_R maxx, alias_R maxy) {
@@ -32,7 +31,6 @@ static inline alias_AABB2D alias__construct_AABB2D(alias_R minx, alias_R miny, a
     , .min_y = miny
     , .max_x = maxx
     , .max_y = maxy
-    , .surface_area = alias_R_TWO * (maxx - minx + maxy - miny)
   };
 }
 
@@ -56,6 +54,10 @@ static inline alias_AABB2D alias_AABB2D_intersection(alias_AABB2D a, alias_AABB2
 
 static inline bool alias_AABB2D_valid(alias_AABB2D aabb) {
   return aabb.min_x < aabb.max_x && aabb.min_y < aabb.max_y;
+}
+
+static inline alias_R alias_AABB2D_surface_area(alias_AABB2D aabb) {
+  return alias_R_TWO * (aabb.max_x - aabb.min_x + aabb.max_y - aabb.min_y);
 }
 
 static inline alias_R alias_AABB2D_volume(alias_AABB2D aabb) {
