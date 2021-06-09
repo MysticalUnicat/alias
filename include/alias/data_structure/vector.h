@@ -1,0 +1,6 @@
+#ifndef _ALIAS_DATA_STRUCTURE_VECTOR_H_
+#define _ALIAS_DATA_STRUCTURE_VECTOR_H_
+
+
+
+#endif
