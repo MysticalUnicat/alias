@@ -53,12 +53,12 @@ void alias_ecs_destroy_instance(alias_ecs_Instance * instance) {
   alias_MemoryAllocationCallback memory_callback = instance->memory_allocation_cb;
 
   if(instance->layer.capacity > 0) {
-    alias_ecs_Vector_free(instance, &instance->layer.free_indexes);
+    alias_Vector_free(&instance->layer.free_indexes, &instance->memory_allocation_cb);
 
     alias_ecs_free(instance, instance->layer.generation, sizeof(*instance->layer.generation) * instance->layer.capacity, alignof(*instance->layer.generation));
 
     for(uint32_t i = 0; i < instance->layer.length; i++) {
-      alias_ecs_Vector_free(instance, &instance->layer.data[i].entities);
+      alias_Vector_free(&instance->layer.data[i].entities, &instance->memory_allocation_cb);
     }
     alias_ecs_free(instance, instance->layer.data, sizeof(*instance->layer.data) * instance->layer.capacity, alignof(*instance->layer.data));
   }
@@ -66,7 +66,7 @@ void alias_ecs_destroy_instance(alias_ecs_Instance * instance) {
   for(uint32_t i = 0; i < instance->component.length; i++) {
     FREE(instance, instance->component.data[i].num_required_components, instance->component.data[i].required_components);
   }
-  alias_ecs_Vector_free(instance, &instance->component);
+  alias_Vector_free(&instance->component, &instance->memory_allocation_cb);
 
   FREE(instance, instance->entity.capacity, instance->entity.generation);
   FREE(instance, instance->entity.capacity, instance->entity.layer_index);
@@ -77,11 +77,11 @@ void alias_ecs_destroy_instance(alias_ecs_Instance * instance) {
     alias_ecs_Archetype * archetype = &instance->archetype.data[i];
     alias_ecs_ComponentSet_free(instance, &archetype->components);
     FREE(instance, archetype->components.count, archetype->offset_size);
-    alias_ecs_Vector_free(instance, &archetype->free_indexes);
+    alias_Vector_free(&archetype->free_indexes, &instance->memory_allocation_cb);
     for(uint32_t j = 0; j < archetype->blocks.length; j++) {
       FREE(instance, 1, archetype->blocks.data[j]);
     }
-    alias_ecs_Vector_free(instance, &archetype->blocks);
+    alias_Vector_free(&archetype->blocks, &instance->memory_allocation_cb);
   }
   FREE(instance, instance->archetype.capacity, instance->archetype.components_index);
   FREE(instance, instance->archetype.capacity, instance->archetype.data);

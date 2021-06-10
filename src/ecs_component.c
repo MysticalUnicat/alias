@@ -29,11 +29,11 @@ alias_ecs_Result alias_ecs_register_component(
     , .required_components = required_components
   };
 
-  return_if_ERROR(alias_ecs_Vector_space_for(instance, &instance->component, 1));
+  alias_Vector_space_for(&instance->component, &instance->memory_allocation_cb, 1);
 
   *component_ptr = instance->component.length;
 
-  *alias_ecs_Vector_push(&instance->component) = component_data;
+  *alias_Vector_push(&instance->component) = component_data;
 
   return ALIAS_ECS_SUCCESS;
 }

@@ -3,6 +3,7 @@
 
 #include "utils_local.h"
 #include <alias/ecs.h>
+#include <alias/data_structure/vector.h>
 
 #include <stdlib.h>
 #include <stdalign.h>
@@ -13,13 +14,11 @@
 
 typedef uint32_t alias_ecs_ArchetypeHandle;
 
-#define alias_ecs_Vector(T) struct { uint32_t capacity; uint32_t length; T * data; }
-
 typedef struct alias_ecs_Layer {
   uint32_t dirty : 1;
   uint32_t at_max : 1;
   uint32_t _reserved : 30;
-  alias_ecs_Vector(uint32_t) entities;
+  alias_Vector(uint32_t) entities;
 } alias_ecs_Layer;
 
 typedef struct alias_ecs_Component {
@@ -57,9 +56,9 @@ typedef struct alias_ecs_Archetype {
   uint32_t entities_per_block;
 
   uint32_t next_index;
-  alias_ecs_Vector(uint32_t) free_indexes;
+  alias_Vector(uint32_t) free_indexes;
 
-  alias_ecs_Vector(alias_ecs_DataBlock *) blocks;
+  alias_Vector(alias_ecs_DataBlock *) blocks;
 } alias_ecs_Archetype;
 
 // typedef already in ecs.h
@@ -68,7 +67,7 @@ struct alias_ecs_Instance {
 
   // generational layers
   struct {
-    alias_ecs_Vector(uint32_t) free_indexes;
+    alias_Vector(uint32_t) free_indexes;
     uint32_t capacity;
     uint32_t length;
     uint32_t * generation;
@@ -77,7 +76,7 @@ struct alias_ecs_Instance {
 
   // generational entities
   struct {
-    alias_ecs_Vector(uint32_t) free_indexes;
+    alias_Vector(uint32_t) free_indexes;
     uint32_t capacity;
     uint32_t length;
     uint32_t * generation;
@@ -95,7 +94,7 @@ struct alias_ecs_Instance {
     alias_ecs_Archetype * data;
   } archetype;
 
-  alias_ecs_Vector(alias_ecs_Component) component;
+  alias_Vector(alias_ecs_Component) component;
 };
 
 struct alias_ecs_Query {
@@ -269,79 +268,6 @@ void alias_ecs_ComponentSet_free(
     alias_ecs_Instance *     instance
   , alias_ecs_ComponentSet * set
 );
-
-// ============================================================================
-// Vector utility functions and macros
-
-// VoidVector makes some code easier
-typedef alias_ecs_Vector(void) alias_ecs_VoidVector;
-
-static inline alias_ecs_Result alias_ecs_VoidVector_set_capacity(
-    alias_ecs_Instance *   instance
-  , alias_ecs_VoidVector * vv
-  , size_t                 s
-  , size_t                 a
-  , size_t                 new_capacity
-) {
-  size_t old_capacity = vv->capacity;
-  if(old_capacity == new_capacity) {
-    return ALIAS_ECS_SUCCESS;
-  }
-  alias_ecs_Result result = alias_ecs_realloc(instance, vv->data, old_capacity * s, new_capacity * s, a, &vv->data);
-  if(result >= ALIAS_ECS_SUCCESS) {
-    vv->capacity = new_capacity;
-  }
-  return result;
-}
-
-static inline alias_ecs_Result alias_ecs_VoidVector_space_for(
-    alias_ecs_Instance   * instance
-  , alias_ecs_VoidVector * vv
-  , size_t                 s
-  , size_t                 a
-  , size_t                 c
-) {
-  size_t new_capacity = vv->length + c;
-  if(new_capacity > vv->capacity) {
-    new_capacity += new_capacity >> 1;
-    return  alias_ecs_VoidVector_set_capacity(instance, vv, s, a, new_capacity);
-  }
-  return ALIAS_ECS_SUCCESS;
-}
-
-#define alias_ecs_Vector_VoidVector_args(V) (alias_ecs_VoidVector *)(V), sizeof(*(V)->data), alignof(*(V)->data)
-
-#define alias_ecs_Vector_free(I, V)                                                          \
-  do {                                                                                       \
-    if((V)->data != NULL) {                                                                  \
-      alias_ecs_free(I, (V)->data, (V)->capacity * sizeof(*(V)->data), alignof(*(V)->data)); \
-    }                                                                                        \
-    (V)->length = 0;                                                                         \
-    (V)->capacity = 0;                                                                       \
-    (V)->data = NULL;                                                                        \
-  } while(0)
-#define alias_ecs_Vector_pop(V) ((V)->data + (--(V)->length))
-#define alias_ecs_Vector_push(V) ((V)->data + ((V)->length++))
-#define alias_ecs_Vector_set_capacity(I, V, C) alias_ecs_VoidVector_set_capacity(I, alias_ecs_Vector_VoidVector_args(V), C)
-#define alias_ecs_Vector_space_for(I, V, C) alias_ecs_VoidVector_space_for(I, alias_ecs_Vector_VoidVector_args(V), C)
-#define alias_ecs_Vector_qsort(V, F) qsort((V)->data, (V)->length, sizeof(*(V)->data), F)
-#define alias_ecs_Vector_bsearch(V, F, K) bsearch(K, (V)->data, (V)->length, sizeof(*(V)->data), F)
-#define alias_ecs_Vector_remove_at(V, I)                                                         \
-  do {                                                                                           \
-      uint32_t __i = (I);                                                                        \
-      (V)->length--;                                                                             \
-      if((V)->length > 0 && (V)->length != __i) {                                                \
-        memmove((V)->data + __i, (V)->data + __i + 1, ((V)->length - __i) * sizeof(*(V)->data)); \
-      }                                                                                          \
-  } while(0)
-#define alias_ecs_Vector_swap_pop(V, I)                                     \
-  do {                                                                      \
-    uint32_t __i = (I);                                                     \
-    (V)->length--;                                                          \
-    if((V)->length != __i) {                                                \
-      memcpy((V)->data + __i, (V)->data + (V)->length, sizeof(*(V)->data)); \
-    }                                                                       \
-  } while(0)
 
 // ============================================================================
 // layer.c

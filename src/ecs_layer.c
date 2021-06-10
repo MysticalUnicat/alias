@@ -28,7 +28,7 @@ static int _compare_entity_index(const void * ap, const void * bp) {
 static void _linear_remove_entity(alias_ecs_Layer * data, uint32_t entity_index) {
   for(uint32_t i = 0; i < data->entities.length; i++) {
     if(data->entities.data[i] == entity_index) {
-      alias_ecs_Vector_remove_at(&data->entities, i);
+      alias_Vector_remove_at(&data->entities, i);
       return;
     }
   }
@@ -54,17 +54,17 @@ void alias_ecs_unset_entity_layer(
   }
 
   if(data->dirty) {
-    alias_ecs_Vector_qsort(&data->entities, _compare_entity_index);
+    alias_Vector_qsort(&data->entities, _compare_entity_index);
   }
 
   // the case where the entity is not found should not happen
   // TODO: record such case
-  uint32_t * index_ptr = alias_ecs_Vector_bsearch(&data->entities, _compare_entity_index, &entity_index);
+  uint32_t * index_ptr = alias_Vector_bsearch(&data->entities, _compare_entity_index, &entity_index);
   if(index_ptr != NULL) {
     if(data->entities.length < MAX_ENTITIES_FOR_LINEAR_OPS) {
-      alias_ecs_Vector_remove_at(&data->entities, index_ptr - data->entities.data);
+      alias_Vector_remove_at(&data->entities, index_ptr - data->entities.data);
     } else {
-      alias_ecs_Vector_swap_pop(&data->entities, *index_ptr);
+      alias_Vector_swap_pop(&data->entities, *index_ptr);
       data->dirty = 1;
     }
   }
@@ -87,8 +87,8 @@ alias_ecs_Result alias_ecs_set_entity_layer(
     return ALIAS_ECS_ERROR_INVALID_ENTITY;
   }
 
-  return_if_ERROR(alias_ecs_Vector_space_for(instance, &instance->layer.data[layer_index].entities, entity_index));
-  *alias_ecs_Vector_pop(&instance->layer.data[layer_index].entities) = entity_index;
+  alias_Vector_space_for(&instance->layer.data[layer_index].entities, &instance->memory_allocation_cb, entity_index);
+  *alias_Vector_pop(&instance->layer.data[layer_index].entities) = entity_index;
 
   return ALIAS_ECS_SUCCESS;
 }
@@ -105,7 +105,7 @@ alias_ecs_Result alias_ecs_create_layer(
   return_ERROR_INVALID_ARGUMENT_if(layer_ptr == NULL);
 
   if(instance->layer.free_indexes.length > 0) {
-    index = *alias_ecs_Vector_pop(&instance->layer.free_indexes);
+    index = *alias_Vector_pop(&instance->layer.free_indexes);
   } else {
     index = instance->layer.length++;
   }
@@ -122,7 +122,7 @@ alias_ecs_Result alias_ecs_create_layer(
 
   if(create_info->max_entities > 0) {
     data->at_max = 1;
-    alias_ecs_Vector_set_capacity(instance, &data->entities, create_info->max_entities);
+    alias_Vector_set_capacity(&data->entities, &instance->memory_allocation_cb, create_info->max_entities);
   }
 
   uint32_t generation = instance->layer.generation[index];

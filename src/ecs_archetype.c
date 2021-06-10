@@ -119,7 +119,7 @@ static alias_ecs_Result _allocate_code(
   uint32_t index;
 
   if(archetype->free_indexes.length > 0) {
-    index = *alias_ecs_Vector_pop(&archetype->free_indexes);
+    index = *alias_Vector_pop(&archetype->free_indexes);
   } else {
     index = archetype->next_index++;
   }
@@ -130,8 +130,8 @@ static alias_ecs_Result _allocate_code(
   // ASSERT(block_index <= archetype->num_blocks)
 
   if(block_index == archetype->blocks.length) {
-    alias_ecs_Vector_set_capacity(instance, &archetype->blocks, block_index + 1);
-    *alias_ecs_Vector_push(&archetype->blocks) = NULL;
+    alias_Vector_set_capacity(&archetype->blocks, &instance->memory_allocation_cb, block_index + 1);
+    *alias_Vector_push(&archetype->blocks) = NULL;
   }
 
   if(archetype->blocks.data[block_index] == NULL) {
@@ -151,13 +151,13 @@ static alias_ecs_Result _free_code(
 ) {
   alias_ecs_Archetype * archetype = &instance->archetype.data[archetype_index];
 
-  return_if_ERROR(alias_ecs_Vector_space_for(instance, &archetype->free_indexes, 1));
+  alias_Vector_space_for(&archetype->free_indexes, &instance->memory_allocation_cb, 1);
   
   uint32_t block_index = archetype_code >> 16;
   uint32_t block_offset = archetype_code & 0xFFFF;
   uint32_t index = block_index * archetype->entities_per_block + block_offset;
 
-  *alias_ecs_Vector_push(&archetype->free_indexes) = index;
+  *alias_Vector_push(&archetype->free_indexes) = index;
 
   ASSERT(archetype->blocks.data[block_index]->live_count > 0);
   archetype->blocks.data[block_index]->live_count--;

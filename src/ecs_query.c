@@ -34,8 +34,8 @@ alias_ecs_Result alias_ecs_create_query(
 
   return_if_ERROR(alias_ecs_ComponentSet_init(instance, &query->component_set, query->component_count, query->component));
 
-  alias_ecs_Vector(uint32_t) other = { 0 };
-  alias_ecs_Vector_set_capacity(instance, &other, query->component_count + create_info->num_filters);
+  alias_Vector(uint32_t) other = { 0 };
+  alias_Vector_set_capacity(&other, &instance->memory_allocation_cb, query->component_count + create_info->num_filters);
 
   for(uint32_t i = 0; i < query->component_count; i++) {
     bool optional = false;
@@ -48,14 +48,14 @@ alias_ecs_Result alias_ecs_create_query(
     if(optional) {
       continue;
     }
-    *alias_ecs_Vector_push(&other) = query->component[i];
+    *alias_Vector_push(&other) = query->component[i];
   }
   for(uint32_t j = 0; j < create_info->num_filters; j++) {
     if(create_info->filters[j].filter != ALIAS_ECS_FILTER_MODIFIED) {
       continue;
     }
     if(!alias_ecs_ComponentSet_contains(&query->component_set, create_info->filters[j].component)) {
-      *alias_ecs_Vector_push(&other) = create_info->filters[j].component;
+      *alias_Vector_push(&other) = create_info->filters[j].component;
     }
   }
   return_if_ERROR(alias_ecs_ComponentSet_init(instance, &query->require_component_set, other.length, other.data));
@@ -63,12 +63,12 @@ alias_ecs_Result alias_ecs_create_query(
   other.length = 0;
   for(uint32_t j = 0; j < create_info->num_filters; j++) {
     if(create_info->filters[j].filter == ALIAS_ECS_FILTER_EXCLUDE) {
-      *alias_ecs_Vector_push(&other) = create_info->filters[j].component;
+      *alias_Vector_push(&other) = create_info->filters[j].component;
     }
   }
   return_if_ERROR(alias_ecs_ComponentSet_init(instance, &query->exclude_component_set, other.length, other.data));
   
-  alias_ecs_Vector_free(instance, &other);
+  alias_Vector_free(&other, &instance->memory_allocation_cb);
 
   *query_ptr = query;
 
