@@ -7,6 +7,4 @@
 
 #define alias_Vector(T) struct { uint32_t capacity; uint32_t length; T * data; }
 
-
-
 #endif
