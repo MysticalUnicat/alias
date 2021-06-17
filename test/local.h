@@ -5,7 +5,7 @@
 #include <stdio.h>
 
 struct StubAllocator {
-  alias_MemoryAllocationCallback cb;
+  alias_MemoryCB cb;
   uint32_t num_allocations;
   uint32_t bytes_allocated;
   uint32_t num_frees;

@@ -1,25 +1,11 @@
 #include "ecs_local.h"
 
-static void * _default_allocation(void * ud, void * ptr, size_t old_size, size_t new_size, size_t alignment) {
-  UNUSED(ud);
-  UNUSED(old_size);
-  UNUSED(alignment);
-  if(new_size == 0) {
-    free(ptr);
-    return NULL;
-  } else {
-    return realloc(ptr, new_size);
-  }
-}
-
-static alias_MemoryAllocationCallback _default_allocation_cb = { _default_allocation, NULL };
-
 alias_ecs_Result alias_ecs_create_instance(
-    const alias_MemoryAllocationCallback * memory_callback
-  , alias_ecs_Instance *                 * instance_ptr
+    const alias_MemoryCB * memory_callback
+  , alias_ecs_Instance * * instance_ptr
 ) {
   if(memory_callback == NULL) {
-    memory_callback = &_default_allocation_cb;
+    memory_callback = &alias_default_MemoryCB;
   }
 
   return_ERROR_INVALID_ARGUMENT_if(memory_callback->fn == NULL);
@@ -32,7 +18,7 @@ alias_ecs_Result alias_ecs_create_instance(
   }
 
   memset(instance, 0, sizeof(*instance));
-  instance->memory_allocation_cb = *memory_callback;
+  instance->memory_cb = *memory_callback;
 
   {
     alias_ecs_EntityHandle e;
@@ -50,7 +36,7 @@ alias_ecs_Result alias_ecs_create_instance(
 }
 
 void alias_ecs_destroy_instance(alias_ecs_Instance * instance) {
-  alias_MemoryAllocationCallback memory_callback = instance->memory_allocation_cb;
+  alias_MemoryCB memory_callback = instance->memory_cb;
 
   if(instance->layer.capacity > 0) {
     alias_ecs_Vector_free(instance, &instance->layer.free_indexes);
