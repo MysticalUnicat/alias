@@ -42,12 +42,19 @@ void _run(int * result, struct Test * test) {
   
   test->fn(&success);
 
-  if(g_stub_allocator.num_allocations != g_stub_allocator.num_frees || g_stub_allocator.bytes_allocated != g_stub_allocator.bytes_freed) {
-    success = 0;
-  }
-  
   if(success == 0) {
     fprintf(stdout, "ERR - %s\n", test->ident);
+    *result = 1;
+  } else if(g_stub_allocator.num_allocations != g_stub_allocator.num_frees || g_stub_allocator.bytes_allocated != g_stub_allocator.bytes_freed) {
+    fprintf(
+        stdout
+      , "MEM - %s, %ia %if %iba %ibf\n"
+      , test->ident
+      , g_stub_allocator.num_allocations
+      , g_stub_allocator.num_frees
+      , g_stub_allocator.bytes_allocated
+      , g_stub_allocator.bytes_freed
+      );
     *result = 1;
   } else {
     fprintf(stdout, " OK - %s\n", test->ident);

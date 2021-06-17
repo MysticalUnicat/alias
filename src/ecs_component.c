@@ -29,11 +29,13 @@ alias_ecs_Result alias_ecs_register_component(
     , .required_components = required_components
   };
 
-  return_if_ERROR(alias_ecs_Vector_space_for(instance, &instance->component, 1));
+  if(!alias_Vector_space_for(&instance->component, &instance->memory_cb, 1)) {
+    return ALIAS_ECS_ERROR_OUT_OF_MEMORY;
+  }
 
   *component_ptr = instance->component.length;
 
-  *alias_ecs_Vector_push(&instance->component) = component_data;
+  *alias_Vector_push(&instance->component) = component_data;
 
   return ALIAS_ECS_SUCCESS;
 }

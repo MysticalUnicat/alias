@@ -26,7 +26,7 @@ alias_ecs_Result alias_ecs_create_entity(
   uint32_t index;
 
   if(instance->entity.free_indexes.length > 0) {
-    index = *alias_ecs_Vector_pop(&instance->entity.free_indexes);
+    index = *alias_Vector_pop(&instance->entity.free_indexes);
   } else {
     index = instance->entity.length++;
   }
@@ -54,8 +54,10 @@ alias_ecs_Result alias_ecs_free_entity(
   , uint32_t             entity_id
 ) {
   ++instance->entity.generation[entity_id];
-  return_if_ERROR(alias_ecs_Vector_space_for(instance, &instance->entity.free_indexes, 1));
-  *alias_ecs_Vector_push(&instance->entity.free_indexes) = entity_id;
+  if(!alias_Vector_space_for(&instance->entity.free_indexes, &instance->memory_cb, 1)) {
+    return ALIAS_ECS_ERROR_OUT_OF_MEMORY;
+  }
+  *alias_Vector_push(&instance->entity.free_indexes) = entity_id;
   return ALIAS_ECS_SUCCESS;
 }
 
