@@ -63,7 +63,7 @@ typedef struct alias_ecs_Archetype {
 
 // typedef already in ecs.h
 struct alias_ecs_Instance {
-  alias_MemoryAllocationCallback memory_allocation_cb;
+  alias_MemoryCB memory_cb;
 
   // generational layers
   struct {

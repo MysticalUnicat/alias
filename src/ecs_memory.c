@@ -8,7 +8,7 @@ alias_ecs_Result alias_ecs_malloc(
   , size_t               alignment
   , void *             * out_ptr
 ) {
-  *out_ptr = alias_Closure_call(&instance->memory_allocation_cb, NULL, 0, size, alignment);
+  *out_ptr = alias_malloc(&instance->memory_cb, size, alignment);
   if(*out_ptr == NULL) {
     // TODO make effort to cleanup old archetype blocks
     return ALIAS_ECS_ERROR_OUT_OF_MEMORY;
@@ -25,7 +25,7 @@ alias_ecs_Result alias_ecs_realloc(
   , size_t               alignment
   , void *             * out_ptr
 ) {
-  *out_ptr = alias_Closure_call(&instance->memory_allocation_cb, ptr, old_size, new_size, alignment);
+  *out_ptr = alias_realloc(&instance->memory_cb, ptr, old_size, new_size, alignment);
   if(*out_ptr == NULL) {
     return ALIAS_ECS_ERROR_OUT_OF_MEMORY;
   }
@@ -42,7 +42,7 @@ void alias_ecs_free(
   , size_t               alignment
 ) {
   if(ptr != NULL && size > 0) {
-    alias_Closure_call(&instance->memory_allocation_cb, ptr, size, 0, alignment);
+    alias_free(&instance->memory_cb, ptr, size, alignment);
   }
 }
 

@@ -10,8 +10,6 @@
 #define ALIAS_DECLARE_CLOSURE(NAME, RESULT_TYPE, ...) \
   typedef RESULT_TYPE (* NAME##_function_type)(void *, ## __VA_ARGS__); \
   typedef alias_Closure(NAME##_function_type) NAME;
-  
-ALIAS_DECLARE_CLOSURE(alias_MemoryAllocationCallback, void *, void * ptr, size_t old_size, size_t new_size, size_t alignment)
 
 #endif // _ALIAS_UTILS_H_
 

@@ -1,7 +1,7 @@
 #ifndef _ALIAS_ECS_H_
 #define _ALIAS_ECS_H_
 
-#include <alias/utils.h>
+#include <alias/memory.h>
 
 /// @defgroup ecs Alias-ECS
 /// @{
@@ -40,8 +40,8 @@ typedef struct alias_ecs_Instance alias_ecs_Instance;
  *  - aeERROR_OUT_OF_MEMORY a memory allocation failed
  */
 alias_ecs_Result alias_ecs_create_instance(
-    const alias_MemoryAllocationCallback * memory_callback
-  , alias_ecs_Instance *                 * instance_ptr
+    const alias_MemoryCB * memory_callback
+  , alias_ecs_Instance * * instance_ptr
 );
 
 /** Destructor for an Instance

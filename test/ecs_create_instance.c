@@ -2,7 +2,7 @@
 
 TEST(create_instance, "aeCreateInstance and it's possible error conditions") {
   alias_ecs_Instance * instance;
-  alias_MemoryAllocationCallback memory_callback = { 0, 0 };
+  alias_MemoryCB memory_callback = { 0, 0 };
 
   TEST_EQ(alias_ecs_create_instance(NULL, NULL), ALIAS_ECS_ERROR_INVALID_ARGUMENT, "expected to require result pointer to instance");
 
