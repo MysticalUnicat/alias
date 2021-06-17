@@ -3,4 +3,4 @@ build
 
 # personal files
 .local*
-
+.cache
