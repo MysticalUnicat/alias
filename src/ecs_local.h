@@ -3,6 +3,7 @@
 
 #include "utils_local.h"
 #include <alias/ecs.h>
+#include <alias/data_structure/vector.h>
 
 #include <stdlib.h>
 #include <stdalign.h>
@@ -13,13 +14,11 @@
 
 typedef uint32_t alias_ecs_ArchetypeHandle;
 
-#define alias_ecs_Vector(T) struct { uint32_t capacity; uint32_t length; T * data; }
-
 typedef struct alias_ecs_Layer {
   uint32_t dirty : 1;
   uint32_t at_max : 1;
   uint32_t _reserved : 30;
-  alias_ecs_Vector(uint32_t) entities;
+  alias_Vector(uint32_t) entities;
 } alias_ecs_Layer;
 
 typedef struct alias_ecs_Component {
@@ -57,9 +56,9 @@ typedef struct alias_ecs_Archetype {
   uint32_t entities_per_block;
 
   uint32_t next_index;
-  alias_ecs_Vector(uint32_t) free_indexes;
+  alias_Vector(uint32_t) free_indexes;
 
-  alias_ecs_Vector(alias_ecs_DataBlock *) blocks;
+  alias_Vector(alias_ecs_DataBlock *) blocks;
 } alias_ecs_Archetype;
 
 // typedef already in ecs.h
@@ -68,7 +67,7 @@ struct alias_ecs_Instance {
 
   // generational layers
   struct {
-    alias_ecs_Vector(uint32_t) free_indexes;
+    alias_Vector(uint32_t) free_indexes;
     uint32_t capacity;
     uint32_t length;
     uint32_t * generation;
@@ -77,7 +76,7 @@ struct alias_ecs_Instance {
 
   // generational entities
   struct {
-    alias_ecs_Vector(uint32_t) free_indexes;
+    alias_Vector(uint32_t) free_indexes;
     uint32_t capacity;
     uint32_t length;
     uint32_t * generation;
@@ -95,7 +94,7 @@ struct alias_ecs_Instance {
     alias_ecs_Archetype * data;
   } archetype;
 
-  alias_ecs_Vector(alias_ecs_Component) component;
+  alias_Vector(alias_ecs_Component) component;
 };
 
 struct alias_ecs_Query {
@@ -274,7 +273,7 @@ void alias_ecs_ComponentSet_free(
 // Vector utility functions and macros
 
 // VoidVector makes some code easier
-typedef alias_ecs_Vector(void) alias_ecs_VoidVector;
+typedef alias_Vector(void) alias_ecs_VoidVector;
 
 static inline alias_ecs_Result alias_ecs_VoidVector_set_capacity(
     alias_ecs_Instance *   instance

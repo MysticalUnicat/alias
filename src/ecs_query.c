@@ -34,7 +34,7 @@ alias_ecs_Result alias_ecs_create_query(
 
   return_if_ERROR(alias_ecs_ComponentSet_init(instance, &query->component_set, query->component_count, query->component));
 
-  alias_ecs_Vector(uint32_t) other = { 0 };
+  alias_Vector(uint32_t) other = { 0 };
   alias_ecs_Vector_set_capacity(instance, &other, query->component_count + create_info->num_filters);
 
   for(uint32_t i = 0; i < query->component_count; i++) {
