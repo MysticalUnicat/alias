@@ -5,7 +5,7 @@ alias_ecs_Result alias_ecs_create_instance(
   , alias_ecs_Instance * * instance_ptr
 ) {
   if(memory_callback == NULL) {
-    memory_callback = &alias_default_MemoryCB;
+    memory_callback = alias_default_MemoryCB();
   }
 
   return_ERROR_INVALID_ARGUMENT_if(memory_callback->fn == NULL);

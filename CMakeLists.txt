@@ -58,6 +58,8 @@ if(ALIAS_BUILD_TESTS)
     list(APPEND TEST_SOURCES "test/${NAME}.c")
   endmacro()
 
+  alias_test(data_structure_soa)
+
   alias_test(ecs_create_instance)
   alias_test(ecs_create_layer)
   alias_test(ecs_create_component)
