@@ -62,12 +62,8 @@ void alias_ecs_destroy_instance(alias_ecs_Instance * instance) {
   for(uint32_t i = 0; i < instance->archetype.length; i++) {
     alias_ecs_Archetype * archetype = &instance->archetype.data[i];
     alias_ecs_ComponentSet_free(instance, &archetype->components);
-    FREE(instance, archetype->components.count, archetype->offset_size);
-    alias_Vector_free(&archetype->free_indexes, &memory_cb);
-    for(uint32_t j = 0; j < archetype->blocks.length; j++) {
-      FREE(instance, 1, archetype->blocks.data[j]);
-    }
-    alias_Vector_free(&archetype->blocks, &memory_cb);
+    alias_Vector_free(&archetype->free_codes, &memory_cb);
+    alias_PagedSOA_free(&archetype->paged_soa, &memory_cb);
   }
   FREE(instance, instance->archetype.capacity, instance->archetype.components_index);
   FREE(instance, instance->archetype.capacity, instance->archetype.data);

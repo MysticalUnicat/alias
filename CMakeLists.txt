@@ -59,6 +59,7 @@ if(ALIAS_BUILD_TESTS)
   endmacro()
 
   alias_test(data_structure_soa)
+  alias_test(data_structure_paged_soa)
 
   alias_test(ecs_create_instance)
   alias_test(ecs_create_layer)

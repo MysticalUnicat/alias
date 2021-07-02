@@ -4,6 +4,7 @@
 #include "utils_local.h"
 #include <alias/ecs.h>
 #include <alias/data_structure/vector.h>
+#include <alias/data_structure/paged_soa.h>
 
 #include <stdlib.h>
 #include <stdalign.h>
@@ -42,23 +43,10 @@ typedef struct alias_ecs_ComponentSet {
 #define TOTAL_BLOCK_SIZE (1 << 16)
 #define BLOCK_DATA_SIZE (TOTAL_BLOCK_SIZE - (sizeof(uint32_t) * 2))
 
-typedef struct alias_ecs_DataBlock {
-  uint32_t live_count;
-  uint8_t data[BLOCK_DATA_SIZE];
-} alias_ecs_DataBlock;
-
 typedef struct alias_ecs_Archetype {
   alias_ecs_ComponentSet components;
-
-  uint32_t * offset_size;
-
-  uint32_t entity_size;
-  uint32_t entities_per_block;
-
-  uint32_t next_index;
-  alias_Vector(uint32_t) free_indexes;
-
-  alias_Vector(alias_ecs_DataBlock *) blocks;
+  alias_Vector(uint32_t) free_codes;
+  alias_PagedSOA         paged_soa;
 } alias_ecs_Archetype;
 
 // typedef already in ecs.h
@@ -116,7 +104,7 @@ struct alias_ecs_Query {
 
   alias_ecs_ArchetypeHandle * archetype;
 
-  uint32_t * offset_size;
+  uint32_t * size_offset;
 };
 
 // ============================================================================
@@ -124,26 +112,24 @@ struct alias_ecs_Query {
 #define ENTITy_LAYER_INDEX(I, E)            (I)->entity.layer_index[E]
 #define ENTITY_ARCHETYPE_INDEX(I, E)        (I)->entity.archetype_index[E]
 #define ENTITY_ARCHETYPE_CODE(I, E)         (I)->entity.archetype_code[E]
-#define ENTITY_ARCHETYPE_BLOCK_INDEX(I, E)  (ENTITY_ARCHETYPE_CODE(I, E) >> 16)
-#define ENTITY_ARCHETYPE_BLOCK_OFFSET(I, E) (ENTITY_ARCHETYPE_CODE(I, E) & 0xFFFF)
+#define ENTITY_ARCHETYPE_CODE_PAGE(I, E)    (ENTITY_ARCHETYPE_CODE(I, E) >> 16)
+#define ENTITY_ARCHETYPE_CODE_INDEX(I, E)   (ENTITY_ARCHETYPE_CODE(I, E) & 0xFFFF)
 #define ENTITY_ARCHETYPE_DATA(I, E)         (&(I)->archetype.data[ENTITY_ARCHETYPE_INDEX(I, E)])
-#define ENTITY_DATA_BLOCK(I, E)             ENTITY_ARCHETYPE_DATA(I, E)->blocks.data[ENTITY_ARCHETYPE_BLOCK_INDEX(I, E)]
-#define ENTITY_DATA_BLOCK_DATA(I, E)        (ENTITY_DATA_BLOCK(I, E)->data)
-#define ENTITY_DATA_ENTITY_INDEX(I, E)      ((uint32_t *)ENTITY_DATA_BLOCK_DATA(I, E))[ENTITY_ARCHETYPE_BLOCK_OFFSET(I, E)]
+#define ENTITY_DATA_BLOCK(I, E)             ENTITY_ARCHETYPE_DATA(I, E)->paged_soa.pages[ENTITY_ARCHETYPE_CODE_PAGE(I, E)]
+#define ENTITY_DATA_BLOCK_DATA(I, E)        ((void *)(ENTITY_DATA_BLOCK(I, E) + sizeof(uint32_t)))
+#define ENTITY_DATA_ENTITY_INDEX(I, E)      ((uint32_t *)ENTITY_DATA_BLOCK_DATA(I, E))[ENTITY_ARCHETYPE_CODE_INDEX(I, E)]
 
 static inline void * alias_ecs_raw_access(
     alias_ecs_Instance * instance
   , uint32_t             archetype_index
   , uint32_t             component_index
-  , uint32_t             block_index
-  , uint32_t             block_offset
+  , uint32_t             page
+  , uint32_t             index
 ) {
   alias_ecs_Archetype * archetype = &instance->archetype.data[archetype_index];
-  alias_ecs_DataBlock * block = archetype->blocks.data[block_index];
-  uint32_t offset_size = archetype->offset_size[component_index];
-  uint32_t offset = offset_size >> 16;
-  uint32_t size = offset_size & 0xFFFF;
-  return (void *)(block->data + (uintptr_t)offset + ((uintptr_t)block_offset * size));
+  uint32_t size, offset;
+  alias_PagedSOA_decode_column(&archetype->paged_soa, component_index + 1, &size, &offset);
+  return alias_PagedSOA_raw_write(&archetype->paged_soa, page, index, size, offset);
 }
 
 static inline void * alias_ecs_write(
@@ -152,9 +138,9 @@ static inline void * alias_ecs_write(
   , uint32_t             component_index
 ) {
   uint32_t archetype_index = ENTITY_ARCHETYPE_INDEX(instance, entity_index);
-  uint32_t block_index = ENTITY_ARCHETYPE_BLOCK_INDEX(instance, entity_index);
-  uint32_t block_offset = ENTITY_ARCHETYPE_BLOCK_OFFSET(instance, entity_index);
-  return alias_ecs_raw_access(instance, archetype_index, component_index, block_index, block_offset);
+  uint32_t page = ENTITY_ARCHETYPE_CODE_PAGE(instance, entity_index);
+  uint32_t index = ENTITY_ARCHETYPE_CODE_INDEX(instance, entity_index);
+  return alias_ecs_raw_access(instance, archetype_index, component_index, page, index);
 }
 
 // ============================================================================

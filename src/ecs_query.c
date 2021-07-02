@@ -114,7 +114,7 @@ static alias_ecs_Result alias_ecs_update_query(
       uint32_t new_capacity = query->archetype_length + 1;
       new_capacity += new_capacity >> 1;
       RELOC(instance,                          old_capacity,                          new_capacity, query->archetype);
-      RELOC(instance, query->component_count * old_capacity, query->component_count * new_capacity, query->offset_size);
+      RELOC(instance, query->component_count * old_capacity, query->component_count * new_capacity, query->size_offset);
       query->archetype_capacity = new_capacity;
     }
 
@@ -124,7 +124,7 @@ static alias_ecs_Result alias_ecs_update_query(
     for(uint32_t k = 0; k < query->component_count; k++) {
       uint32_t archetype_component_index = alias_ecs_ComponentSet_order_of(&archetype->components, query->component[k]);
       if(archetype_component_index != UINT32_MAX) {
-        query->offset_size[index * query->component_count + k] = archetype->offset_size[archetype_component_index];
+        query->size_offset[index * query->component_count + k] = archetype->paged_soa.size_offset[archetype_component_index + 1];
       }
     }
   }
@@ -144,34 +144,35 @@ alias_ecs_Result alias_ecs_execute_query(
   return_if_ERROR(alias_ecs_update_query(instance, query));
 
   uint8_t ** runtime = query->runtime;
-  const uint32_t * offset_size = query->offset_size;
+  const uint32_t * size_offset = query->size_offset;
   const alias_ecs_ArchetypeHandle * archetype_handle = query->archetype;
   for(uint32_t i = 0; i < query->archetype_length; i++) {
     const alias_ecs_Archetype * archetype = &instance->archetype.data[*archetype_handle];
 
-    for(uint32_t j = 0; j < archetype->blocks.length; j++) {
-      alias_ecs_DataBlock * block = (alias_ecs_DataBlock *)archetype->blocks.data[j];
-      if(block == NULL) {
+    for(uint32_t j = 0; j < archetype->paged_soa.num_pages; j++) {
+      uint8_t * page = archetype->paged_soa.pages[j];
+      uint32_t * live_count = (uint32_t *)page;
+      if(page == NULL) {
         break;
       }
-      const uint32_t * entity = (const uint32_t *)block->data;
+      const uint32_t * entity = (const uint32_t *)(page + sizeof(uint32_t));
       for(uint32_t c = 0, C = query->component_count; c < C; c++) {
-        runtime[c] = offset_size[c] ? block->data + (offset_size[c] >> 16) : NULL;
+        runtime[c] = size_offset[c] ? page + (size_offset[c] & 0xFFFF) : NULL;
       }
-      for(uint32_t k = 0, K = block->live_count; k < K; ) {
+      for(uint32_t k = 0, K = *live_count; k < K; ) {
         if(*entity) {
           alias_Closure_call(&cb, instance, *entity, (void **)runtime);
           k++;
         }
         entity++;
         for(uint32_t c = 0, C = query->component_count; c < C; c++) {
-          runtime[c] += offset_size[c] & 0xFFFF;
+          runtime[c] += size_offset[c] >> 16;
         }
       }
     }
 
     archetype_handle++;
-    offset_size += query->component_count;
+    size_offset += query->component_count;
   }
 
   return ALIAS_ECS_SUCCESS;
@@ -190,7 +191,7 @@ void alias_ecs_destroy_query(
   FREE(instance,                           query->component_count, query->component);
   FREE(instance,                           query->component_count, query->runtime);
   FREE(instance, query->archetype_length                         , query->archetype);
-  FREE(instance, query->archetype_length * query->component_count, query->offset_size);
+  FREE(instance, query->archetype_length * query->component_count, query->size_offset);
   FREE(instance,                                                1, query);
 }
 

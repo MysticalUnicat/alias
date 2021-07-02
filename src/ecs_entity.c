@@ -126,9 +126,8 @@ alias_ecs_Result alias_ecs_spawn(
 
     ASSERT(component_index != UINT32_MAX);
 
-    uint32_t offset_size = archetype->offset_size[component_index];
-    uint32_t component_offset = offset_size >> 16;
-    uint32_t component_size = offset_size & 0xFFFF;
+    uint32_t component_size, component_offset;
+    alias_PagedSOA_decode_column(&archetype->paged_soa, component_index + 1, &component_size, &component_offset);
 
     const uint8_t * read = spawn_component.data;
     uint32_t stride = spawn_component.stride ? spawn_component.stride : component_size;
@@ -136,9 +135,9 @@ alias_ecs_Result alias_ecs_spawn(
     for(uint32_t j = 0; j < spawn_info->count; j++) {
       uint32_t entity_index = (uint32_t)(entities_ptr[j] & 0xFFFFFFFF);
       uint32_t code = ENTITY_ARCHETYPE_CODE(instance, entity_index);
-      uint32_t block_index = code >> 16;
-      uint32_t block_offset = code & 0xFFFF;
-      void * write = (void *)(archetype->blocks.data[block_index]->data + component_offset + (component_size * block_offset));
+      uint32_t page, index;
+      alias_PagedSOA_decode_code(&archetype->paged_soa, code, &page, &index);
+      void * write = alias_PagedSOA_raw_write(&archetype->paged_soa, page, index, component_size, component_offset);
       memcpy(write, read, component_size);
       read += stride;
     }

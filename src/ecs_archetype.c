@@ -66,36 +66,18 @@ alias_ecs_Result alias_ecs_resolve_archetype(
 
   alias_ecs_Archetype * archetype = &instance->archetype.data[archetype_index];
 
-  archetype->entity_size = sizeof(uint32_t); // space for the hidden 'component' that stores entity index
   archetype->components = components;
 
-  if(components.count > 0) {
-    ALLOC(instance, components.count, archetype->offset_size);
+  size_t * sizes = alias_malloc(&instance->memory_cb, sizeof(size_t) * (1 + components.count), alignof(*sizes));
 
-    // copy over component sizes
-    // size is encoded as the low bits of offset_size
-    for(size_t i = 0; i < components.count; i++) {
-      archetype->offset_size[i] = (uint16_t)instance->component.data[components.index[i]].size;
-      archetype->entity_size += archetype->offset_size[i];
-    }
-
-    // from here we can calculate the entity size, we need this for offsets
-    archetype->entities_per_block = BLOCK_DATA_SIZE / archetype->entity_size;
-
-    // data is stored in a block in columns of component data ie. entity_index+ (component+)+
-    // the first component starts after all the hidden entity index 'component'
-    // offset is encoded as the high bits of offset_size
-    uint32_t offset = 0;
-    uint32_t size = sizeof(uint32_t);
-    for(uint32_t i = 0; i < components.count; i++) {
-      archetype->offset_size[i] |= (offset + (size * archetype->entities_per_block)) << 16;
-      size = archetype->offset_size[i] & 0xFFFF;
-      offset = archetype->offset_size[i] >> 16;
-    }
-  } else {
-    archetype->offset_size = NULL;
-    archetype->entities_per_block = BLOCK_DATA_SIZE / archetype->entity_size;
+  sizes[0] = sizeof(uint32_t);
+  for(uint32_t i = 0; i < components.count; i++) {
+    sizes[i + 1] = instance->component.data[components.index[i]].size;
   }
+
+  alias_PagedSOA_initialize(&archetype->paged_soa, &instance->memory_cb, sizeof(uint32_t), 1 + components.count, sizes);
+
+  alias_free(&instance->memory_cb, sizes, sizeof(size_t) * (1 + components.count), alignof(*sizes));
 
   instance->archetype.components_index[archetype_index] = archetype_index;
   alias_ecs_quicksort(
@@ -116,30 +98,18 @@ static alias_ecs_Result _allocate_code(
 ) {
   alias_ecs_Archetype * archetype = &instance->archetype.data[archetype_index];
 
-  uint32_t index;
+  uint32_t code;
 
-  if(archetype->free_indexes.length > 0) {
-    index = *alias_Vector_pop(&archetype->free_indexes);
+  if(archetype->free_codes.length > 0) {
+    code = *alias_Vector_pop(&archetype->free_codes);
   } else {
-    index = archetype->next_index++;
+    alias_PagedSOA_space_for(&archetype->paged_soa, &instance->memory_cb, 1);
+    code = alias_PagedSOA_push(&archetype->paged_soa);
   }
 
-  uint32_t block_index = index / archetype->entities_per_block;
-  uint32_t block_offset = index % archetype->entities_per_block;
+  *(uint32_t *)alias_PagedSOA_page(&archetype->paged_soa, code) += 1;
 
-  // ASSERT(block_index <= archetype->num_blocks)
-
-  if(block_index == archetype->blocks.length) {
-    alias_Vector_set_capacity(&archetype->blocks, &instance->memory_cb, block_index + 1);
-    *alias_Vector_push(&archetype->blocks) = NULL;
-  }
-
-  if(archetype->blocks.data[block_index] == NULL) {
-    ALLOC(instance, 1, archetype->blocks.data[block_index]);
-  }
-
-  archetype->blocks.data[block_index]->live_count++;
-  *archetype_code = (block_index << 16) | block_offset;
+  *archetype_code = code;
 
   return ALIAS_ECS_SUCCESS;
 }
@@ -147,22 +117,17 @@ static alias_ecs_Result _allocate_code(
 static alias_ecs_Result _free_code(
     alias_ecs_Instance * instance
   , uint32_t             archetype_index
-  , uint32_t             archetype_code
+  , uint32_t             code
 ) {
   alias_ecs_Archetype * archetype = &instance->archetype.data[archetype_index];
 
-  if(!alias_Vector_space_for(&archetype->free_indexes, &instance->memory_cb, 1)) {
+  if(!alias_Vector_space_for(&archetype->free_codes, &instance->memory_cb, 1)) {
     return ALIAS_ECS_ERROR_OUT_OF_MEMORY;
   }
   
-  uint32_t block_index = archetype_code >> 16;
-  uint32_t block_offset = archetype_code & 0xFFFF;
-  uint32_t index = block_index * archetype->entities_per_block + block_offset;
+  *alias_Vector_push(&archetype->free_codes) = code;
 
-  *alias_Vector_push(&archetype->free_indexes) = index;
-
-  ASSERT(archetype->blocks.data[block_index]->live_count > 0);
-  archetype->blocks.data[block_index]->live_count--;
+  *(uint32_t *)alias_PagedSOA_page(&archetype->paged_soa, code) -= 1;
 
   return ALIAS_ECS_SUCCESS;
 }
@@ -229,7 +194,7 @@ alias_ecs_Result alias_ecs_set_entity_archetype(
     if(r < old_archetype->components.count && old_archetype->components.index[r] == c) {
       void * old_data = alias_ecs_raw_access(instance, old_archetype_index, r, old_block_index, old_block_offset);
       void *     data = alias_ecs_raw_access(instance,     archetype_index, w,     block_index,     block_offset);
-      memcpy(data, old_data, archetype->offset_size[w] & 0xFFFF);
+      memcpy(data, old_data, archetype->paged_soa.size_offset[w + 1] >> 16);
       
       r++;
     }
