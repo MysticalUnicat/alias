@@ -76,11 +76,11 @@ static inline uint32_t alias_SOA_push(alias_SOA * soa) {
 }
 
 static inline const void * alias_SOA_read(const alias_SOA * soa, uint32_t index, uint32_t column) {
-  return index < soa->length ? soa->column_data[column] + index : NULL;
+  return index < soa->length ? soa->column_data[column] + index * (soa->column_size_alignment[column] & 0xFFFF) : NULL;
 }
 
 static inline void * alias_SOA_write(alias_SOA * soa, uint32_t index, uint32_t column) {
-  return index < soa->length ? soa->column_data[column] + index : NULL;
+  return index < soa->length ? soa->column_data[column] + index * (soa->column_size_alignment[column] & 0xFFFF) : NULL;
 }
 
 #endif

@@ -39,6 +39,14 @@ typedef double alias_R;
 #error "invalid Alias real precision"
 #endif
 
+static inline bool alias_R_is_zero(alias_R a) {
+  return alias_abs(a) < alias_R_MIN;
+}
+
+static inline bool alias_R_fuzzy_eq(alias_R a, alias_R b) {
+  return alias_abs(a - b) < alias_R_MIN;
+}
+
 #define ALIAS_MIN_PAIR(A, B) ((A) < (B) ? (A) : (B))
 #define ALIAS_MAX_PAIR(A, B) ((A) > (B) ? (A) : (B))
 
@@ -82,7 +90,7 @@ static inline alias_Vector2D alias_multiply_Vector2D_R(alias_Vector2D v, alias_R
 }
 
 static inline alias_Vector2D alias_divide_Vector2D_R(alias_Vector2D v, alias_R s) {
-  if(alias_abs(s) < alias_R_MIN) {
+  if(alias_R_is_zero(s)) {
     return (alias_Vector2D) { alias_nan("_ / 0"), alias_nan("_ / 0") };
   }
   s = alias_R_ONE / s;
@@ -140,7 +148,7 @@ static inline alias_R alias_Affine2D_determinate(alias_Affine2D m) {
 }
 
 static inline alias_Affine2D alias_Affine2D_inverse(alias_Affine2D m) {
-  alias_R i_det = 1.0f / alias_Affine2D_determinate(m);
+  alias_R i_det = alias_R_ONE / alias_Affine2D_determinate(m);
   return (alias_Affine2D) {
        m._22 * i_det, -m._12 * i_det, (m._22 * m._13 - m._12 * m._23) * i_det
     , -m._21 * i_det,  m._11 * i_det, (m._21 * m._13 - m._11 * m._23) * i_det

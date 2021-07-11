@@ -39,6 +39,8 @@ add_library(alias STATIC
 
   src/log.c
 
+  src/geometry_bvh.c
+
   src/transform.c
   src/physics.c
 )
@@ -60,6 +62,9 @@ if(ALIAS_BUILD_TESTS)
 
   alias_test(data_structure_soa)
   alias_test(data_structure_paged_soa)
+
+  alias_test(geometry_aabb)
+  alias_test(geometry_bvh)
 
   alias_test(ecs_create_instance)
   alias_test(ecs_create_layer)
