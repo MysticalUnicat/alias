@@ -12,6 +12,8 @@ option(ALIAS_BUILD_DOCS "Build documents if Doxygen is found" ON)
 option(ALIAS_BUILD_TESTS "Build tests for Alias" ON)
 option(ALIAS_COVERAGE "Build tests and generate reports for coverage" ON)
 
+add_subdirectory(ext/glfw)
+
 add_library(coverage_config INTERFACE)
 if(ALIAS_COVERAGE AND CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
   target_compile_options(coverage_config INTERFACE -O0 -g --coverage)
