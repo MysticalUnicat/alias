@@ -1,9 +1,4 @@
-#include <alias/physics.h>
-
-typedef struct alias_Physics2DLinearSpeed {
-  alias_R speed;
-  alias_Normal2D direction;
-} alias_Physics2DLinearSpeed;
+#include "physics_local.h"
 
 alias_ecs_Result alias_Physics2DBundle_initialize(alias_ecs_Instance * instance, alias_Physics2DBundle * bundle, alias_TransformBundle * transform_bundle) {
   alias_ecs_register_component(instance, &(alias_ecs_ComponentCreateInfo) {

@@ -11,5 +11,4 @@
   typedef RESULT_TYPE (* NAME##_function_type)(void *, ## __VA_ARGS__); \
   typedef alias_Closure(NAME##_function_type) NAME;
 
-#endif // _ALIAS_UTILS_H_
-
+#endif

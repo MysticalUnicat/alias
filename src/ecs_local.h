@@ -1,7 +1,6 @@
 #ifndef _ALIAS_ECS_LOCAL_H_
 #define _ALIAS_ECS_LOCAL_H_
 
-#include "utils_local.h"
 #include <alias/ecs.h>
 #include <alias/data_structure/vector.h>
 #include <alias/data_structure/paged_soa.h>
