@@ -13,7 +13,7 @@ option(ALIAS_BUILD_TESTS "Build tests for Alias" ON)
 option(ALIAS_BUILD_EXAMPLES "Build examples for Alias" ON)
 option(ALIAS_COVERAGE "Build tests and generate reports for coverage" ON)
 
-add_subdirectory(ext/glfw)
+#add_subdirectory(ext/glfw)
 
 add_library(coverage_config INTERFACE)
 if(ALIAS_COVERAGE AND CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")

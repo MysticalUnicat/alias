@@ -20,13 +20,14 @@ typedef float alias_R;
 #define alias_nan nanf
 #define alias_abs fabsf
 
-#define alias_R_EPSILON FLT_EPSILON
-#define alias_R_MIN     FLT_MIN
-#define alias_R_MAX     FLT_MAX
-#define alias_R_ZERO    0.0f
-#define alias_R_ONE     1.0f
-#define alias_R_TWO     2.0f
-#define alias_R_NAN     alias_nan("")
+#define alias_R_EPSILON  FLT_EPSILON
+#define alias_R_MIN      FLT_MIN
+#define alias_R_MAX      FLT_MAX
+#define alias_R_ZERO     0.0f
+#define alias_R_ONE      1.0f
+#define alias_R_TWO      2.0f
+#define alias_R_NAN      alias_nan("")
+#define alais_R_INFINITY INFINITY
 
 #elif ALIAS_REAL_PRECISION == 64
 typedef double alias_R;
