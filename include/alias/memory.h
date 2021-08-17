@@ -59,4 +59,16 @@ static inline bool alias_memory_clear(void * dest, size_t dest_size) {
   return alias_memory_set(dest, dest_size, 0, dest_size);
 }
 
+static inline bool alias_memory_move(void * dest, size_t dest_size, const void * src, size_t count) {
+  #if defined(__STDC_LIB_EXT1__) && ALIAS_MEMORY_C11_CONSTRAINTS
+  extern int memmove_s(void *, size_t, const void *, size_t);
+  return memmove_s(dest, dest_size, src, count) == 0;
+  #else
+  extern void * memmove(void *, const void *, size_t);
+  (void)dest_size;
+  memmove(dest, src, count);
+  return true;
+  #endif
+}
+
 #endif
