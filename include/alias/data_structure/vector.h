@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include <stdalign.h>
 
 #include <alias/memory.h>
 
@@ -16,6 +17,11 @@
     (V)->length = 0;                                                                      \
     (V)->capacity = 0;                                                                    \
     (V)->data = NULL;                                                                     \
+  } while(0)
+
+#define alias_Vector_clear(V) \
+  do {                        \
+    (V)->length = 0;          \
   } while(0)
 
 #define alias_Vector_pop(V) ((V)->data + (--(V)->length))

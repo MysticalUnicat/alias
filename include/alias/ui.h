@@ -9,26 +9,26 @@
 typedef struct alias_ui alias_ui;
 
 typedef enum alias_ui_Result {
-    alias_ui_Success,
-    alias_ui_ErrorOutOfMemory
+  alias_ui_Success,
+  alias_ui_ErrorOutOfMemory
 } alias_ui_Result;
 
 typedef struct alias_ui_Size {
-    alias_R x;
-    alias_R y;
+  alias_R width;
+  alias_R height;
 } alias_ui_Size;
 
 typedef struct alias_ui_Constraint {
-    alias_ui_Size min;
-    alias_ui_Size max;
+  alias_ui_Size min;
+  alias_ui_Size max;
 } alias_ui_Constraint;
 
 typedef struct alias_ui_Input {
-    alias_ui_Size screen_size;
+  alias_ui_Size screen_size;
 } alias_ui_Input;
 
 typedef struct alias_ui_Output {
-    uint32_t things;
+  uint32_t things;
 } alias_ui_Output;
 
 alias_ui_Result alias_ui_initialize(alias_MemoryCB * mcb, alias_ui * * ui_ptr);
@@ -40,12 +40,11 @@ void alias_ui_font_color(alias_ui * ui, alias_Color color);
 void alias_ui_textv(alias_ui * ui, const char * format, va_list ap);
 alias_ui_Result alias_ui_end_frame(alias_ui * ui, alias_MemoryCB * mcb, alias_ui_Output * output);
 
-static inline alias_ui_Result alias_ui_text(alias_ui * ui, const char * format, ...) {
-    va_list ap;
-    va_start(ap, format);
-    alias_ui_Result result = alias_ui_textv(ui, format, ap);
-    va_end(ap);
-    return result;
+static inline void alias_ui_text(alias_ui * ui, const char * format, ...) {
+  va_list ap;
+  va_start(ap, format);
+  alias_ui_textv(ui, format, ap);
+  va_end(ap);
 }
  
 #endif
