@@ -10,4 +10,8 @@ typedef struct alias_Color {
   alias_R a;
 } alias_Color;
 
+extern const alias_Color alias_Color_WHITE;
+extern const alias_Color alias_Color_BLACK;
+extern const alias_Color alias_Color_TRANSPARENT_BLACK;
+
 #endif

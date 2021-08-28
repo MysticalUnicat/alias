@@ -28,7 +28,7 @@ endif()
 if(MSVC)
   add_compile_options(/W4 /WX)
 else()
-  add_compile_options(-Wall -Wextra -pedantic -Werror)
+  add_compile_options(-Wall -Wextra -pedantic -Werror -Wno-gnu)
 endif()
 
 add_library(alias STATIC
@@ -48,6 +48,8 @@ add_library(alias STATIC
   src/physics.c
   src/physics_bvh_2d.c
   src/color.c
+
+  src/ash.c
 
   src/ui.c
 )
@@ -84,6 +86,10 @@ if(ALIAS_BUILD_TESTS)
   alias_test(ecs_query)
   alias_test(ecs_add_component)
   alias_test(ecs_remove_component)
+
+  alias_test(ash)
+
+  alias_test(ui)
 
   list(REVERSE TEST_SOURCES)
 
