@@ -56,6 +56,7 @@ TEST(ui, "ui layouts") {
   TEST_EQ(output.num_triangles, 0, "");
   TEST_EQ(output.num_vertexes, 0, "");
 
+  /*
   alias_ui_begin_frame(ui, alias_default_MemoryCB(), &input);
   alias_ui_fill(ui, alias_Color_BLACK);
   alias_ui_end_frame(ui, alias_default_MemoryCB(), &output);
@@ -101,6 +102,7 @@ TEST(ui, "ui layouts") {
   TEST_EQ(vertexes[2].xy[1], 75, "");
   TEST_EQ(vertexes[3].xy[0], 75, "");
   TEST_EQ(vertexes[3].xy[1], 25, "");
+  */
 
   alias_ui_free(ui, alias_default_MemoryCB());
 }

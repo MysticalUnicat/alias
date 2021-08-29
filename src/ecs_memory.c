@@ -99,12 +99,14 @@ static int _cmp(
 }
 #define CMP(I, OP, J) (_cmp(base, size, I, J, cb) OP 0)
 
+/*
 static inline size_t size_t_min(
     size_t a
   , size_t b
 ) {
   return a < b ? a : b;
 }
+*/
 
 static size_t _partition(
     enum PivotScheme       pivot_scheme

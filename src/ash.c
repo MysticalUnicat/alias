@@ -110,7 +110,7 @@ bool alias_ash_Program_end_word(alias_ash_Program * p, alias_MemoryCB * mcb) {
   return true;
 }
 
-bool alias_ash_Program_begin_anonymous_word(alias_ash_Program * p, alias_MemoryCB * mcb) {
+bool alias_ash_Program_begin_quotation(alias_ash_Program * p, alias_MemoryCB * mcb) {
   if(!alias_Vector_space_for(&p->words, mcb, 1)) {
     return false;
   }
@@ -130,7 +130,7 @@ bool alias_ash_Program_begin_anonymous_word(alias_ash_Program * p, alias_MemoryC
   return true;
 }
 
-bool alias_ash_Program_end_anonymous_word(alias_ash_Program * p, alias_MemoryCB * mcb) {
+bool alias_ash_Program_end_quotation(alias_ash_Program * p, alias_MemoryCB * mcb) {
   alias_ash_Word * word = alias_Vector_pop(&p->words);
   // TODO assert we are in an anonymous word
 

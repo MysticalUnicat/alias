@@ -72,17 +72,16 @@ alias_ui_Result alias_ui_initialize(alias_MemoryCB * mcb, alias_ui * * ui_ptr) {
   alias_ash_Program_begin_library(&ui->layout_program, mcb);
 
   ALIAS_ASH_EMIT(&ui->layout_program, mcb
-    // [a] b f([a] -- ?) -- ? b
-    , fn(dip, swap, r_push, call, r_pop)
+    , fn(dip // [a] b f([a] -- ?) -- ? b
+       , swap, r_push, call, r_pop)
 
-    // [a] b c f([a] -- ?) -- ? b c
-    , fn(dip2, rot, r_push, r_push, call, r_pop, r_pop)
+    , fn(dip2 // [a] b c f([a] -- ?) -- ? b c
+       , rot, r_push, r_push, call, r_pop, r_pop)
 
-    // [a] b f([a] b -- ?) -- ? b
-    , fn(keep, swap, dup, r_push, call, r_pop)
-    
-    // a b c d f(x y -- z) -- f(a c) f(b d)
-    , fn(f2_zip
+    , fn(keep // [a] b f([a] b -- ?) -- ? b
+       , swap, dup, r_push, call, r_pop)
+ 
+    , fn(f2_zip // a b c d f(x y -- z) -- f(a c) f(b d)
        , r_push        // a b c d
        , ( swap ), dip // a b c d -> a c b d
        , r_at, call    // a c f(b d)
@@ -90,17 +89,17 @@ alias_ui_Result alias_ui_initialize(alias_MemoryCB * mcb, alias_ui * * ui_ptr) {
        , r_pop, call   // f(b d) f(a c)
        , swap)
 
-    // a b c d -- min(a, c) min(b, d)
-    , fn(f2_min, ( f_min ), f2_zip)
+    , fn(f2_min // a b c d -- min(a, c) min(b, d)
+       , ( f_min ), f2_zip)
 
-    // a b c d -- max(a, c) max(b,d)
-    , fn(f2_max, ( f_max ), f2_zip)
+    , fn(f2_max // a b c d -- max(a, c) max(b,d)
+       , ( f_max ), f2_zip)
 
-    // minw minh maxw maxh w h -- w h
-    , fn(fit, f2_min, f2_max)
+    , fn(fit // minw minh maxw maxh w h -- w h
+       , f2_min, f2_max)
 
-    // w h -- 0 0 w h
-    , fn(loose_constraint, f(0), dup, swap2)
+   , fn(loose_constraint // w h -- 0 0 w h
+       , f(0), dup, swap2)
   );
 
   alias_ash_Program_end_library(&ui->layout_program);
@@ -169,8 +168,7 @@ void alias_ui_center(alias_ui * ui) {
 // state: w h
 static inline void _override_size_end_child(alias_ui * ui) {
   // w h _ _ -- w h
-  alias_ash_Program * lp = &ui->layout_program;
-  ALIAS_ASH_EMIT(lp, ui->mcb, drop2);
+  ALIAS_ASH_EMIT(&ui->layout_program, ui->mcb, drop2);
 
   _end_scope(ui);
   _end_child(ui);
@@ -227,5 +225,3 @@ alias_ui_Result alias_ui_end_frame(alias_ui * ui, alias_MemoryCB * mcb, alias_ui
 
   return alias_ui_Success;
 }
-
-#endif

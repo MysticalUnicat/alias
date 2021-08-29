@@ -11,7 +11,7 @@
 #define ALIAS_ASH_DSTACK_SIZE 256
 #endif
 
-// ASH Alias SHader language is used internally to unravel some complexity
+// ASH Alias Script Holograph is used internally to unravel some complexity
 // It is very FORTH influenced, as programs are designed to be be fast to generate and fast-enough to execute once and thrown away
 
 // forward declaration
@@ -191,7 +191,7 @@ bool alias_ash_step(alias_ash * ash);
 #define ALIAS_ASH_IS_OP_f_div  ALIAS__PROBE
 #define ALIAS_ASH_IS_OP_f_min  ALIAS__PROBE
 #define ALIAS_ASH_IS_OP_f_max  ALIAS__PROBE
-#define ALIAS_ASH_IS_OP_f_cmp  ALIAS__PROBALIAS_EVAL( E )
+#define ALIAS_ASH_IS_OP_f_cmp  ALIAS__PROBE
 
 #define ALIAS_ASH_IS_SPECIAL(X) ALIAS__IS_PROBE(ALIAS_CAT(ALIAS_ASH_IS_SPECIAL_, X)())
 #define ALIAS_ASH_IS_SPECIAL_fn(...) ALIAS__PROBE
@@ -202,7 +202,7 @@ bool alias_ash_step(alias_ash * ash);
   do { \
     alias_ash_Program * ALIAS_ASH_EMIT_P = (P); \
     alias_MemoryCB * ALIAS_ASH_EMIT_M = (M); \
-    ALIAS_EVAL( ALIAS_ASH_EMIT_map(__VA_ARGS__)) \
+    (void)(true ALIAS_EVAL(ALIAS_ASH_EMIT_map(__VA_ARGS__))); \
   } while(0)
 
 #define ALIAS_ASH_EMIT_map_id() ALIAS_ASH_EMIT_map
@@ -215,16 +215,16 @@ bool alias_ash_step(alias_ash * ash);
 
 #define ALIAS_ASH_EMIT_quotation_id() ALIAS_ASH_EMIT_quotation
 #define ALIAS_ASH_EMIT_quotation(X) \
-  alias_ash_Program_begin_quotation(ALIAS_ASH_EMIT_P, ALIAS_ASH_EMIT_M); \
+  && alias_ash_Program_begin_quotation(ALIAS_ASH_EMIT_P, ALIAS_ASH_EMIT_M) \
   ALIAS__DEFER_2(ALIAS_ASH_EMIT_map_id)()X \
-  alias_ash_Program_end_quotation(ALIAS_ASH_EMIT_P, ALIAS_ASH_EMIT_M);
+  && alias_ash_Program_end_quotation(ALIAS_ASH_EMIT_P, ALIAS_ASH_EMIT_M)
 
 #define ALIAS_ASH_EMIT_maybe_op_id() ALIAS_ASH_EMIT_maybe_op
 #define ALIAS_ASH_EMIT_maybe_op(X) \
   ALIAS_IFF(ALIAS_ASH_IS_OP(X))(ALIAS_ASH_EMIT_op_id, ALIAS_ASH_EMIT_maybe_special_id)()(X)
 
 #define ALIAS_ASH_EMIT_op_id() ALIAS_ASH_EMIT_op
-#define ALIAS_ASH_EMIT_op(X) alias_ash_Program_emit_op(ALIAS_ASH_EMIT_P, ALIAS_ASH_EMIT_M, alias_ash_Op_ ## X);
+#define ALIAS_ASH_EMIT_op(X) && alias_ash_Program_emit_op(ALIAS_ASH_EMIT_P, ALIAS_ASH_EMIT_M, alias_ash_Op_ ## X)
 
 #define ALIAS_ASH_EMIT_maybe_special_id() ALIAS_ASH_EMIT_maybe_special
 #define ALIAS_ASH_EMIT_maybe_special(X) \
@@ -233,14 +233,14 @@ bool alias_ash_step(alias_ash * ash);
 #define ALIAS_ASH_EMIT_special_id() ALIAS_ASH_EMIT_special
 #define ALIAS_ASH_EMIT_special(X) ALIAS_CAT(ALIAS_ASH_EMIT_special_, X)
 #define ALIAS_ASH_EMIT_special_fn(NAME, ...) \
-  alias_ash_Program_begin_word(ALIAS_ASH_EMIT_P, ALIAS_ASH_EMIT_M, #NAME); \
+  && alias_ash_Program_begin_word(ALIAS_ASH_EMIT_P, ALIAS_ASH_EMIT_M, #NAME) \
   ALIAS__DEFER_2(ALIAS_ASH_EMIT_map_id)()(__VA_ARGS__) \
-  alias_ash_Program_end_word(ALIAS_ASH_EMIT_P, ALIAS_ASH_EMIT_M);
-#define ALIAS_ASH_EMIT_special_i(X) alias_ash_Program_emit_i(ALIAS_ASH_EMIT_P, ALIAS_ASH_EMIT_M, X);
-#define ALIAS_ASH_EMIT_special_f(X) alias_ash_Program_emit_f(ALIAS_ASH_EMIT_P, ALIAS_ASH_EMIT_M, X);
+  && alias_ash_Program_end_word(ALIAS_ASH_EMIT_P, ALIAS_ASH_EMIT_M)
+#define ALIAS_ASH_EMIT_special_i(X) && alias_ash_Program_emit_i(ALIAS_ASH_EMIT_P, ALIAS_ASH_EMIT_M, X)
+#define ALIAS_ASH_EMIT_special_f(X) && alias_ash_Program_emit_f(ALIAS_ASH_EMIT_P, ALIAS_ASH_EMIT_M, X)
 
 #define ALIAS_ASH_EMIT_call_id() ALIAS_ASH_EMIT_call
-#define ALIAS_ASH_EMIT_call(X) alias_ash_Program_emit_call(ALIAS_ASH_EMIT_P, ALIAS_ASH_EMIT_M, #X);
+#define ALIAS_ASH_EMIT_call(X) && alias_ash_Program_emit_call(ALIAS_ASH_EMIT_P, ALIAS_ASH_EMIT_M, #X)
 #endif
 
 #endif

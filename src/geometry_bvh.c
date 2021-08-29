@@ -10,15 +10,15 @@ extern int abs(int);
 // (value & 1) == 1 - c child
 typedef struct { uint32_t _; } ParentRef;
 static const ParentRef ParentRef_INVALID = { 0 };
-static inline ParentRef ParentRef_from_raw(uint32_t i)  { return (ParentRef){ i }; }
+//static inline ParentRef ParentRef_from_raw(uint32_t i)  { return (ParentRef){ i }; }
 static inline ParentRef ParentRef_for_b(uint32_t i) { return (ParentRef){ ((i + 1) << 1) | 0 }; }
 static inline ParentRef ParentRef_for_c(uint32_t i) { return (ParentRef){ ((i + 1) << 1) | 1 }; }
-static inline ParentRef ParentRef_for_side(uint32_t i, int32_t s) { return (ParentRef){ ((i + 1) << 1) | !!s }; }
-static inline uint32_t ParentRef_to_raw(ParentRef p) { return p._; }
+//static inline ParentRef ParentRef_for_side(uint32_t i, int32_t s) { return (ParentRef){ ((i + 1) << 1) | !!s }; }
+//static inline uint32_t ParentRef_to_raw(ParentRef p) { return p._; }
 static inline bool ParentRef_is_valid(ParentRef p) { return p._ != 0; }
 static inline bool ParentRef_is_b(ParentRef p) { return (p._ & 1) == 0 && p._ != 0; } // extra check to make sure it is also valid
 static inline bool ParentRef_is_c(ParentRef p) { return (p._ & 1) == 1; }
-static inline bool ParentRef_is_side(ParentRef p, int32_t s) { return (p._ & 1) == !!s && p._ != 0; }
+//static inline bool ParentRef_is_side(ParentRef p, int32_t s) { return (p._ & 1) == !!s && p._ != 0; }
 static inline int32_t ParentRef_unwrap_side(ParentRef p) { return (p._ & 1); }
 static inline uint32_t ParentRef_unwrap_node_index(ParentRef p) { return (p._ >> 1) - 1; }
 
@@ -37,12 +37,12 @@ static inline bool ChildRef_is_leaf(ChildRef child) { return child._ < 0; }
 static inline uint32_t ChildRef_unwrap_node_index(ChildRef child) { return child._ - 1; }
 static inline uint32_t ChildRef_unwrap_leaf_index(ChildRef child) { return -child._ - 1; }
 static inline uint32_t ChildRef_unwrap_index(ChildRef child) { return (uint32_t)abs(child._) - 1; }
-static inline bool ChildRef_eq(ChildRef a, ChildRef b) { return a._ == b._; }
+//static inline bool ChildRef_eq(ChildRef a, ChildRef b) { return a._ == b._; }
 
 static inline ChildRef ChildRef_from_ParentRef(ParentRef parent) { return ChildRef_from_node_index(ParentRef_unwrap_node_index(parent)); }
 static inline ParentRef ParentRef_from_ChildRef_b(ChildRef child) { return ParentRef_for_b(ChildRef_unwrap_node_index(child)); }
 static inline ParentRef ParentRef_from_ChildRef_c(ChildRef child) { return ParentRef_for_c(ChildRef_unwrap_node_index(child)); }
-static inline ParentRef ParentRef_from_ChildRef_side(ChildRef child, int32_t s) { return ParentRef_for_side(ChildRef_unwrap_node_index(child), s); }
+//static inline ParentRef ParentRef_from_ChildRef_side(ChildRef child, int32_t s) { return ParentRef_for_side(ChildRef_unwrap_node_index(child), s); }
 
 #define ALIAS_SOA_HELPER_SIZEOF(I, T, N) sizeof(T),
 #define ALIAS_SOA_HELPER_ALIGNOF(I, T, N) alignof(T),
@@ -70,9 +70,11 @@ static inline ChildRef * _child_2d(alias_BVH2D * bvh, ChildRef self, int32_t sid
   return (ChildRef *)alias_SOA_write(&bvh->nodes, ChildRef_unwrap_node_index(self), 3 + !!side);
 }
 
+/*
 static inline uint64_t * _payload_2d(alias_BVH2D * bvh, ChildRef self) {
   return (uint64_t *)alias_SOA_write(&bvh->nodes, ChildRef_unwrap_leaf_index(self), 1);
 }
+*/
 
 static inline ParentRef _read_parent_2d(const alias_BVH2D * bvh, ChildRef self) {
   return *(ParentRef *)alias_SOA_read(ChildRef_is_node(self) ? &bvh->nodes : &bvh->leafs, ChildRef_unwrap_index(self), 0);
@@ -86,9 +88,11 @@ static inline ChildRef _read_child_2d(const alias_BVH2D * bvh, ChildRef self, in
   return *(ChildRef *)alias_SOA_read(&bvh->nodes, ChildRef_unwrap_node_index(self), 3 + !!side);
 }
 
+/*
 static inline uint64_t _read_payload_2d(const alias_BVH2D * bvh, ChildRef self) {
   return *(uint64_t *)alias_SOA_read(&bvh->nodes, ChildRef_unwrap_leaf_index(self), 1);
 }
+*/
 
 bool alias_BVH2D_initialize(alias_BVH2D * bvh, alias_MemoryCB * mcb) {
   if(!alias_SOA_initialize(
