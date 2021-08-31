@@ -25,12 +25,6 @@ if(ALIAS_COVERAGE AND CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
   endif()
 endif()
 
-if(MSVC)
-  add_compile_options(/W4 /WX)
-else()
-  add_compile_options(-Wall -Wextra -pedantic -Werror -Wno-gnu)
-endif()
-
 add_library(alias STATIC
   src/ecs_archetype.c
   src/ecs_component.c
@@ -54,7 +48,12 @@ add_library(alias STATIC
   src/ui.c
 )
 
+if(CMAKE_C_COMPILER_ID MATCHES "Clang")
+  set(ALLOW_WARNINGS -Wno-gnu-zero-variadic-macro-arguments -Wno-gnu-alignof-expression)
+endif()
+
 set_property(TARGET alias PROPERTY C_STANDARD 11)
+target_compile_options(alias PRIVATE -pedantic -Wall -Wextra -Werror PUBLIC ${ALLOW_WARNINGS})
 target_include_directories(alias
   PUBLIC SYSTEM ${CMAKE_CURRENT_SOURCE_DIR}/include
 )

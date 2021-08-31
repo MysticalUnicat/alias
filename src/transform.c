@@ -18,7 +18,7 @@ static alias_ecs_Result _construct_query(
   alias_ecs_QueryFilterCreateInfo filters[12];
   alias_ecs_QueryCreateInfo create_info = {
       .num_write_components = 1
-    , .write_components = &bundle->LocalToWorld2D_component
+    , .write_components = child ? &bundle->LocalToParent2D_component : &bundle->LocalToWorld2D_component
     , .read_components = read_components
     , .filters = filters
   };
@@ -104,6 +104,8 @@ alias_ecs_Result alias_TransformBundle_initialize(alias_ecs_Instance * instance,
 #if ALIAS_TRANSFORM_ENABLE_HEIRARCHY
   alias_ecs_register_component(instance, &(alias_ecs_ComponentCreateInfo) {
     .size = sizeof(alias_LocalToParent2D)
+    , .num_required_components = 1
+    , .required_components = &bundle->LocalToWorld2D_component
   }, &bundle->LocalToParent2D_component);
 
   alias_ecs_register_component(instance, &(alias_ecs_ComponentCreateInfo) {
@@ -126,10 +128,10 @@ alias_ecs_Result alias_TransformBundle_initialize(alias_ecs_Instance * instance,
       .num_write_components = 1
     , .write_components = &bundle->LocalToWorld2D_component
     , .num_read_components = 2
-    , .read_components = (alias_ecs_ComponentHandle[]){ bundle->LocalToWorld2D_component, bundle->Parent2D_component }
+    , .read_components = (alias_ecs_ComponentHandle[]){ bundle->LocalToParent2D_component, bundle->Parent2D_component }
     , .num_filters = 2
     , .filters = (alias_ecs_QueryFilterCreateInfo[]) { 
-        { .component = bundle->LocalToWorld2D_component, .filter = ALIAS_ECS_FILTER_MODIFIED }
+        { .component = bundle->LocalToParent2D_component, .filter = ALIAS_ECS_FILTER_MODIFIED }
       , { .component = bundle->Parent2D_component, .filter = ALIAS_ECS_FILTER_MODIFIED }
       }
   }, &bundle->parent_query);

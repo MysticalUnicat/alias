@@ -24,39 +24,50 @@ struct alias_ui {
 
   alias_MemoryCB * mcb;
 
-  struct scope * scope;
+  uint32_t scope_index_p1;
   struct scope scopes[MAX_SCOPES];
 };
 
 // ====================================================================================================================
 // private functions
+static struct scope * _scope(alias_ui * ui) {
+  return ui->scope_index_p1 > 0 ? &ui->scopes[ui->scope_index_p1 - 1] : NULL;
+}
+
 static inline void _begin_child(alias_ui * ui) {
-  if(ui->scope->begin_child) {
-    ui->scope->begin_child(ui);
+  struct scope * s = _scope(ui);
+  if(s && s->begin_child) {
+    s->begin_child(ui);
   }
 }
 
 static inline void _end_child(alias_ui * ui) {
-  if(ui->scope->end_child) {
-    ui->scope->end_child(ui);
+  struct scope * s = _scope(ui);
+  if(s->end_child) {
+    s->end_child(ui);
   }
 }
 
 static inline void _begin_scope(alias_ui * ui, void (* begin_child)(alias_ui *), void (* end_child)(alias_ui *), void (* end_scope)(alias_ui *)) {
-  ui->scope++;
-  ui->scope->font_size = (ui->scope - 1)->font_size;
-  ui->scope->font_color = (ui->scope - 1)->font_color;
-  ui->scope->flex = alias_R_ZERO;
-  ui->scope->total_flex = alias_R_ZERO;
-  ui->scope->begin_child = begin_child;
-  ui->scope->end_child = end_child;
-  ui->scope->end_scope = end_scope;
+  struct scope * p = _scope(ui);
+  struct scope * s = &ui->scopes[ui->scope_index_p1++];
+
+  s->font_size = p ? p->font_size : 10;
+  s->font_color = p ? p->font_color : alias_Color_WHITE;
+  s->flex = alias_R_ZERO;
+  s->total_flex = alias_R_ZERO;
+  s->begin_child = begin_child;
+  s->end_child = end_child;
+  s->end_scope = end_scope;
 }
 
 static inline void _end_scope(alias_ui * ui) {
-  ui->scope--;
-  if((ui->scope + 1)->end_scope) {
-    (ui->scope + 1)->end_scope(ui);
+  struct scope * s = _scope(ui);
+  if(s) {
+    ui->scope_index_p1--;
+    if(s->end_scope) {
+      s->end_scope(ui);
+    }
   }
 }
 
@@ -64,7 +75,7 @@ static inline void _end_scope(alias_ui * ui) {
 // lifetime
 alias_ui_Result alias_ui_initialize(alias_MemoryCB * mcb, alias_ui * * ui_ptr) {
   alias_ui * ui = alias_malloc(mcb, sizeof(*ui), alignof(*ui));
-  if(*ui_ptr == NULL) {
+  if(ui == NULL) {
     return alias_ui_ErrorOutOfMemory;
   }
 
@@ -130,6 +141,9 @@ alias_ui_Result alias_ui_begin_frame(alias_ui * ui, alias_MemoryCB * mcb, const 
     , dup2
   );
 
+  ui->scope_index_p1 = 0;
+  _begin_scope(ui, NULL, NULL, NULL);
+
   return alias_ui_Success;
 }
 
@@ -190,11 +204,11 @@ void alias_ui_override_size(alias_ui * ui, alias_R width, alias_R height) {
 // ====================================================================================================================
 // font
 void alias_ui_font_size(alias_ui * ui, alias_R size) {
-  ui->scope->font_size = size;
+  _scope(ui)->font_size = size;
 }
 
 void alias_ui_font_color(alias_ui * ui, alias_Color color) {
-  ui->scope->font_color = color;
+  _scope(ui)->font_color = color;
 }
 
 // ====================================================================================================================
@@ -220,6 +234,8 @@ void alias_ui_textv(alias_ui * ui, const char * format, va_list ap) {
 // frame (end)
 alias_ui_Result alias_ui_end_frame(alias_ui * ui, alias_MemoryCB * mcb, alias_ui_Output * output) {
   (void)output;
+
+  _end_scope(ui);
 
   alias_ash_Program_end_shader(&ui->layout_program, mcb);
 

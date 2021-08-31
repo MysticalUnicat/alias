@@ -9,6 +9,8 @@
 #define ALIAS_ALL(...) __VA_ARGS__
 #define ALIAS_NONE(...)
 
+#define ALIAS_EQ(PREFIX, X, Y) ALIAS__IS_PROBE(ALIAS_CAT(ALIAS__EQ__ ## PREFIX ## X ## __ ## PREFIX, Y)())
+
 #define ALIAS_PRIMITIVE_CAT(X, ...) X ## __VA_ARGS__
 
 #define ALIAS_CAT(X, ...) ALIAS_PRIMITIVE_CAT(X, __VA_ARGS__)
@@ -17,6 +19,12 @@
 #define ALIAS_BNOT(X) ALIAS_CAT(ALIAS_BNOT_, X)
 #define ALIAS_BNOT_0 1
 #define ALIAS_BNOT_1 0
+
+#define ALIAS_OR(X, Y) ALIAS_CAT(ALIAS_OR_, ALIAS_CAT(X, Y))
+#define ALIAS_OR_00 0
+#define ALIAS_OR_10 1
+#define ALIAS_OR_01 1
+#define ALIAS_OR_11 1
 
 #define ALIAS_IFF(X) ALIAS_CAT(ALIAS__IFF_test_, X)
 #define ALIAS__IFF_test_0(T, F) F
@@ -94,5 +102,15 @@
     , /* do nothing */ \
   )
 #define ALIAS_MAP_ID() ALIAS_MAP
+
+#define ALIAS_FILTER_MAP(P, F, X, ...) \
+  ALIAS_IFF(P(X))(F(X),) \
+  ALIAS_IFF( \
+    ALIAS_OPTION_IS_SOME(ALIAS_FIRST(__VA_ARGS__)) \
+  )( \
+      ALIAS__DEFER_2(ALIAS_FILTER_MAP_ID)()(P, F, __VA_ARGS__) \
+    , /* do nothing */ \
+  )
+#define ALIAS_FILTER_MAP_ID() ALIAS_FILTER_MAP
 
 #endif
