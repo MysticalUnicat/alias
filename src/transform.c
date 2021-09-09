@@ -247,14 +247,14 @@ static void _construct_parent_from_translation(void * ud, alias_ecs_Instance * i
   (void)ud;
   (void)instance;
   (void)entity;
-  alias_LocalToWorld2D * local_to_world = (alias_LocalToWorld2D *)data[0];
+  alias_LocalToParent2D * local_to_parent = (alias_LocalToParent2D *)data[0];
   const alias_Translation2D * translation = (const alias_Translation2D *)data[1];
-  local_to_world->value._11 = 1.0f;
-  local_to_world->value._12 = 0.0f;
-  local_to_world->value._13 = translation->value.x;
-  local_to_world->value._21 = 0.0f;
-  local_to_world->value._22 = 1.0f;
-  local_to_world->value._23 = translation->value.y;
+  local_to_parent->value._11 = 1.0f;
+  local_to_parent->value._12 = 0.0f;
+  local_to_parent->value._13 = translation->value.x;
+  local_to_parent->value._21 = 0.0f;
+  local_to_parent->value._22 = 1.0f;
+  local_to_parent->value._23 = translation->value.y;
 }
 
 void alias_transform_update2d_construct_parent_from_translation(alias_ecs_Instance * instance, alias_TransformBundle * bundle) {

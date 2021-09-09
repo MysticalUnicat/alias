@@ -9,8 +9,6 @@
 #define ALIAS_ALL(...) __VA_ARGS__
 #define ALIAS_NONE(...)
 
-#define ALIAS_EQ(PREFIX, X, Y) ALIAS__IS_PROBE(ALIAS_CAT(ALIAS__EQ__ ## PREFIX ## X ## __ ## PREFIX, Y)())
-
 #define ALIAS_PRIMITIVE_CAT(X, ...) X ## __VA_ARGS__
 
 #define ALIAS_CAT(X, ...) ALIAS_PRIMITIVE_CAT(X, __VA_ARGS__)
@@ -38,6 +36,13 @@
 #define ALIAS__PROBE(...) ~, 1
 #define ALIAS__IS_PROBE(...) ALIAS__IS_PROBE_(__VA_ARGS__, 0, 0)
 #define ALIAS__IS_PROBE_(X, Y, ...) Y
+
+#define ALIAS_EQ(PREFIX, X, Y) ALIAS__IS_PROBE(ALIAS_CAT(ALIAS__EQ__ ## PREFIX ## X ## __ ## PREFIX, Y)())
+
+#define ALIAS_IS_ZERO(X) ALIAS_EQ(ALIAS, 0, X)
+#define ALIAS__EQ__ALIAS0__ALIAS0 ALIAS__PROBE
+
+#define ALIAS_IS_NOT_ZERO(X) ALIAS_BNOT(ALIAS_EQ(ALIAS, 0, X))
 
 // tell us if this is an option! can take any identifier or number-pp token
 #define ALIAS_IS_OPTION(OPTION) ALIAS__IS_PROBE(ALIAS_CAT(ALIAS_IS_OPTION_, OPTION))
@@ -87,6 +92,8 @@
 #define ALIAS_IS_BEGIN_PAREN(X) ALIAS__IS_BEGIN_PAREN_(ALIAS__IS_BEGIN_PAREN_test_ X)
 #define ALIAS__IS_BEGIN_PAREN_(X) ALIAS__IS_PROBE(X())
 #define ALIAS__IS_BEGIN_PAREN_test_(...) ALIAS__PROBE
+
+#define ALIAS_UNWRAP(X) ALIA__DEFER_1(ALIAS_ALL) X
 
 #define ALIAS__EMPTY()
 #define ALIAS__DEFER_1(X) X ALIAS__EMPTY()
