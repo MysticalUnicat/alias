@@ -24,6 +24,12 @@
 #define ALIAS_OR_01 1
 #define ALIAS_OR_11 1
 
+#define ALIAS_AND(X, Y) ALIAS_CAT(ALIAS_AND_, ALIAS_CAT(X, Y))
+#define ALIAS_AND_00 0
+#define ALIAS_AND_10 0
+#define ALIAS_AND_01 0
+#define ALIAS_AND_11 1
+
 #define ALIAS_IFF(X) ALIAS_CAT(ALIAS__IFF_test_, X)
 #define ALIAS__IFF_test_0(T, F) F
 #define ALIAS__IFF_test_1(T, F) T
@@ -84,6 +90,10 @@
       ALIAS_EVAL ALIAS_OPTION_VALUE(OPTION) \
     , DEFAULT \
   )
+
+#define ALIAS_PRIMITIVE_1st(A, ...) A
+#define ALIAS_PRIMITIVE_2nd(A, B, ...) B
+#define ALIAS_PRIMITIVE_3rd(A, B, C, ...) C
 
 // get the first argument, hopefully it catches a lot of things, returns None() or Some(X)
 #define ALIAS_FIRST(...) ALIAS_FIRST_(~, ## __VA_ARGS__, ALIAS__PROBE)

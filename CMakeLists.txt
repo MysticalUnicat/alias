@@ -36,6 +36,8 @@ add_library(alias STATIC
 
   src/log.c
 
+  src/pga.c
+
   src/geometry_bvh.c
 
   src/transform.c

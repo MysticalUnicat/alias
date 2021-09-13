@@ -198,12 +198,5 @@ static inline alias_R alias_Vector3D_dot_product(alias_Vector3D a, alias_Vector3
   return (a.x*b.x + a.y*b.y + a.z*b.z);
 }
 
-typedef struct alias_Quaternion {
-  alias_R x;
-  alias_R y;
-  alias_R z;
-  alias_R w;
-} alias_Quaternion;
-
 #endif
 
