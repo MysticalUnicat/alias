@@ -150,91 +150,91 @@ void alias_ash_initialize(alias_ash * ash, alias_ash_Program * program);
 bool alias_ash_step(alias_ash * ash);
 
 #if defined(_ALIAS_CPP_H_)
-#define ALIAS_ASH_IS_OP(X) ALIAS__IS_PROBE(ALIAS_CAT(ALIAS_ASH_IS_OP_, X)())
-#define ALIAS_ASH_IS_OP_pick   ALIAS__PROBE 
-#define ALIAS_ASH_IS_OP_roll   ALIAS__PROBE
-#define ALIAS_ASH_IS_OP_dup    ALIAS__PROBE
-#define ALIAS_ASH_IS_OP_q_dup  ALIAS__PROBE
-#define ALIAS_ASH_IS_OP_drop   ALIAS__PROBE
-#define ALIAS_ASH_IS_OP_swap   ALIAS__PROBE
-#define ALIAS_ASH_IS_OP_over   ALIAS__PROBE
-#define ALIAS_ASH_IS_OP_rot    ALIAS__PROBE
-#define ALIAS_ASH_IS_OP_irot   ALIAS__PROBE
-#define ALIAS_ASH_IS_OP_nip    ALIAS__PROBE
-#define ALIAS_ASH_IS_OP_tuck   ALIAS__PROBE
-#define ALIAS_ASH_IS_OP_drop2  ALIAS__PROBE
-#define ALIAS_ASH_IS_OP_dup2   ALIAS__PROBE
-#define ALIAS_ASH_IS_OP_over2  ALIAS__PROBE
-#define ALIAS_ASH_IS_OP_swap2  ALIAS__PROBE
-#define ALIAS_ASH_IS_OP_r_push ALIAS__PROBE
-#define ALIAS_ASH_IS_OP_r_pop  ALIAS__PROBE
-#define ALIAS_ASH_IS_OP_r_at   ALIAS__PROBE
-#define ALIAS_ASH_IS_OP_jump   ALIAS__PROBE
-#define ALIAS_ASH_IS_OP_jump_z ALIAS__PROBE
-#define ALIAS_ASH_IS_OP_call   ALIAS__PROBE
-#define ALIAS_ASH_IS_OP_ret    ALIAS__PROBE
-#define ALIAS_ASH_IS_OP_cfun   ALIAS__PROBE
-#define ALIAS_ASH_IS_OP_i_add  ALIAS__PROBE
-#define ALIAS_ASH_IS_OP_i_sub  ALIAS__PROBE
-#define ALIAS_ASH_IS_OP_i_neg  ALIAS__PROBE
-#define ALIAS_ASH_IS_OP_i_mul  ALIAS__PROBE
-#define ALIAS_ASH_IS_OP_i_div  ALIAS__PROBE
-#define ALIAS_ASH_IS_OP_i_min  ALIAS__PROBE
-#define ALIAS_ASH_IS_OP_i_max  ALIAS__PROBE
-#define ALIAS_ASH_IS_OP_b_and  ALIAS__PROBE
-#define ALIAS_ASH_IS_OP_b_or   ALIAS__PROBE
-#define ALIAS_ASH_IS_OP_b_xor  ALIAS__PROBE
-#define ALIAS_ASH_IS_OP_f_add  ALIAS__PROBE
-#define ALIAS_ASH_IS_OP_f_sub  ALIAS__PROBE
-#define ALIAS_ASH_IS_OP_f_neg  ALIAS__PROBE
-#define ALIAS_ASH_IS_OP_f_mul  ALIAS__PROBE
-#define ALIAS_ASH_IS_OP_f_div  ALIAS__PROBE
-#define ALIAS_ASH_IS_OP_f_min  ALIAS__PROBE
-#define ALIAS_ASH_IS_OP_f_max  ALIAS__PROBE
-#define ALIAS_ASH_IS_OP_f_cmp  ALIAS__PROBE
+#define ALIAS_ASH_IS_OP(X) ALIAS_CPP_IS_PROBE(ALIAS_CPP_CAT(ALIAS_ASH_IS_OP_, X)())
+#define ALIAS_ASH_IS_OP_pick   ALIAS_CPP_PROBE 
+#define ALIAS_ASH_IS_OP_roll   ALIAS_CPP_PROBE
+#define ALIAS_ASH_IS_OP_dup    ALIAS_CPP_PROBE
+#define ALIAS_ASH_IS_OP_q_dup  ALIAS_CPP_PROBE
+#define ALIAS_ASH_IS_OP_drop   ALIAS_CPP_PROBE
+#define ALIAS_ASH_IS_OP_swap   ALIAS_CPP_PROBE
+#define ALIAS_ASH_IS_OP_over   ALIAS_CPP_PROBE
+#define ALIAS_ASH_IS_OP_rot    ALIAS_CPP_PROBE
+#define ALIAS_ASH_IS_OP_irot   ALIAS_CPP_PROBE
+#define ALIAS_ASH_IS_OP_nip    ALIAS_CPP_PROBE
+#define ALIAS_ASH_IS_OP_tuck   ALIAS_CPP_PROBE
+#define ALIAS_ASH_IS_OP_drop2  ALIAS_CPP_PROBE
+#define ALIAS_ASH_IS_OP_dup2   ALIAS_CPP_PROBE
+#define ALIAS_ASH_IS_OP_over2  ALIAS_CPP_PROBE
+#define ALIAS_ASH_IS_OP_swap2  ALIAS_CPP_PROBE
+#define ALIAS_ASH_IS_OP_r_push ALIAS_CPP_PROBE
+#define ALIAS_ASH_IS_OP_r_pop  ALIAS_CPP_PROBE
+#define ALIAS_ASH_IS_OP_r_at   ALIAS_CPP_PROBE
+#define ALIAS_ASH_IS_OP_jump   ALIAS_CPP_PROBE
+#define ALIAS_ASH_IS_OP_jump_z ALIAS_CPP_PROBE
+#define ALIAS_ASH_IS_OP_call   ALIAS_CPP_PROBE
+#define ALIAS_ASH_IS_OP_ret    ALIAS_CPP_PROBE
+#define ALIAS_ASH_IS_OP_cfun   ALIAS_CPP_PROBE
+#define ALIAS_ASH_IS_OP_i_add  ALIAS_CPP_PROBE
+#define ALIAS_ASH_IS_OP_i_sub  ALIAS_CPP_PROBE
+#define ALIAS_ASH_IS_OP_i_neg  ALIAS_CPP_PROBE
+#define ALIAS_ASH_IS_OP_i_mul  ALIAS_CPP_PROBE
+#define ALIAS_ASH_IS_OP_i_div  ALIAS_CPP_PROBE
+#define ALIAS_ASH_IS_OP_i_min  ALIAS_CPP_PROBE
+#define ALIAS_ASH_IS_OP_i_max  ALIAS_CPP_PROBE
+#define ALIAS_ASH_IS_OP_b_and  ALIAS_CPP_PROBE
+#define ALIAS_ASH_IS_OP_b_or   ALIAS_CPP_PROBE
+#define ALIAS_ASH_IS_OP_b_xor  ALIAS_CPP_PROBE
+#define ALIAS_ASH_IS_OP_f_add  ALIAS_CPP_PROBE
+#define ALIAS_ASH_IS_OP_f_sub  ALIAS_CPP_PROBE
+#define ALIAS_ASH_IS_OP_f_neg  ALIAS_CPP_PROBE
+#define ALIAS_ASH_IS_OP_f_mul  ALIAS_CPP_PROBE
+#define ALIAS_ASH_IS_OP_f_div  ALIAS_CPP_PROBE
+#define ALIAS_ASH_IS_OP_f_min  ALIAS_CPP_PROBE
+#define ALIAS_ASH_IS_OP_f_max  ALIAS_CPP_PROBE
+#define ALIAS_ASH_IS_OP_f_cmp  ALIAS_CPP_PROBE
 
-#define ALIAS_ASH_IS_SPECIAL(X) ALIAS__IS_PROBE(ALIAS_CAT(ALIAS_ASH_IS_SPECIAL_, X)())
-#define ALIAS_ASH_IS_SPECIAL_fn(...) ALIAS__PROBE
-#define ALIAS_ASH_IS_SPECIAL_i(...) ALIAS__PROBE
-#define ALIAS_ASH_IS_SPECIAL_f(...) ALIAS__PROBE
+#define ALIAS_ASH_IS_SPECIAL(X) ALIAS_CPP_IS_PROBE(ALIAS_CPP_CAT(ALIAS_ASH_IS_SPECIAL_, X)())
+#define ALIAS_ASH_IS_SPECIAL_fn(...) ALIAS_CPP_PROBE
+#define ALIAS_ASH_IS_SPECIAL_i(...) ALIAS_CPP_PROBE
+#define ALIAS_ASH_IS_SPECIAL_f(...) ALIAS_CPP_PROBE
 
 #define ALIAS_ASH_EMIT(P, M, ...) \
   do { \
     alias_ash_Program * ALIAS_ASH_EMIT_P = (P); \
     alias_MemoryCB * ALIAS_ASH_EMIT_M = (M); \
-    (void)(true ALIAS_EVAL(ALIAS_ASH_EMIT_map(__VA_ARGS__))); \
+    (void)(true ALIAS_CPP_EVAL(ALIAS_ASH_EMIT_map(__VA_ARGS__))); \
   } while(0)
 
 #define ALIAS_ASH_EMIT_map_id() ALIAS_ASH_EMIT_map
-#define ALIAS_ASH_EMIT_map(...) ALIAS_MAP(ALIAS_ASH_EMIT_item, __VA_ARGS__)
+#define ALIAS_ASH_EMIT_map(...) ALIAS_CPP_MAP(ALIAS_ASH_EMIT_item, __VA_ARGS__)
 
 #define ALIAS_ASH_EMIT_item(X) ALIAS_ASH_EMIT_maybe_quotation(X)
 
 #define ALIAS_ASH_EMIT_maybe_quotation(X) \
-  ALIAS_IFF(ALIAS_IS_BEGIN_PAREN(X))(ALIAS_ASH_EMIT_quotation_id, ALIAS_ASH_EMIT_maybe_op_id)()(X)
+  ALIAS_CPP_IFF(ALIAS_CPP_IS_BEGIN_PAREN(X))(ALIAS_ASH_EMIT_quotation_id, ALIAS_ASH_EMIT_maybe_op_id)()(X)
 
 #define ALIAS_ASH_EMIT_quotation_id() ALIAS_ASH_EMIT_quotation
 #define ALIAS_ASH_EMIT_quotation(X) \
   && alias_ash_Program_begin_quotation(ALIAS_ASH_EMIT_P, ALIAS_ASH_EMIT_M) \
-  ALIAS__DEFER_2(ALIAS_ASH_EMIT_map_id)()X \
+  ALIAS_CPP_DEFER_2(ALIAS_ASH_EMIT_map_id)()X \
   && alias_ash_Program_end_quotation(ALIAS_ASH_EMIT_P, ALIAS_ASH_EMIT_M)
 
 #define ALIAS_ASH_EMIT_maybe_op_id() ALIAS_ASH_EMIT_maybe_op
 #define ALIAS_ASH_EMIT_maybe_op(X) \
-  ALIAS_IFF(ALIAS_ASH_IS_OP(X))(ALIAS_ASH_EMIT_op_id, ALIAS_ASH_EMIT_maybe_special_id)()(X)
+  ALIAS_CPP_IFF(ALIAS_ASH_IS_OP(X))(ALIAS_ASH_EMIT_op_id, ALIAS_ASH_EMIT_maybe_special_id)()(X)
 
 #define ALIAS_ASH_EMIT_op_id() ALIAS_ASH_EMIT_op
 #define ALIAS_ASH_EMIT_op(X) && alias_ash_Program_emit_op(ALIAS_ASH_EMIT_P, ALIAS_ASH_EMIT_M, alias_ash_Op_ ## X)
 
 #define ALIAS_ASH_EMIT_maybe_special_id() ALIAS_ASH_EMIT_maybe_special
 #define ALIAS_ASH_EMIT_maybe_special(X) \
-  ALIAS_IFF(ALIAS_ASH_IS_SPECIAL(X))(ALIAS_ASH_EMIT_special_id, ALIAS_ASH_EMIT_call_id)()(X)
+  ALIAS_CPP_IFF(ALIAS_ASH_IS_SPECIAL(X))(ALIAS_ASH_EMIT_special_id, ALIAS_ASH_EMIT_call_id)()(X)
 
 #define ALIAS_ASH_EMIT_special_id() ALIAS_ASH_EMIT_special
-#define ALIAS_ASH_EMIT_special(X) ALIAS_CAT(ALIAS_ASH_EMIT_special_, X)
+#define ALIAS_ASH_EMIT_special(X) ALIAS_CPP_CAT(ALIAS_ASH_EMIT_special_, X)
 #define ALIAS_ASH_EMIT_special_fn(NAME, ...) \
   && alias_ash_Program_begin_word(ALIAS_ASH_EMIT_P, ALIAS_ASH_EMIT_M, #NAME) \
-  ALIAS__DEFER_2(ALIAS_ASH_EMIT_map_id)()(__VA_ARGS__) \
+  ALIAS_CPP_DEFER_2(ALIAS_ASH_EMIT_map_id)()(__VA_ARGS__) \
   && alias_ash_Program_end_word(ALIAS_ASH_EMIT_P, ALIAS_ASH_EMIT_M)
 #define ALIAS_ASH_EMIT_special_i(X) && alias_ash_Program_emit_i(ALIAS_ASH_EMIT_P, ALIAS_ASH_EMIT_M, X)
 #define ALIAS_ASH_EMIT_special_f(X) && alias_ash_Program_emit_f(ALIAS_ASH_EMIT_P, ALIAS_ASH_EMIT_M, X)

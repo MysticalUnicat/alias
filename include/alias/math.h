@@ -55,6 +55,8 @@ static inline bool alias_R_fuzzy_eq(alias_R a, alias_R b) {
 #define alias_min(A, B) ALIAS_MIN_PAIR(A, B)
 #define alias_max(A, B) ALIAS_MAX_PAIR(A, B)
 
+// TODO: nuke this
+#if 0
 typedef struct alias_Point2D {
   alias_R x;
   alias_R y;
@@ -197,6 +199,7 @@ typedef struct alias_Vector3D {
 static inline alias_R alias_Vector3D_dot_product(alias_Vector3D a, alias_Vector3D b) {
   return (a.x*b.x + a.y*b.y + a.z*b.z);
 }
+#endif
 
 #endif
 
