@@ -25,9 +25,5 @@
    , ## __VA_ARGS__ \
    )
 
-ALIAS_PGA_GENERATE_UNARY(ALIAS_PGA_UNARY_POLARITY, polarity)
-
-#define alias_pga_polarity(A) ALIAS_PGA_USE_UNARY(ALIAS_PGA_UNARY_POLARITY, polarity, A)
-
 #endif
 

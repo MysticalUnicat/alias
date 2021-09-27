@@ -28,9 +28,5 @@
   , ## __VA_ARGS__ \
   )
 
-ALIAS_PGA_GENERATE_BINARY_FUNCTIONS(ALIAS_PGA_BINARY_REGRESSIVE_PRODUCT, regressive_product)
-
-#define alias_pga_regressive_product(A, B) ALIAS_PGA_USE_BINARY(ALIAS_PGA_BINARY_REGRESSIVE_PRODUCT, regressive_product, A, B)
-
 #endif
 

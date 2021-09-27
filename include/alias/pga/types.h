@@ -29,9 +29,18 @@
 
 ALIAS_PGA_ALL_BITS(ALIAS_PGA_GENERATE_MULTIGRADE_TYPE)
 
+// gemetric algebra types
+typedef alias_pga_Multigrade10000 alias_pga_Scalar;
+typedef alias_pga_Multigrade01000 alias_pga_Vector;
+typedef alias_pga_Multigrade00100 alias_pga_Bivector;
+typedef alias_pga_Multigrade00010 alias_pga_Trivector;
+typedef alias_pga_Multigrade00001 alias_pga_Antiscalar;
+
+// geometric object types
 typedef alias_pga_Multigrade01000 alias_pga_Plane;
 typedef alias_pga_Multigrade00100 alias_pga_Line;
-typedef alias_pga_Multigrade00010 alias_pga_Point;
+typedef alias_pga_Multigrade00010 alias_pga_Point, alias_pga_Direction;
+typedef alias_pga_Multigrade10101 alias_pga_Rotor;
 
 #endif
 

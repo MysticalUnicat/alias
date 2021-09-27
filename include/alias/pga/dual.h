@@ -24,9 +24,5 @@
    , ## __VA_ARGS__ \
    )
 
-ALIAS_PGA_GENERATE_UNARY(ALIAS_PGA_UNARY_DUAL, dual)
-
-#define alias_pga_dual(A) ALIAS_PGA_USE_UNARY(ALIAS_PGA_UNARY_DUAL, dual, A)
-
 #endif
 

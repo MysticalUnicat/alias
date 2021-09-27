@@ -25,9 +25,5 @@
    , ## __VA_ARGS__ \
    )
 
-ALIAS_PGA_GENERATE_BINARY_FUNCTIONS(ALIAS_PGA_BINARY_ADD, add)
-
-#define alias_pga_add(A, B) ALIAS_PGA_USE_BINARY(ALIAS_PGA_BINARY_ADD, add, A, B)
-
 #endif
 

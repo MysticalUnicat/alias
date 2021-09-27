@@ -26,9 +26,5 @@
  , ## __VA_ARGS__ \
  )
 
-ALIAS_PGA_GENERATE_BINARY_FUNCTIONS(ALIAS_PGA_BINARY_COMMUTATOR_PRODUCT, commutator_product)
-
-#define alias_pga_commutator_product(A, B) ALIAS_PGA_USE_BINARY(ALIAS_PGA_BINARY_COMMUTATOR_PRODUCT, commutator_product, A, B)
-
 #endif
 

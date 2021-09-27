@@ -1,5 +1,6 @@
 #include <alias/pga.h>
 
+#if 0
 alias_PGA_Grade1 alias_pga_e1 = ALIAS_PGA_TO_C(ALIAS_PGA_E1);
 alias_PGA_Grade1 alias_pga_e2 = ALIAS_PGA_TO_C(ALIAS_PGA_E2);
 alias_PGA_Grade1 alias_pga_e3 = ALIAS_PGA_TO_C(ALIAS_PGA_E3);
@@ -19,3 +20,4 @@ alias_PGA_Grade4 alias_pga_e1234 = ALIAS_PGA_TO_C(ALIAS_PGA_E1234);
 void test(void) {
   alias_pga_add(alias_pga_e1, alias_pga_e2);
 }
+#endif

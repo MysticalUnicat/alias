@@ -48,9 +48,5 @@
   , ## __VA_ARGS__ \
   )
 
-ALIAS_PGA_GENERATE_BINARY_FUNCTIONS(ALIAS_PGA_BINARY_GEOMETRIC_PRODUCT, geometric_product)
-
-#define alias_pga_geometric_product(A, B) ALIAS_PGA_USE_BINARY(ALIAS_PGA_BINARY_GEOMETRIC_PRODUCT, geometric_product, A, B)
-
 #endif
 

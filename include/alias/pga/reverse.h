@@ -25,9 +25,5 @@
    , ## __VA_ARGS__ \
    )
 
-ALIAS_PGA_GENERATE_UNARY(ALIAS_PGA_UNARY_REVERSE, reverse)
-
-#define alias_pga_reverse(A) ALIAS_PGA_USE_UNARY(ALIAS_PGA_UNARY_REVERSE, reverse, A)
-
 #endif
 
