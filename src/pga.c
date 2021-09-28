@@ -1,23 +1,33 @@
 #include <alias/pga.h>
 
-#if 0
-alias_PGA_Grade1 alias_pga_e1 = ALIAS_PGA_TO_C(ALIAS_PGA_E1);
-alias_PGA_Grade1 alias_pga_e2 = ALIAS_PGA_TO_C(ALIAS_PGA_E2);
-alias_PGA_Grade1 alias_pga_e3 = ALIAS_PGA_TO_C(ALIAS_PGA_E3);
-alias_PGA_Grade1 alias_pga_e4 = ALIAS_PGA_TO_C(ALIAS_PGA_E4);
-alias_PGA_Grade2 alias_pga_e23 = ALIAS_PGA_TO_C(ALIAS_PGA_E23);
-alias_PGA_Grade2 alias_pga_e31 = ALIAS_PGA_TO_C(ALIAS_PGA_E31);
-alias_PGA_Grade2 alias_pga_e12 = ALIAS_PGA_TO_C(ALIAS_PGA_E12);
-alias_PGA_Grade2 alias_pga_e43 = ALIAS_PGA_TO_C(ALIAS_PGA_E43);
-alias_PGA_Grade2 alias_pga_e42 = ALIAS_PGA_TO_C(ALIAS_PGA_E42);
-alias_PGA_Grade2 alias_pga_e41 = ALIAS_PGA_TO_C(ALIAS_PGA_E41);
-alias_PGA_Grade3 alias_pga_e321 = ALIAS_PGA_TO_C(ALIAS_PGA_E321);
-alias_PGA_Grade3 alias_pga_e124 = ALIAS_PGA_TO_C(ALIAS_PGA_E124);
-alias_PGA_Grade3 alias_pga_e314 = ALIAS_PGA_TO_C(ALIAS_PGA_E314);
-alias_PGA_Grade3 alias_pga_e234 = ALIAS_PGA_TO_C(ALIAS_PGA_E234);
-alias_PGA_Grade4 alias_pga_e1234 = ALIAS_PGA_TO_C(ALIAS_PGA_E1234);
+#include <alias/cpp/defer_eval.h>
 
-void test(void) {
-  alias_pga_add(alias_pga_e1, alias_pga_e2);
-}
-#endif
+#include <alias/pga/operators.h>
+
+#include <alias/pga/unary.h>
+#include <alias/pga/binary.h>
+
+#define base_unary_function(op, Xa,Xb,Xc,Xd,Xe, Za,Zb,Zc,Zd,Ze, A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P) \
+ALIAS_CPP_IF1(ALIAS_PGA_HAS_GRADES(Za,Zb,Zc,Zd,Ze))( \
+  @ ALIAS_PGA_TYPENAME_FROM_BITS(Za,Zb,Zc,Zd,Ze) ALIAS_PGA_UNARY_NAME(op,Xa,Xb,Xc,Xd,Xe)(ALIAS_PGA_TYPENAME_FROM_BITS(Xa,Xb,Xc,Xd,Xe) x) { \
+    ALIAS_CPP_IF1(ALIAS_PGA_HAS_GRADES(Xa,Xb,Xc,Xd,Xe))()((void)x;) \
+    return ( ALIAS_PGA_TYPENAME_FROM_BITS(Za,Zb,Zc,Zd,Ze) ) { \
+      ALIAS_PGA_EXPORT(A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P, Za,Zb,Zc,Zd,Ze) \
+    }; \
+  } \
+)()
+
+#define base_binary_function(op, Xa,Xb,Xc,Xd,Xe, Ya,Yb,Yc,Yd,Ye, Za,Zb,Zc,Zd,Ze, A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P) \
+ALIAS_CPP_IF1(ALIAS_PGA_HAS_GRADES(Za,Zb,Zc,Zd,Ze))( \
+  @ ALIAS_PGA_TYPENAME_FROM_BITS(Za,Zb,Zc,Zd,Ze) ALIAS_PGA_BINARY_NAME(op,Xa,Xb,Xc,Xd,Xe,Ya,Yb,Yc,Yd,Ye)(ALIAS_PGA_TYPENAME_FROM_BITS(Xa,Xb,Xc,Xd,Xe) x, ALIAS_PGA_TYPENAME_FROM_BITS(Ya,Yb,Yc,Yd,Ye) y) { \
+    ALIAS_CPP_IF1(ALIAS_PGA_HAS_GRADES(Xa,Xb,Xc,Xd,Xe))()((void)x;) \
+    ALIAS_CPP_IF1(ALIAS_PGA_HAS_GRADES(Ya,Yb,Yc,Yd,Ye))()((void)y;) \
+    return ( ALIAS_PGA_TYPENAME_FROM_BITS(Za,Zb,Zc,Zd,Ze) ) { \
+      ALIAS_PGA_EXPORT(A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P, Za,Zb,Zc,Zd,Ze) \
+    }; \
+  } \
+)()
+
+ALIAS_CPP_EVAL( ALIAS_PGA_UNARY_OPERATORS(ALIAS_PGA_GENERATE_UNARY, base_unary_function) )
+
+ALIAS_CPP_EVAL( ALIAS_PGA_BINARY_OPERATORS(ALIAS_PGA_GENERATE_BINARY, base_binary_function) )

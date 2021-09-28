@@ -6,6 +6,7 @@
 #define ALIAS_PGA_UNARY_OPERATORS(X, ...) \
   X(ALIAS_PGA_OP_NEGATE,             negate,             ## __VA_ARGS__) \
   X(ALIAS_PGA_OP_DUAL,               dual,               ## __VA_ARGS__) \
+  X(ALIAS_PGA_OP_HODGE_DUAL,         hodge_dual,         ## __VA_ARGS__) \
   X(ALIAS_PGA_OP_POLARITY,           polarity,           ## __VA_ARGS__) \
   X(ALIAS_PGA_OP_REVERSE,            reverse,            ## __VA_ARGS__) \
   X(ALIAS_PGA_OP_SELECT_GRADE_0,     select_grade_0,     ## __VA_ARGS__) \
@@ -21,14 +22,16 @@
   X(ALIAS_PGA_OP_OUTER_PRODUCT,      outer_product,      ## __VA_ARGS__) \
   X(ALIAS_PGA_OP_REGRESSIVE_PRODUCT, regressive_product, ## __VA_ARGS__) \
   X(ALIAS_PGA_OP_INNER_PRODUCT,      inner_product,      ## __VA_ARGS__) \
-  X(ALIAS_PGA_OP_COMMUTATOR_PRODUCT, commutator_product, ## __VA_ARGS__)
+  X(ALIAS_PGA_OP_COMMUTATOR_PRODUCT, commutator_product, ## __VA_ARGS__) \
+  /*X(ALIAS_PGA_OP_DIVIDE,             divide,             ## __VA_ARGS__)*/ \
+  X(ALIAS_PGA_OP_SANDWICH,           sandwich,           ## __VA_ARGS__)
 
-#define ALIAS_PGA_RZ_NEG(A) ALIAS_CPP_IF1(ALIAS_CPP_IS_ZERO(A))(0)(-A)
+#define ALIAS_PGA_RZ_NEG(A) ALIAS_CPP_IF1(ALIAS_CPP_IS_ZERO(A))(0)((-A))
 
-#define ALIAS_PGA_RZ_ADD(A, B) ALIAS_CPP_IF2(ALIAS_CPP_IS_ZERO(A), ALIAS_CPP_IS_ZERO(B))(0)( B)(A)(A+B)
-#define ALIAS_PGA_RZ_SUB(A, B) ALIAS_CPP_IF2(ALIAS_CPP_IS_ZERO(A), ALIAS_CPP_IS_ZERO(B))(0)(-B)(A)(A-B)
-#define ALIAS_PGA_RZ_AML(A, B) ALIAS_CPP_IF2(ALIAS_CPP_IS_ZERO(A), ALIAS_CPP_IS_ZERO(B))( )(  )( )(+(A*B))
-#define ALIAS_PGA_RZ_SML(A, B) ALIAS_CPP_IF2(ALIAS_CPP_IS_ZERO(A), ALIAS_CPP_IS_ZERO(B))( )(  )( )(-(A*B))
+#define ALIAS_PGA_RZ_ADD(A, B) ALIAS_CPP_IF2(ALIAS_CPP_IS_ZERO(A), ALIAS_CPP_IS_ZERO(B))( 0 )(    B )( A )(    A+B )
+#define ALIAS_PGA_RZ_SUB(A, B) ALIAS_CPP_IF2(ALIAS_CPP_IS_ZERO(A), ALIAS_CPP_IS_ZERO(B))( 0 )( (-B) )( A )(    A-B )
+#define ALIAS_PGA_RZ_AML(A, B) ALIAS_CPP_IF2(ALIAS_CPP_IS_ZERO(A), ALIAS_CPP_IS_ZERO(B))(   )(      )(   )( +(A*B) )
+#define ALIAS_PGA_RZ_SML(A, B) ALIAS_CPP_IF2(ALIAS_CPP_IS_ZERO(A), ALIAS_CPP_IS_ZERO(B))(   )(      )(   )( -(A*B) )
 
 #define ALIAS_PGA_OP_NEGATE(RETURN, A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P, ...) \
   ALIAS_PGA_OP_NEGATE_(RETURN, A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P, ALIAS_PGA_RZ_NEG,##__VA_ARGS__)
@@ -59,6 +62,18 @@
   , O, N, M, L \
   , K, J, I, H, G, F \
   , E, D, C, B \
+  , A \
+  , ## __VA_ARGS__ \
+  )
+
+#define ALIAS_PGA_OP_HODGE_DUAL(RETURN, A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P, ...) \
+  ALIAS_PGA_OP_HODGE_DUAL(RETURN, A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P, ALIAS_PGA_RZ_NEG,##__VA_ARGS__)
+#define ALIAS_PGA_OP_HODGE_DUAL_(RETURN, A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P, NEG,...) \
+  RETURN( \
+    P \
+  , O, N, M, L \
+  , K, J, I, H, G, F \
+  , NEG(E), NEG(D), NEG(C), NEG(B) \
   , A \
   , ## __VA_ARGS__ \
   )
@@ -97,7 +112,7 @@
 #define ALIAS_PGA_OP_SELECT_GRADE_4(RETURN, A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P, ...) RETURN(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,P,## __VA_ARGS__)
 
 #define ALIAS_PGA_OP_ADD(RETURN, A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p, ...) \
-  ALIAS_PGA_OP_ADD_(RETURN, A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p, ALIAS_PGA_RZ_ADD,##_VA_ARGS__)
+  ALIAS_PGA_OP_ADD_(RETURN, A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p, ALIAS_PGA_RZ_ADD,##__VA_ARGS__)
 #define ALIAS_PGA_OP_ADD_(RETURN, A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p, ADD,...) \
   RETURN( \
      ADD(A, a) \
@@ -167,21 +182,21 @@
 #define ALIAS_PGA_OP_OUTER_PRODUCT(RETURN, A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p, ...) ALIAS_PGA_OP_OUTER_PRODUCT_(RETURN, A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p, ALIAS_PGA_RZ_AML,ALIAS_PGA_RZ_SML,## __VA_ARGS__)
 #define ALIAS_PGA_OP_OUTER_PRODUCT_(RETURN, A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p, ADD,SUB, ...) \
   RETURN( \
-    0 ADD(A, a) \
-  , 0 ADD(A, b) ADD(B, a) \
-  , 0 ADD(A, c)           ADD(C, a) \
-  , 0 ADD(A, d)                     ADD(D, a) \
-  , 0 ADD(A, e)                               ADD(E, a) \
-  , 0 ADD(A, f) ADD(B, c) SUB(C, b)                     ADD(F, a) \
-  , 0 ADD(A, g) ADD(B, d)           SUB(D, b)                     ADD(G, a) \
-  , 0 ADD(A, h) ADD(B, e)                     SUB(E, b)                     ADD(H, a) \
-  , 0 ADD(A, i)           ADD(C, d) SUB(D, c)                                         ADD(I, a) \
-  , 0 ADD(A, j)           SUB(C, e)           ADD(E, c)                                         ADD(J, a) \
-  , 0 ADD(A, k)                     SUB(D, e) SUB(E, d)                                                   ADD(K, a) \
-  , 0 ADD(A, l) SUB(B, i) ADD(C, g) SUB(D, f)           SUB(F, d) ADD(G, c)           SUB(I, b)                     ADD(L, a) \
-  , 0 ADD(A, m) SUB(B, j) SUB(C, h)           ADD(E, f) ADD(F, e)           SUB(H, c)           SUB(J, b)                     ADD(M, a) \
-  , 0 ADD(A, n) SUB(B, k)           SUB(D, h) SUB(E, g)           SUB(G, e) ADD(H, d)                     SUB(K, b)                     ADD(N, a) \
-  , 0 ADD(A, o)           ADD(C, k) ADD(D, j) ADD(E, i)                               ADD(I, e) ADD(J, d) ADD(K, c)                               ADD(O, a) \
+    0 ADD(A, a)                                                                                                                                                       \
+  , 0 ADD(A, b) ADD(B, a)                                                                                                                                             \
+  , 0 ADD(A, c)           ADD(C, a)                                                                                                                                   \
+  , 0 ADD(A, d)                     ADD(D, a)                                                                                                                         \
+  , 0 ADD(A, e)                               ADD(E, a)                                                                                                               \
+  , 0 ADD(A, f) ADD(B, c) SUB(C, b)                     ADD(F, a)                                                                                                     \
+  , 0 ADD(A, g) ADD(B, d)           SUB(D, b)                     ADD(G, a)                                                                                           \
+  , 0 ADD(A, h) ADD(B, e)                     SUB(E, b)                     ADD(H, a)                                                                                 \
+  , 0 ADD(A, i)           ADD(C, d) SUB(D, c)                                         ADD(I, a)                                                                       \
+  , 0 ADD(A, j)           SUB(C, e)           ADD(E, c)                                         ADD(J, a)                                                             \
+  , 0 ADD(A, k)                     SUB(D, e) SUB(E, d)                                                   ADD(K, a)                                                   \
+  , 0 ADD(A, l) SUB(B, i) ADD(C, g) SUB(D, f)           SUB(F, d) ADD(G, c)           SUB(I, b)                     ADD(L, a)                                         \
+  , 0 ADD(A, m) SUB(B, j) SUB(C, h)           ADD(E, f) ADD(F, e)           SUB(H, c)           SUB(J, b)                     ADD(M, a)                               \
+  , 0 ADD(A, n) SUB(B, k)           SUB(D, h) SUB(E, g)           SUB(G, e) ADD(H, d)                     SUB(K, b)                     ADD(N, a)                     \
+  , 0 ADD(A, o)           ADD(C, k) ADD(D, j) ADD(E, i)                               ADD(I, e) ADD(J, d) ADD(K, c)                               ADD(O, a)           \
   , 0 ADD(A, p) ADD(B, o) ADD(C, n) ADD(D, m) ADD(E, l) ADD(F, k) ADD(G, j) ADD(H, i) ADD(I, h) ADD(J, g) ADD(K, f) SUB(L, e) SUB(M, d) SUB(N, c) SUB(O, b) ADD(P, a) \
   , ## __VA_ARGS__ \
   )
@@ -190,21 +205,21 @@
 #define ALIAS_PGA_OP_REGRESSIVE_PRODUCT_(RETURN, A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p, ADD,SUB, ...) \
   RETURN( \
     0 ADD(A, p) ADD(B, o) ADD(C, n) ADD(D, m) ADD(E, l) ADD(F, k) ADD(G, j) ADD(H, i) ADD(I, h) ADD(J, g) ADD(K, f) SUB(L, e) SUB(M, d) SUB(N, c) SUB(O, b) ADD(P, a) \
-  , 0 ADD(A, o)           ADD(C, k) ADD(D, j) ADD(E, i)                               ADD(I, e) ADD(J, d) ADD(K, c)                               ADD(O, a) \
-  , 0 ADD(A, n) SUB(B, k)           SUB(D, h) SUB(E, g)           SUB(G, e) ADD(H, d)                     SUB(K, b)                     ADD(N, a) \
-  , 0 ADD(A, m) SUB(B, j) SUB(C, h)           ADD(E, f) ADD(F, e)           SUB(H, c)           SUB(J, b)                     ADD(M, a) \
-  , 0 ADD(A, l) SUB(B, i) ADD(C, g) SUB(D, f)           SUB(F, d) ADD(G, c)           SUB(I, b)                     ADD(L, a) \
-  , 0 ADD(A, k)                     SUB(D, e) SUB(E, d)                                                   ADD(K, a) \
-  , 0 ADD(A, j)           SUB(C, e)           ADD(E, c)                                         ADD(J, a) \
-  , 0 ADD(A, i)           ADD(C, d) SUB(D, c)                                         ADD(I, a) \
-  , 0 ADD(A, h) ADD(B, e)                     SUB(E, b)                     ADD(H, a) \
-  , 0 ADD(A, g) ADD(B, d)           SUB(D, b)                     ADD(G, a) \
-  , 0 ADD(A, f) ADD(B, c) SUB(C, b)                     ADD(F, a) \
-  , 0 ADD(A, e)                               ADD(E, a) \
-  , 0 ADD(A, d)                     ADD(D, a) \
-  , 0 ADD(A, c)           ADD(C, a) \
-  , 0 ADD(A, b) ADD(B, a) \
-  , 0 ADD(A, a) \
+  , 0 ADD(A, o)           ADD(C, k) ADD(D, j) ADD(E, i)                               ADD(I, e) ADD(J, d) ADD(K, c)                               ADD(O, a)           \
+  , 0 ADD(A, n) SUB(B, k)           SUB(D, h) SUB(E, g)           SUB(G, e) ADD(H, d)                     SUB(K, b)                     ADD(N, a)                     \
+  , 0 ADD(A, m) SUB(B, j) SUB(C, h)           ADD(E, f) ADD(F, e)           SUB(H, c)           SUB(J, b)                     ADD(M, a)                               \
+  , 0 ADD(A, l) SUB(B, i) ADD(C, g) SUB(D, f)           SUB(F, d) ADD(G, c)           SUB(I, b)                     ADD(L, a)                                         \
+  , 0 ADD(A, k)                     SUB(D, e) SUB(E, d)                                                   ADD(K, a)                                                   \
+  , 0 ADD(A, j)           SUB(C, e)           ADD(E, c)                                         ADD(J, a)                                                             \
+  , 0 ADD(A, i)           ADD(C, d) SUB(D, c)                                         ADD(I, a)                                                                       \
+  , 0 ADD(A, h) ADD(B, e)                     SUB(E, b)                     ADD(H, a)                                                                                 \
+  , 0 ADD(A, g) ADD(B, d)           SUB(D, b)                     ADD(G, a)                                                                                           \
+  , 0 ADD(A, f) ADD(B, c) SUB(C, b)                     ADD(F, a)                                                                                                     \
+  , 0 ADD(A, e)                               ADD(E, a)                                                                                                               \
+  , 0 ADD(A, d)                     ADD(D, a)                                                                                                                         \
+  , 0 ADD(A, c)           ADD(C, a)                                                                                                                                   \
+  , 0 ADD(A, b) ADD(B, a)                                                                                                                                             \
+  , 0 ADD(A, a)                                                                                                                                                       \
   , ## __VA_ARGS__ \
   )
 
@@ -230,33 +245,30 @@
   , ## __VA_ARGS__ \
   )
 
-// 1/2(ab - ba)
+// mul(0.5, sub(mul(a, b), mul(b, a)))
 #define ALIAS_PGA_OP_COMMUTATOR_PRODUCT(RETURN, A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p, ...) ALIAS_PGA_OP_COMMUTATOR_PRODUCT_(RETURN, A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p, ALIAS_PGA_RZ_AML,ALIAS_PGA_RZ_SML,## __VA_ARGS__)
-#define ALIAS_PGA_OADDCOMMUTATOR_PRODUCT_(RETURN, A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p, ADD,SUB, ...) \
+#define ALIAS_PGA_OP_COMMUTATOR_PRODUCT_(RETURN, A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p, ADD,SUB, ...) \
   RETURN( \
    0 \
- , 0 ADD(F,c) SUB(E,h) ADD(C,f) ADD(H,e) ADD(K,n) SUB(N,k) ADD(O,p) SUB(P,o) \
- , 0 ADD(E,j) SUB(D,i) ADD(I,d) SUB(J,e) \
- , 0 ADD(C,i) SUB(E,k) SUB(I,c) ADD(K,e) \
- , 0 ADD(D,k) SUB(C,j) ADD(J,c) SUB(K,d) \
- , 0 ADD(B,c) SUB(C,b) SUB(G,i) ADD(H,j) ADD(I,g) SUB(J,h) ADD(N,o) SUB(O,n) \
- , 0 ADD(B,d) SUB(D,b) ADD(F,i) SUB(H,k) SUB(I,f) ADD(K,h) ADD(M,o) SUB(O,m) \
- , 0 ADD(B,e) SUB(E,b) SUB(F,j) ADD(G,k) ADD(J,f) SUB(K,g) ADD(L,o) SUB(O,l) \
- , 0 ADD(C,d) SUB(D,c) ADD(J,k) SUB(K,j) \
- , 0 ADD(E,c) SUB(C,e) SUB(I,k) ADD(K,i) \
- , 0 ADD(I,j) SUB(J,i) \
- , 0 ADD(E,p) SUB(H,o) ADD(J,n) SUB(K,m) ADD(M,k) SUB(N,j) ADD(O,h) SUB(P,e) \
- , 0 ADD(D,p) SUB(G,o) ADD(K,l) SUB(L,k) ADD(O,g) SUB(P,d) \
- , 0 ADD(C,p) SUB(D,h) SUB(F,o) ADD(H,d) ADD(I,m) SUB(J,l) ADD(L,j) SUB(M,i) ADD(O,f) SUB(P,c) \
- , 0 \
- , 0 ADD(B,o) ADD(C,n) ADD(D,m) ADD(E,l) SUB(L,e) SUB(M,d) SUB(N,c) SUB(O,b) \
+ , 0                      ADD(C, f)           SUB(E, h) ADD(F, c)           ADD(H, e)                     ADD(K, n)                     SUB(N, k) ADD(O, p) SUB(P, o) \
+ , 0                                SUB(D, i) ADD(E, j)                               ADD(I, d) SUB(J, e)                                                             \
+ , 0                      ADD(C, i)           SUB(E, k)                               SUB(I, c)           ADD(K, e)                                                   \
+ , 0                      SUB(C, j) ADD(D, k)                                                   ADD(J, c) SUB(K, d)                                                   \
+ , 0            ADD(B, c) SUB(C, b)                               SUB(G, i) ADD(H, j) ADD(I, g) SUB(J, h)                               ADD(N, o) SUB(O, n)           \
+ , 0            ADD(B, d)           SUB(D, b)           ADD(F, i)           SUB(H, k) SUB(I, f)           ADD(K, h)           ADD(M, o)           SUB(O, m)           \
+ , 0            ADD(B, e)                     SUB(E, b) SUB(F, j) ADD(G, k)                     ADD(J, f) SUB(K, g) ADD(L, o)                     SUB(O, l)           \
+ , 0                      ADD(C, d) SUB(D, c)                                                   ADD(J, k) SUB(K, j)                                                   \
+ , 0                      SUB(C, e)           ADD(E, c)                               SUB(I, k)           ADD(K, i)                                                   \
+ , 0                                                                                  ADD(I, j) SUB(J, i)                                                             \
+ , 0                      ADD(E, p)                                         SUB(H, o)           ADD(J, n) SUB(K, m)           ADD(M, k) SUB(N, j) ADD(O, h) SUB(P, e) \
+ , 0                                ADD(D, p)                     SUB(G, o)                               ADD(K, l) SUB(L, k)                     ADD(O, g) SUB(P, d) \
+ , 0                      ADD(C, p) SUB(D, h)           SUB(F, o)           ADD(H, d) ADD(I, m) SUB(J, l)           ADD(L, j) SUB(M, i)           ADD(O, f) SUB(P, c) \
+ , 0                                                                                                                                                                  \
+ , 0            ADD(B, o) ADD(C, n) ADD(D, m) ADD(E, l)                                                             SUB(L, e) SUB(M, d) SUB(N, c) SUB(O, b)           \
  , ## __VA_ARGS__ \
  )
 
-// ab~a
-#include <alias/pga/sandwich.h>
 
-// #include <alias/pga/normalization.h>
 
 #endif
 

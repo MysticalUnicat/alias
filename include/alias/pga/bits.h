@@ -26,7 +26,8 @@
     , ## __VA_ARGS__ \
     )
 
-#define ALIAS_PGA_BITS_1(X, ...) \
+// trimmed bits for generation
+#define ALIAS_PGA_BITS(X, ...) \
   /* X(0, 0, 0, 0, 0, ## __VA_ARGS__) */ \
   X(0, 0, 0, 0, 1, ## __VA_ARGS__) \
   X(0, 0, 0, 1, 0, ## __VA_ARGS__) \
@@ -59,7 +60,9 @@
   /* X(1, 1, 1, 0, 1, ## __VA_ARGS__) */ \
   /* X(1, 1, 1, 1, 0, ## __VA_ARGS__) */ \
   /* X(1, 1, 1, 1, 1, ## __VA_ARGS__) */
+#define ALIAS_PGA_BITS_1 ALIAS_PGA_BITS
 
+// trimmed bits for generation
 #define ALIAS_PGA_BITS_2(X, ...) \
   /* X(0, 0, 0, 0, 0, ## __VA_ARGS__) */ \
   X(0, 0, 0, 0, 1, ## __VA_ARGS__) \
