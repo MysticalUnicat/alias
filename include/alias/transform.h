@@ -9,7 +9,7 @@
 #define ALIAS_TRANSFORM_ENABLE_HEIRARCHY 1
 
 typedef struct alias_Translation2D {
-  alias_Vector2D value;
+  alias_pga2d_Direction value;
 } alias_Translation2D;
 
 typedef struct alias_Rotation2D {
@@ -24,21 +24,20 @@ typedef struct alias_UniformScale2D {
 
 #if ALIAS_TRANSFORM_ENABLE_NON_UNIFORM_SCALE
 typedef struct alias_NonUniformScale2D {
-  alias_Vector2D value;
 } alias_NonUniformScale2D;
 #endif
 
 typedef struct alias_LocalToWorld2D {
-  alias_Affine2D value;
+  alias_pga2d_Transform value;
 } alias_LocalToWorld2D;
 
 typedef struct alias_WorldToLocal2D {
-  alias_Affine2D value;
+  alias_pga2d_Transform value;
 } alias_WorldToLocal2D;
 
 #if ALIAS_TRANSFORM_ENABLE_HEIRARCHY
 typedef struct alias_LocalToParent2D {
-  alias_Affine2D value;
+  alias_pga2d_Transform value;
 } alias_LocalToParent2D;
 
 typedef struct alias_Parent2D {

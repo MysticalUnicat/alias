@@ -4,8 +4,7 @@
 #include <alias/math.h>
 
 typedef struct alias_AABB2D {
-  alias_Vector2D min;
-  alias_Vector2D max;
+  struct { alias_R x; alias_R y; } min, max;
 } alias_AABB2D;
 
 static inline alias_R alias_AABB2D_surface_area(alias_AABB2D aabb) {

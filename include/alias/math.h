@@ -55,6 +55,34 @@ static inline bool alias_R_fuzzy_eq(alias_R a, alias_R b) {
 #define alias_min(A, B) ALIAS_MIN_PAIR(A, B)
 #define alias_max(A, B) ALIAS_MAX_PAIR(A, B)
 
+#include <alias/pga2d.h>
+
+// TODO modify gen program to add these aliases
+// something like:
+//  --type line:abc a=e1,b=e2,c=e0
+//  --type point:xy x=e02,y=e01,1=e12
+//  --type direction:xy x=e02,y=e01,0=e12
+
+typedef alias_pga2d_0100 alias_pga2d_Line;
+typedef alias_pga2d_0010 alias_pga2d_Point;
+typedef alias_pga2d_0010 alias_pga2d_Direction;
+typedef alias_pga2d_1010 alias_pga2d_Motor;
+
+#define alias_pga2d_line(a, b, c) ((alias_pga2d_Line) { .e1 = a, .e2 = b, .e0 = c })
+#define alias_pga2d_line_a(l) l.e1
+#define alias_pga2d_line_b(l) l.e2
+#define alias_pga2d_line_c(l) l.e0
+
+#define alias_pga2d_point(x, y) ((alias_pga2d_Point) { .e02 = x, .e01 = y, .e12 = 1 })
+#define alias_pga2d_point_x(p) p.e02
+#define alias_pga2d_point_y(p) p.e01
+
+#define alias_pga2d_direction(x, y) ((alias_pga2d_Direction) { .e02 = x, .e01 = y })
+#define alias_pga2d_direction_x(p) p.e02
+#define alias_pga2d_direction_y(p) p.e01
+
+#define alias_pga2d_motor(angle, x, y) ((alias_pga2d_Transform) { .one = cos(angle / 2), .e02 = x, .e01 = y, .e12 = sin(angle / 2) })
+
 // TODO: nuke this
 #if 0
 typedef struct alias_Point2D {

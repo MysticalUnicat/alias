@@ -156,12 +156,7 @@ static void _construct_local_from_translation(void * ud, alias_ecs_Instance * in
   (void)entity;
   alias_LocalToWorld2D * local_to_world = (alias_LocalToWorld2D *)data[0];
   const alias_Translation2D * translation = (const alias_Translation2D *)data[1];
-  local_to_world->value._11 = 1.0f;
-  local_to_world->value._12 = 0.0f;
-  local_to_world->value._13 = translation->value.x;
-  local_to_world->value._21 = 0.0f;
-  local_to_world->value._22 = 1.0f;
-  local_to_world->value._23 = translation->value.y;
+  local_to_world->value = alias_pga2d_motor(0, alias_pga2d_direction_x(translation->value), alias_pga2d_direction_x(translation->value));
 }
 
 void alias_transform_update2d_construct_local_from_translation(alias_ecs_Instance * instance, alias_TransformBundle * bundle) {
@@ -175,15 +170,7 @@ static void _construct_local_from_rotation(void * ud, alias_ecs_Instance * insta
   (void)entity;
   alias_LocalToWorld2D * local_to_world = (alias_LocalToWorld2D *)data[0];
   const alias_Rotation2D * rotation = (const alias_Rotation2D *)data[1];
-  const float angle = rotation->value;
-  const float s = sin(angle);
-  const float c = cos(angle);
-  local_to_world->value._11 = c;
-  local_to_world->value._12 = -s;
-  local_to_world->value._13 = 0.0f;
-  local_to_world->value._21 = s;
-  local_to_world->value._22 = c;
-  local_to_world->value._23 = 0.0f;
+  local_to_world->value = alias_pga2d_motor(rotation->value, 0, 0);
 }
 
 void alias_transform_update2d_construct_local_from_rotation(alias_ecs_Instance * instance, alias_TransformBundle * bundle) {
@@ -198,15 +185,7 @@ static void _construct_local_from_rotation_translation(void * ud, alias_ecs_Inst
   alias_LocalToWorld2D * local_to_world = (alias_LocalToWorld2D *)data[0];
   const alias_Translation2D * translation = (const alias_Translation2D *)data[1];
   const alias_Rotation2D * rotation = (const alias_Rotation2D *)data[2];
-  const float angle = rotation->value;
-  const float s = sin(angle);
-  const float c = cos(angle);
-  local_to_world->value._11 = c;
-  local_to_world->value._12 = -s;
-  local_to_world->value._13 = translation->value.x;
-  local_to_world->value._21 = s;
-  local_to_world->value._22 = c;
-  local_to_world->value._23 = translation->value.y;
+  local_to_world->value = alias_pga2d_motor(rotation->value, alias_pga2d_direction_x(translation->value), alias_pga2d_direction_x(translation->value));
 }
 
 void alias_transform_update2d_construct_local_from_rotation_translation(alias_ecs_Instance * instance, alias_TransformBundle * bundle) {
@@ -249,12 +228,7 @@ static void _construct_parent_from_translation(void * ud, alias_ecs_Instance * i
   (void)entity;
   alias_LocalToParent2D * local_to_parent = (alias_LocalToParent2D *)data[0];
   const alias_Translation2D * translation = (const alias_Translation2D *)data[1];
-  local_to_parent->value._11 = 1.0f;
-  local_to_parent->value._12 = 0.0f;
-  local_to_parent->value._13 = translation->value.x;
-  local_to_parent->value._21 = 0.0f;
-  local_to_parent->value._22 = 1.0f;
-  local_to_parent->value._23 = translation->value.y;
+  local_to_parent->value = alias_pga2d_motor(0, alias_pga2d_direction_x(translation->value), alias_pga2d_direction_x(translation->value))
 }
 
 void alias_transform_update2d_construct_parent_from_translation(alias_ecs_Instance * instance, alias_TransformBundle * bundle) {
@@ -268,15 +242,7 @@ static void _construct_parent_from_rotation(void * ud, alias_ecs_Instance * inst
   (void)entity;
   alias_LocalToParent2D * local_to_parent = (alias_LocalToParent2D *)data[0];
   const alias_Rotation2D * rotation = (const alias_Rotation2D *)data[1];
-  const float angle = rotation->value;
-  const float s = sin(angle);
-  const float c = cos(angle);
-  local_to_parent->value._11 = c;
-  local_to_parent->value._12 = -s;
-  local_to_parent->value._13 = 0.0f;
-  local_to_parent->value._21 = s;
-  local_to_parent->value._22 = c;
-  local_to_parent->value._23 = 0.0f;
+  local_to_parent->value = alias_pga2d_motor(rotation->value, 0, 0);
 }
 
 void alias_transform_update2d_construct_parent_from_rotation(alias_ecs_Instance * instance, alias_TransformBundle * bundle) {
@@ -291,15 +257,7 @@ static void _construct_parent_from_rotation_translation(void * ud, alias_ecs_Ins
   alias_LocalToParent2D * local_to_parent = (alias_LocalToParent2D *)data[0];
   const alias_Translation2D * translation = (const alias_Translation2D *)data[1];
   const alias_Rotation2D * rotation = (const alias_Rotation2D *)data[2];
-  const float angle = rotation->value;
-  const float s = sin(angle);
-  const float c = cos(angle);
-  local_to_parent->value._11 = c;
-  local_to_parent->value._12 = -s;
-  local_to_parent->value._13 = translation->value.x;
-  local_to_parent->value._21 = s;
-  local_to_parent->value._22 = c;
-  local_to_parent->value._23 = translation->value.y;
+  local_to_parent->value = alias_pga2d_motor(rotation->value, alias_pga2d_direction_x(translation->value), alias_pga2d_direction_x(translation->value));
 }
 
 void alias_transform_update2d_construct_parent_from_rotation_translation(alias_ecs_Instance * instance, alias_TransformBundle * bundle) {
@@ -343,7 +301,7 @@ static void _construct_local_from_parent(void * ud, alias_ecs_Instance * instanc
   const alias_LocalToWorld2D * parent_local_to_world = NULL;
   alias_ecs_read_entity_component(instance, parent->value, bundle->LocalToWorld2D_component, (const void **)&parent_local_to_world);
 
-  local_to_world->value = alias_multiply_Affine2D_Affine2D(parent_local_to_world->value, local_to_parent->value);
+  local_to_world->value = alias_pga2d_mul_mm(parent_local_to_world->value, local_to_parent->value);
 }
 
 void alias_transform_update2d_construct_local_from_parent(alias_ecs_Instance * instance, alias_TransformBundle * bundle) {
