@@ -82,11 +82,13 @@ add_library(alias STATIC
 )
 
 if(CMAKE_C_COMPILER_ID MATCHES "Clang")
-  set(ALLOW_WARNINGS -Wno-gnu-zero-variadic-macro-arguments -Wno-gnu-alignof-expression)
+  set(ALLOW_WARNINGS -Wno-gnu-zero-variadic-macro-arguments -Wno-gnu-alignof-expression -Wno-initializer-overrides -Wno-unused-value)
+else()
+  set(ALLOW_WARNINGS -Wno-error=unused-value -Wno-unused-value)
 endif()
 
 set_property(TARGET alias PROPERTY C_STANDARD 11)
-target_compile_options(alias PRIVATE -pedantic -Wall -Wextra -Werror PUBLIC ${ALLOW_WARNINGS})
+target_compile_options(alias PRIVATE -pedantic -Wall -Wextra -Werror -std=gnu11 ${ALLOW_WARNINGS})
 target_include_directories(alias
   PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include ${CMAKE_CURRENT_BINARY_DIR}/include
 )

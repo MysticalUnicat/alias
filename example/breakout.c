@@ -1,5 +1,5 @@
 #include <alias/transform.h>
-#include <alias/physics.h>
+//#include <alias/physics.h>
 
 enum {
     Binding_Left
@@ -74,7 +74,7 @@ static inline void alias_update_state(alias_State ** state_machine) {
 // =============================================================================================================================================================
 
 alias_TransformBundle g_transform_bundle;
-alias_Physics2DBundle g_physics_2d_bundle;
+//alias_Physics2DBundle g_physics_2d_bundle;
 alias_State * g_state_machine = NULL;
 
 // =============================================================================================================================================================

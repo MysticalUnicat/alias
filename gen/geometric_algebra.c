@@ -190,49 +190,67 @@ void values(char c) {
   }
 }
 
-const char * unlicense =
-  "/* This is free and unencumbered software released into the public domain.\n"
-  " * \n"
-  " * Anyone is free to copy, modify, publish, use, compile, sell, or\n"
-  " * distribute this software, either in source code form or as a compiled\n"
-  " * binary, for any purpose, commercial or non-commercial, and by any\n"
-  " * means.\n"
-  " * \n"
-  " * In jurisdictions that recognize copyright laws, the author or authors\n"
-  " * of this software dedicate any and all copyright interest in the\n"
-  " * software to the public domain. We make this dedication for the benefit\n"
-  " * of the public at large and to the detriment of our heirs and\n"
-  " * successors. We intend this dedication to be an overt act of\n"
-  " * relinquishment in perpetuity of all present and future rights to this\n"
-  " * software under copyright law.\n"
-  " * \n"
-  " * THE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND,\n"
-  " * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF\n"
-  " * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.\n"
-  " * IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR\n"
-  " * OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,\n"
-  " * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR\n"
-  " * OTHER DEALINGS IN THE SOFTWARE.\n"
-  " * \n"
-  " * For more information, please refer to <https://unlicense.org>\n"
-  " */\n"
+const char * header =
+  "#ifndef _%1$s_H_\n"
+  "#define _%1$s_H_\n"
+  "// %2$i positive dimension(s)\n"
+  "// %3$i negative dimension(s)\n"
+  "// %4$i deginerate dimension(s)\n"
+  "// %5$i total dimension(s)\n"
+  "// %6$i total grade(s)\n"
+  "#define %1$s_EMPTY(...)\n"
+  "#define %1$s_UNPACK(...) __VA_ARGS__\n"
+  "#define %1$s_CAT(X, ...) %1$s_CAT0(X, ## __VA_ARGS__)\n"
+  "#define %1$s_CAT0(X, ...) X ## __VA_ARGS__\n"
+  "#define %1$s_CAT3(X, Y, ...) %1$s_CAT30(X, Y, ## __VA_ARGS__)\n"
+  "#define %1$s_CAT30(X, Y, ...) X ## Y ## __VA_ARGS__\n"
+  "#define %1$s_OR(X, Y) %1$s_CAT3(%1$s_OR_, X, Y)\n"
+  "#define %1$s_OR_00 0\n"
+  "#define %1$s_OR_01 1\n"
+  "#define %1$s_OR_10 1\n"
+  "#define %1$s_OR_11 1\n"
+  "#define %1$s_IFF(X) %1$s_CAT(%1$s_IFF_, X)\n"
+  "#define %1$s_IFF_0(T, F) F\n"
+  "#define %1$s_IFF_1(T, F) T\n"
+  "#define %1$s_IF2(X, Y) %1$s_CAT3(%1$s_IF2_, X, Y)\n"
+  "#define %1$s_IF(X) %1$s_CAT(%1$s_IF_, X)\n"
+  "#define %1$s_IF_0(...) %1$s_UNPACK\n"
+  "#define %1$s_IF_1(...) __VA_ARGS__ %1$s_EMPTY\n"
+  "#define %1$s_IF2(X, Y) %1$s_CAT3(%1$s_IF2_, X, Y)\n"
+  "#define %1$s_IF2_00(...) %1$s_IF2_000\n"
+  "#define %1$s_IF2_000(...) %1$s_IF2_001\n"
+  "#define %1$s_IF2_001(...) %1$s_UNPACK\n"
+  "#define %1$s_IF2_01(...) %1$s_IF2_010\n"
+  "#define %1$s_IF2_010(...) %1$s_IF2_011\n"
+  "#define %1$s_IF2_011(...) __VA_ARGS__ %1$s_EMPTY\n"
+  "#define %1$s_IF2_10(...) %1$s_IF2_100\n"
+  "#define %1$s_IF2_100(...) __VA_ARGS__ %1$s_IF2_101\n"
+  "#define %1$s_IF2_101(...) %1$s_EMPTY\n"
+  "#define %1$s_IF2_11(...) __VA_ARGS__ %1$s_IF2_110\n"
+  "#define %1$s_IF2_110(...) %1$s_IF2_111\n"
+  "#define %1$s_IF2_111(...) %1$s_EMPTY\n"
+  "#define %1$s_PROBE(...) ~,1\n"
+  "#define %1$s_IS_PROBE(...) %1$s_IS_PROBE0(__VA_ARGS__, 0, 0)\n"
+  "#define %1$s_IS_PROBE0(X, Y, ...) Y\n"
+  "#define %1$s_IS_ZERO(X) %1$s_IFF(%1$s_IS_PROBE(%1$s_PROBE X))(%1$s_IS_ZERO1, %1$s_IS_ZERO2)(X)\n"
+  "#define %1$s_IS_ZERO1(X) 0\n"
+  "#define %1$s_IS_ZERO2(X) %1$s_IS_PROBE(%1$s_CAT(%1$s_IS_ZERO3_, X)())\n"
+  "#define %1$s_IS_ZERO3_0 %1$s_PROBE\n"
+  "#define %1$s_IS_NONZERO(X) %1$s_IF(%1$s_IS_ZERO(X))(0)(1)\n"
+  "#define %1$s_NEG(X) %1$s_IF(%1$s_IS_ZERO(X))( 0 )( (-X) )\n"
+  "#define %1$s_ADD(X, Y) %1$s_IF2(%1$s_IS_ZERO(X), %1$s_IS_ZERO(Y))( 0 )(   Y  )( X )( X+Y )\n"
+  "#define %1$s_SUB(X, Y) %1$s_IF2(%1$s_IS_ZERO(X), %1$s_IS_ZERO(Y))( 0 )( (-Y) )( X )( X-Y )\n"
+  "#define %1$s_ADD_MUL(X, Y) %1$s_IF(%1$s_OR(%1$s_IS_ZERO(X), %1$s_IS_ZERO(Y)))( )( +X*Y )\n"
+  "#define %1$s_SUB_MUL(X, Y) %1$s_IF(%1$s_OR(%1$s_IS_ZERO(X), %1$s_IS_ZERO(Y)))( )( -X*Y )\n"
   ;
 
 void generate(void) {
   first_basis = d ? '0' : '1';
   num_dimensions = p + n + d;
   num_grades = 1 + num_dimensions;
-
-  printf("#ifndef _%s_H_\n", PREFIX);
-  printf("#define _%s_H_\n", PREFIX);
-
-  printf("// %i positive dimension%s\n", p, p == 1 ? "" : "s");
-  printf("// %i negative dimension%s\n", n, n == 1 ? "" : "s");
-  printf("// %i deginerate dimension%s\n", d, d == 1 ? "" : "s");
-  printf("// %i total dimension%s\n", num_dimensions, num_dimensions == 1 ? "" : "s");
-  printf("// %i total grade%s\n", num_grades, num_grades == 1 ? "" : "s");
-  
   num_basis = 1 << num_dimensions;
+
+  printf(header, PREFIX, p, n, d, num_dimensions, num_grades);
 
   basis = calloc(num_basis, sizeof(*basis));
   basis_by_bits = calloc(num_basis, sizeof(*basis_by_bits));
@@ -317,53 +335,18 @@ void generate(void) {
       printf("; }; ");
     }
     printf("}; } %s_%s", prefix, str_build);
-    if(i == 0) {
+    if(i == 1 << 0) {
       printf(", %s_Scalar", prefix);
+    } else if(i == 1 << 1) {
+      printf(", %s_Vector", prefix);
+    } else if(i == 1 << 2) {
+      printf(", %s_Bivector", prefix);
+    } else if(i == 1 << 3) {
+      printf(", %s_Trivector", prefix);
     }
     printf(";\n");
   }
   free(str_build);
-
-  // cpp 'library'
-  printf("#define %s_EMPTY(...)\n", PREFIX);
-  printf("#define %s_UNPACK(...) __VA_ARGS__\n", PREFIX);
-  printf("#define %s_CAT(X, ...) %s_CAT0(X, ## __VA_ARGS__)\n", PREFIX, PREFIX);
-  printf("#define %s_CAT0(X, ...) X ## __VA_ARGS__\n", PREFIX);
-  printf("#define %s_CAT3(X, Y, ...) %s_CAT30(X, Y, ## __VA_ARGS__)\n", PREFIX, PREFIX);
-  printf("#define %s_CAT30(X, Y, ...) X ## Y ## __VA_ARGS__\n", PREFIX);
-  printf("#define %s_OR(X, Y) %s_CAT3(%s_OR_, X, Y)\n", PREFIX, PREFIX, PREFIX);
-  printf("#define %s_OR_00 0\n", PREFIX);
-  printf("#define %s_OR_01 1\n", PREFIX);
-  printf("#define %s_OR_10 1\n", PREFIX);
-  printf("#define %s_OR_11 1\n", PREFIX);
-  printf("#define %s_IF2(X, Y) %s_CAT3(%s_IF2_, X, Y)\n", PREFIX, PREFIX, PREFIX);
-  printf("#define %s_IF(X) %s_CAT(%s_IF_, X)\n", PREFIX, PREFIX, PREFIX);
-  printf("#define %s_IF_0(...) %s_UNPACK\n", PREFIX, PREFIX);
-  printf("#define %s_IF_1(...) __VA_ARGS__ %s_EMPTY\n", PREFIX, PREFIX);
-  printf("#define %s_IF2(X, Y) %s_CAT3(%s_IF2_, X, Y)\n", PREFIX, PREFIX, PREFIX);
-  printf("#define %s_IF2_00(...) %s_IF2_000\n", PREFIX, PREFIX);
-  printf("#define %s_IF2_000(...) %s_IF2_001\n", PREFIX, PREFIX);
-  printf("#define %s_IF2_001(...) %s_UNPACK\n", PREFIX, PREFIX);
-  printf("#define %s_IF2_01(...) %s_IF2_010\n", PREFIX, PREFIX);
-  printf("#define %s_IF2_010(...) %s_IF2_011\n", PREFIX, PREFIX);
-  printf("#define %s_IF2_011(...) __VA_ARGS__ %s_EMPTY\n", PREFIX, PREFIX);
-  printf("#define %s_IF2_10(...) %s_IF2_100\n", PREFIX, PREFIX);
-  printf("#define %s_IF2_100(...) __VA_ARGS__ %s_IF2_101\n", PREFIX, PREFIX);
-  printf("#define %s_IF2_101(...) %s_EMPTY\n", PREFIX, PREFIX);
-  printf("#define %s_IF2_11(...) __VA_ARGS__ %s_IF2_110\n", PREFIX, PREFIX);
-  printf("#define %s_IF2_110(...) %s_IF2_111\n", PREFIX, PREFIX);
-  printf("#define %s_IF2_111(...) %s_EMPTY\n", PREFIX, PREFIX);
-  printf("#define %s_PROBE(...) ~,1\n", PREFIX);
-  printf("#define %s_IS_PROBE(...) %s_IS_PROBE0(__VA_ARGS__, 0, 0)\n", PREFIX, PREFIX);
-  printf("#define %s_IS_PROBE0(X, Y, ...) Y\n", PREFIX);
-  printf("#define %s_IS_ZERO(X) %s_IS_PROBE(%s_CAT(%s_IS_ZERO0_, X)())\n", PREFIX, PREFIX, PREFIX, PREFIX);
-  printf("#define %s_IS_ZERO0_0 %s_PROBE\n", PREFIX, PREFIX);
-  printf("#define %s_IS_NONZERO(X) %s_IF(%s_IS_ZERO(X))(0)(1)\n", PREFIX, PREFIX, PREFIX);
-  printf("#define %s_NEG(X) %s_IF(%s_IS_ZERO(X))(0)(-X)\n", PREFIX, PREFIX, PREFIX);
-  printf("#define %s_ADD(X, Y) %s_IF2(%s_IS_ZERO(X), %s_IS_ZERO(Y))( )(   Y  )( X )( X+Y )\n", PREFIX, PREFIX, PREFIX, PREFIX);
-  printf("#define %s_SUB(X, Y) %s_IF2(%s_IS_ZERO(X), %s_IS_ZERO(Y))( )( (-Y) )( X )( X-Y )\n", PREFIX, PREFIX, PREFIX, PREFIX);
-  printf("#define %s_ADD_MUL(X, Y) %s_IF(%s_OR(%s_IS_ZERO(X), %s_IS_ZERO(Y)))( )( +(X*Y) )\n", PREFIX, PREFIX, PREFIX, PREFIX, PREFIX);
-  printf("#define %s_SUB_MUL(X, Y) %s_IF(%s_OR(%s_IS_ZERO(X), %s_IS_ZERO(Y)))( )( -(X*Y) )\n", PREFIX, PREFIX, PREFIX, PREFIX, PREFIX);
 
   printf("#define %s_GRADE(RETURN, ", PREFIX); values('X'); printf(", ...) RETURN(" NL);
   for(int i = 0; i < num_grades; i++) {
@@ -384,11 +367,18 @@ void generate(void) {
     printf("%.*s" NL, count - 1, ")))))))))))))))))))))");
   }
   printf("  , ## __VA_ARGS__)\n");
+
+  printf("#define %s_TYPE(", PREFIX); grades('X'); printf(") %s_TYPE_(", PREFIX); grades('X'); printf(")\n");
+  printf("#define %s_TYPE_(", PREFIX); grades('X'); printf(") %s_", prefix);
+  for(int i = 0; i < num_grades; i++) {
+    printf(" ## X%i", i);
+  }
+  printf("\n");
   
   // unary ====================================================================================================================================================
-  printf("#define %s_UNARY(OP, X) %s_UNARY0(%s_UNPACK X)\n", PREFIX, PREFIX, PREFIX);
+  printf("#define %s_UNARY(OP, X) %s_UNARY0(OP, %s_UNPACK X)\n", PREFIX, PREFIX, PREFIX);
   printf("#define %s_UNARY0(...) %s_UNARY1(__VA_ARGS__)\n", PREFIX, PREFIX);
-  printf("#define %s_UNARY1(", PREFIX); grades('X'); printf("X, OP) %s_UNARY2(" NL, PREFIX);
+  printf("#define %s_UNARY1(OP, ", PREFIX); grades('X'); printf(",X) %s_UNARY2(" NL, PREFIX);
   printf("    OP" NL);
   for(int i = 0; i < num_basis; i++) {
     printf("  , %s_IF(X%i)(_x.%s)(0)" NL, PREFIX, basis[i].grade, basis[i].name);
@@ -397,7 +387,7 @@ void generate(void) {
   printf("  )\n");
   printf("#define %s_UNARY2(OP, ", PREFIX); values('X'); printf(","); grades('X'); printf(",X) OP(%s_UNARY3, ", PREFIX); values('X'); printf(", "); grades('X'); printf(",X)\n");
   printf("#define %s_UNARY3(", PREFIX); values('Z'); printf(","); grades('X'); printf(",X) %s_GRADE(%s_UNARY4, ", PREFIX, PREFIX); values('Z'); printf(", "); values('Z'); printf(","); grades('X'); printf(",X)\n");
-  printf("#define %s_UNARY4(", PREFIX); grades('Z'); printf(","); values('Z'); printf(","); grades('X'); printf(",X) ("); grades('Z'); printf(", ({" NL); 
+  printf("#define %s_UNARY4(", PREFIX); grades('Z'); printf(","); values('Z'); printf(","); grades('X'); printf(",X) ("); grades('Z'); printf(", __extension__ ({" NL); 
   printf("  %s_TYPE(", PREFIX); grades('X'); printf(") _x = X;" NL);
   printf("  (%s_TYPE(", PREFIX); grades('Z'); printf(")) {" NL);
   printf("    ._ = 0" NL);
@@ -503,9 +493,9 @@ void generate(void) {
   printf("  , ## __VA_ARGS__)\n");
 
   // binary
-  printf("#define %s_BINARY(OP, X, Y) %s_BINARY0(%s_UNPACK X, %s_UNPACK Y)\n", PREFIX, PREFIX, PREFIX, PREFIX);
+  printf("#define %s_BINARY(OP, X, Y) %s_BINARY0(OP, %s_UNPACK X, %s_UNPACK Y)\n", PREFIX, PREFIX, PREFIX, PREFIX);
   printf("#define %s_BINARY0(...) %s_BINARY1(__VA_ARGS__)\n", PREFIX, PREFIX);
-  printf("#define %s_BINARY1(", PREFIX); grades('X'); printf(",X,"); grades('Y'); printf(",Y, OP) %s_BINARY2(" NL, PREFIX);
+  printf("#define %s_BINARY1(OP, ", PREFIX); grades('X'); printf(",X,"); grades('Y'); printf(",Y) %s_BINARY2(" NL, PREFIX);
   printf("    OP" NL);
   for(int i = 0; i < num_basis; i++) {
     printf("  , %s_IF(X%i)(_x.%s)(0)" NL, PREFIX, basis[i].grade, basis[i].name);
@@ -518,7 +508,7 @@ void generate(void) {
   printf("  )\n");
   printf("#define %s_BINARY2(OP, ", PREFIX); values('X'); printf(","); values('Y'); printf(","); grades('X'); printf(",X, "); grades('Y'); printf(",Y) OP(%s_BINARY3, ", PREFIX); values('X'); printf(","); values('Y'); printf(", "); grades('X'); printf(",X, "); grades('Y'); printf(",Y)\n");
   printf("#define %s_BINARY3(", PREFIX); values('Z'); printf(","); grades('X'); printf(",X, "); grades('Y'); printf(",Y) %s_GRADE(%s_BINARY4, ", PREFIX, PREFIX); values('Z'); printf(", "); values('Z'); printf(","); grades('X'); printf(",X, "); grades('Y'); printf(",Y)\n");
-  printf("#define %s_BINARY4(", PREFIX); grades('Z'); printf(","); values('Z'); printf(","); grades('X'); printf(",X, "); grades('Y'); printf(",Y) ("); grades('Z'); printf(", ({" NL); 
+  printf("#define %s_BINARY4(", PREFIX); grades('Z'); printf(","); values('Z'); printf(","); grades('X'); printf(",X, "); grades('Y'); printf(",Y) ("); grades('Z'); printf(", __extension__ ({" NL); 
   printf("  %s_TYPE(", PREFIX); grades('X'); printf(") _x = X;" NL);
   printf("  %s_TYPE(", PREFIX); grades('Y'); printf(") _y = Y;" NL);
   printf("  (%s_TYPE(", PREFIX); grades('Z'); printf(")) {" NL);
@@ -794,6 +784,34 @@ void generate(void) {
   printf("#endif // _%s_H_\n", PREFIX);
 }
 
+const char * unlicense =
+  "/* This is free and unencumbered software released into the public domain.\n"
+  " * \n"
+  " * Anyone is free to copy, modify, publish, use, compile, sell, or\n"
+  " * distribute this software, either in source code form or as a compiled\n"
+  " * binary, for any purpose, commercial or non-commercial, and by any\n"
+  " * means.\n"
+  " * \n"
+  " * In jurisdictions that recognize copyright laws, the author or authors\n"
+  " * of this software dedicate any and all copyright interest in the\n"
+  " * software to the public domain. We make this dedication for the benefit\n"
+  " * of the public at large and to the detriment of our heirs and\n"
+  " * successors. We intend this dedication to be an overt act of\n"
+  " * relinquishment in perpetuity of all present and future rights to this\n"
+  " * software under copyright law.\n"
+  " * \n"
+  " * THE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND,\n"
+  " * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF\n"
+  " * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.\n"
+  " * IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR\n"
+  " * OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,\n"
+  " * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR\n"
+  " * OTHER DEALINGS IN THE SOFTWARE.\n"
+  " * \n"
+  " * For more information, please refer to <https://unlicense.org>\n"
+  " */\n"
+  ;
+
 int main(int argc, char * argv []) {
   struct option longopts[] = {
       { "positive", required_argument, NULL, 'p' }
@@ -885,13 +903,13 @@ int main(int argc, char * argv []) {
 
   if(Prefix == NULL) {
     int length = snprintf(NULL, 0, "ALIAS_GA%i_%i_%i", p, n, d);
-    Prefix = malloc(length + 1);
+    Prefix = calloc(length + 1, 1);
     snprintf(Prefix, length + 1, "ALIAS_GA%i_%i_%i", p, n, d);
   }
 
   int prefix_length = strlen(Prefix);
-  PREFIX = malloc(prefix_length + 1);
-  prefix = malloc(prefix_length + 1);
+  PREFIX = calloc(prefix_length + 1, 1);
+  prefix = calloc(prefix_length + 1, 1);
 
   for(int i = 0; Prefix[i]; i++) {
     PREFIX[i] = toupper(Prefix[i]);

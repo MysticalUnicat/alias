@@ -6,10 +6,6 @@
 typedef struct alias_AABB2D {
   union {
     struct {
-      alias_Vector2D min;
-      alias_Vector2D max;
-    };
-    struct {
       alias_R min_x;
       alias_R min_y;
       alias_R max_x;
@@ -61,8 +57,9 @@ static inline alias_R alias_AABB2D_surface_area(alias_AABB2D aabb) {
 }
 
 static inline alias_R alias_AABB2D_volume(alias_AABB2D aabb) {
-  alias_Vector2D d = alias_subtract_Vector2D_Vector2D(aabb.max, aabb.min);
-  return (d.x * d.y);
+  float size_x = aabb.max_x - aabb.min_x;
+  float size_y = aabb.max_y - aabb.min_y;
+  return (size_x * size_y);
 }
 
 static inline alias_AABB2D alias_AABB2D_enlarge(alias_AABB2D aabb, alias_R uniform_amount) {

@@ -92,49 +92,5 @@
 #define ALIAS_CPP_IS_BEGIN_PAREN_(X) ALIAS_CPP_IS_PROBE(X())
 #define ALIAS_CPP_IS_BEGIN_PAREN_call(...) ALIAS_CPP_PROBE
 
-_Static_assert(ALIAS_CPP_BOOLEAN_AND(0, 0) == 0, "");
-_Static_assert(ALIAS_CPP_BOOLEAN_AND(0, 1) == 0, "");
-_Static_assert(ALIAS_CPP_BOOLEAN_AND(1, 0) == 0, "");
-_Static_assert(ALIAS_CPP_BOOLEAN_AND(1, 1) == 1, "");
-
-_Static_assert(ALIAS_CPP_BOOLEAN_OR(0, 0) == 0, "");
-_Static_assert(ALIAS_CPP_BOOLEAN_OR(0, 1) == 1, "");
-_Static_assert(ALIAS_CPP_BOOLEAN_OR(1, 0) == 1, "");
-_Static_assert(ALIAS_CPP_BOOLEAN_OR(1, 1) == 1, "");
-
-_Static_assert(ALIAS_CPP_BOOLEAN_NOT(0) == 1, "");
-_Static_assert(ALIAS_CPP_BOOLEAN_NOT(1) == 0, "");
-
-_Static_assert(ALIAS_CPP_BOOLEAN_IMPLY(0, 0), "");
-_Static_assert(ALIAS_CPP_BOOLEAN_IMPLY(0, 1) == 1, "");
-_Static_assert(ALIAS_CPP_BOOLEAN_IMPLY(1, 0) == 0, "");
-_Static_assert(ALIAS_CPP_BOOLEAN_IMPLY(1, 1) == 1, "");
-
-_Static_assert(ALIAS_CPP_BOOLEAN_XOR(0, 0) == 0, "");
-_Static_assert(ALIAS_CPP_BOOLEAN_XOR(0, 1) == 1, "");
-_Static_assert(ALIAS_CPP_BOOLEAN_XOR(1, 0) == 1, "");
-_Static_assert(ALIAS_CPP_BOOLEAN_XOR(1, 1) == 0, "");
-
-_Static_assert(ALIAS_CPP_BOOLEAN_EQ(0, 0) == 1, "");
-_Static_assert(ALIAS_CPP_BOOLEAN_EQ(0, 1) == 0, "");
-_Static_assert(ALIAS_CPP_BOOLEAN_EQ(1, 0) == 0, "");
-_Static_assert(ALIAS_CPP_BOOLEAN_EQ(1, 1) == 1, "");
-
-_Static_assert(ALIAS_CPP_BOOLEAN_CHOICE(0)(2)(3) == 3, "");
-_Static_assert(ALIAS_CPP_BOOLEAN_CHOICE(1)(2)(3) == 2, "");
-
-_Static_assert(ALIAS_CPP_IF2(0, 0)(2)(3)(4)(5) == 5, "");
-_Static_assert(ALIAS_CPP_IF2(0, 1)(2)(3)(4)(5) == 4, "");
-_Static_assert(ALIAS_CPP_IF2(1, 0)(2)(3)(4)(5) == 3, "");
-_Static_assert(ALIAS_CPP_IF2(1, 1)(2)(3)(4)(5) == 2, "");
-
-_Static_assert(ALIAS_CPP_IS_ZERO(0) == 1, "");
-_Static_assert(ALIAS_CPP_IS_ZERO(1) == 0, "");
-_Static_assert(ALIAS_CPP_IS_ZERO(2) == 0, "");
-
-_Static_assert(ALIAS_CPP_IS_NONZERO(0) == 0, "");
-_Static_assert(ALIAS_CPP_IS_NONZERO(1) == 1, "");
-_Static_assert(ALIAS_CPP_IS_NONZERO(2) == 1, "");
-
 #endif
 

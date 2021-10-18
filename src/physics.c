@@ -2,104 +2,88 @@
 
 alias_ecs_Result alias_Physics2DBundle_initialize(alias_ecs_Instance * instance, alias_Physics2DBundle * bundle, alias_TransformBundle * transform_bundle) {
   alias_ecs_register_component(instance, &(alias_ecs_ComponentCreateInfo) {
-      .size = sizeof(alias_Physics2DLinearMotion)
+      .size = sizeof(alias_Physics2DMotion)
     , .num_required_components = 1
-    , .required_components = &transform_bundle->Translation2D_component
-  }, &bundle->Physics2DLinearMotion_component);
+    , .required_components = &transform_bundle->Transform2D_component
+  }, &bundle->Physics2DMotion_component);
 
   alias_ecs_register_component(instance, &(alias_ecs_ComponentCreateInfo) {
-      .size = sizeof(alias_Physics2DLinearMass)
+      .size = sizeof(alias_Physics2DBodyMotion)
     , .num_required_components = 1
-    , .required_components = &bundle->Physics2DLinearMotion_component
-  }, &bundle->Physics2DLinearMass_component);
+    , .required_components = &bundle->Physics2DMotion_component
+  }, &bundle->Physics2DBodyMotion_component);
 
   alias_ecs_register_component(instance, &(alias_ecs_ComponentCreateInfo) {
-      .size = sizeof(alias_Physics2DLinearSpeed)
+      .size = sizeof(alias_Physics2DMass)
     , .num_required_components = 1
-    , .required_components = &bundle->Physics2DLinearMotion_component
-  }, &bundle->Physics2DLinearSpeed_component);
+    , .required_components = &bundle->Physics2DBodyMotion_component
+  }, &bundle->Physics2DMass_component);
 
   alias_ecs_register_component(instance, &(alias_ecs_ComponentCreateInfo) {
-      .size = sizeof(alias_Physics2DLinearMass)
-    , .num_required_components = 1
-    , .required_components = &bundle->Physics2DLinearMass_component
-  }, &bundle->Physics2DGravity_component);
+      .size = sizeof(alias_Physics2DCircle)
+  }, &bundle->Physics2DCircle_component);
 
   alias_ecs_register_component(instance, &(alias_ecs_ComponentCreateInfo) {
-      .size = sizeof(alias_Physics2DDrag)
-    , .num_required_components = 2
-    , .required_components = (alias_ecs_ComponentHandle[]) { bundle->Physics2DLinearMass_component, bundle->Physics2DLinearSpeed_component }
-  }, &bundle->Physics2DDrag_component);
+      .size = sizeof(alias_Physics2DRectangle)
+  }, &bundle->Physics2DRectangle_component);
 
   alias_ecs_create_query(instance, &(alias_ecs_QueryCreateInfo) {
       .num_write_components = 2
-    , .write_components = (alias_ecs_ComponentHandle[]) { transform_bundle->Translation2D_component, bundle->Physics2DLinearMotion_component }
-#if ALIAS_TRANSFORM_ENABLE_HEIRARCHY
+    , .write_components = (alias_ecs_ComponentHandle[]) { transform_bundle->Transform2D_component, bundle->Physics2DMotion_component }
     , .num_filters = 1
     , .filters = &(alias_ecs_QueryFilterCreateInfo) {
         .filter = ALIAS_ECS_FILTER_EXCLUDE
       , .component = transform_bundle->Parent2D_component
       }
-#endif
-  }, &bundle->integrate_position_query);
+  }, &bundle->transform_motion_query);
 
   alias_ecs_create_query(instance, &(alias_ecs_QueryCreateInfo) {
       .num_write_components = 1
-    , .write_components = &bundle->Physics2DLinearSpeed_component
-    , .num_read_components = 1
-    , .read_components = &bundle->Physics2DLinearMotion_component
-#if ALIAS_TRANSFORM_ENABLE_HEIRARCHY
-    , .num_filters = 1
-    , .filters = &(alias_ecs_QueryFilterCreateInfo) {
-        .filter = ALIAS_ECS_FILTER_EXCLUDE
-      , .component = transform_bundle->Parent2D_component
+    , .write_components = &bundle->Physics2DBodyMotion_component
+    , .num_read_components = 2
+    , .read_components = (alias_ecs_ComponentHandle[]) { bundle->Physics2DCircle_component, bundle->Physics2DMass_component }
+    , .num_filters = 3
+    , .filters = (alias_ecs_QueryFilterCreateInfo[]) {
+          { .filter = ALIAS_ECS_FILTER_EXCLUDE
+          , .component = transform_bundle->Parent2D_component
+          }
+        , { .filter = ALIAS_ECS_FILTER_MODIFIED
+          , .component = bundle->Physics2DCircle_component
+          }
+        , { .filter = ALIAS_ECS_FILTER_MODIFIED
+          , .component = bundle->Physics2DMass_component
+          }
       }
-#endif
-  }, &bundle->cache_linear_speed_query);
+  }, &bundle->circle_mass_query);
 
   alias_ecs_create_query(instance, &(alias_ecs_QueryCreateInfo) {
       .num_write_components = 1
-    , .write_components = &bundle->Physics2DLinearMass_component
-    , .num_read_components = 1
-    , .read_components = &bundle->Physics2DGravity_component
-#if ALIAS_TRANSFORM_ENABLE_HEIRARCHY
-    , .num_filters = 1
-    , .filters = &(alias_ecs_QueryFilterCreateInfo) {
-        .filter = ALIAS_ECS_FILTER_EXCLUDE
-      , .component = transform_bundle->Parent2D_component
+    , .write_components = &bundle->Physics2DBodyMotion_component
+    , .num_read_components = 2
+    , .read_components = (alias_ecs_ComponentHandle[]) { bundle->Physics2DRectangle_component, bundle->Physics2DMass_component }
+    , .num_filters = 3
+    , .filters = (alias_ecs_QueryFilterCreateInfo[]) {
+          { .filter = ALIAS_ECS_FILTER_EXCLUDE
+          , .component = transform_bundle->Parent2D_component
+          }
+        , { .filter = ALIAS_ECS_FILTER_MODIFIED
+          , .component = bundle->Physics2DRectangle_component
+          }
+        , { .filter = ALIAS_ECS_FILTER_MODIFIED
+          , .component = bundle->Physics2DMass_component
+          }
       }
-#endif
-  }, &bundle->gravity_query);
-
-  alias_ecs_create_query(instance, &(alias_ecs_QueryCreateInfo) {
-      .num_write_components = 1
-    , .write_components = &bundle->Physics2DLinearMass_component
-    , .num_read_components = 3
-    , .read_components = (alias_ecs_ComponentHandle[]) {
-        bundle->Physics2DLinearMotion_component
-      , bundle->Physics2DLinearSpeed_component
-      , bundle->Physics2DDrag_component
-      }
-#if ALIAS_TRANSFORM_ENABLE_HEIRARCHY
-    , .num_filters = 1
-    , .filters = &(alias_ecs_QueryFilterCreateInfo) {
-        .filter = ALIAS_ECS_FILTER_EXCLUDE
-      , .component = transform_bundle->Parent2D_component
-      }
-#endif
-  }, &bundle->drag_query);
+  }, &bundle->rectangle_mass_query);
 
   alias_ecs_create_query(instance, &(alias_ecs_QueryCreateInfo) {
       .num_write_components = 2
-    , .write_components = (alias_ecs_ComponentHandle[]){ bundle->Physics2DLinearMotion_component, bundle->Physics2DLinearMass_component }
-#if ALIAS_TRANSFORM_ENABLE_HEIRARCHY
+    , .write_components = (alias_ecs_ComponentHandle[]) { bundle->Physics2DMotion_component, bundle->Physics2DBodyMotion_component }
     , .num_filters = 1
     , .filters = &(alias_ecs_QueryFilterCreateInfo) {
         .filter = ALIAS_ECS_FILTER_EXCLUDE
       , .component = transform_bundle->Parent2D_component
       }
-#endif
-  }, &bundle->integrate_velocity_query);
+  }, &bundle->body_motion_query);
 
   return ALIAS_ECS_SUCCESS;
 }
@@ -108,7 +92,7 @@ alias_ecs_Result alias_Physics2DBundle_initialize(alias_ecs_Instance * instance,
 struct _update_data {
   alias_R t;
   alias_R half_t;
-  alias_Vector2D gravity;
+  alias_pga2d_Direction gravity;
 };
 
 void _fill_update_data(struct _update_data * data, alias_ecs_Instance * instance, alias_Physics2DBundle * bundle, alias_R duration) {
@@ -119,123 +103,97 @@ void _fill_update_data(struct _update_data * data, alias_ecs_Instance * instance
 }
 
 // =============================================================================================================================================================
-static void _update2d_integrate_position(void * ud, alias_ecs_Instance * instance, alias_ecs_EntityHandle entity, void ** data) {
+static void _update2d_transform_motion(void * ud, alias_ecs_Instance * instance, alias_ecs_EntityHandle entity, void ** data) {
   (void)instance;
   (void)entity;
 
   struct _update_data * udata = (struct _update_data *)ud;
-  alias_Translation2D * translation = (alias_Translation2D *)data[0];
-  alias_Physics2DLinearMotion * motion = (alias_Physics2DLinearMotion *)data[1];
+  alias_Transform2D * transform = (alias_Transform2D *)data[0];
+  alias_Physics2DMotion * motion = (alias_Physics2DMotion *)data[1];
 
-  alias_R scale = udata->t;
-
-  translation->value.x = alias_fma(motion->velocity.x, scale, translation->value.x);
-  translation->value.y = alias_fma(motion->velocity.y, scale, translation->value.y);
-  motion->velocity.x *= motion->damping;
-  motion->velocity.y *= motion->damping;
+  alias_pga2d_Bivector b = alias_pga2d_mul_bb(transform->bivector, motion->velocity);
+  transform->bivector = alias_pga2d_lerp_b(transform->bivector, b, udata->t);
 }
 
-void alias_physics_update2d_integrate_position(alias_ecs_Instance * instance, alias_Physics2DBundle * bundle, alias_R duration) {
+void alias_physics_update2d_transform_motion(alias_ecs_Instance * instance, alias_Physics2DBundle * bundle, alias_R duration) {
   struct _update_data udata;
   _fill_update_data(&udata, instance, bundle, duration);
-  alias_ecs_execute_query(instance, bundle->integrate_position_query, (alias_ecs_QueryCB) { _update2d_integrate_position, &udata });
+  alias_ecs_execute_query(instance, bundle->transform_motion_query, (alias_ecs_QueryCB) { _update2d_transform_motion, &udata });
 }
 
 // =============================================================================================================================================================
-static void _update2d_cache_linear_speed(void * ud, alias_ecs_Instance * instance, alias_ecs_EntityHandle entity, void ** data) {
+static void _update2d_circle_mass(void * ud, alias_ecs_Instance * instance, alias_ecs_EntityHandle entity, void ** data) {
   (void)ud;
   (void)instance;
   (void)entity;
 
-  alias_Physics2DLinearSpeed * speed = (alias_Physics2DLinearSpeed *)data[0];
-  const alias_Physics2DLinearMotion * motion = (const alias_Physics2DLinearMotion *)data[1];
+  alias_Physics2DBodyMotion * body = (alias_Physics2DBodyMotion *)data[0];
+  const alias_Physics2DCircle * circle = (const alias_Physics2DCircle *)data[1];
+  const alias_Physics2DMass * mass = (const alias_Physics2DMass *)data[2];
 
-  alias_Vector2D_normalize(motion->velocity, &speed->speed, &speed->direction);
+  alias_R r = circle->radius, x = alias_R_PI * r*r*r*r / 4;
+  body->area_of_moment_of_ineria = alias_pga2d_mul_sb(mass->value, ((alias_pga2d_Bivector) { .e01 = x, .e02 = x, .e12 = 1 }));
 }
 
-void alias_physics_update2d_cache_linear_speed(alias_ecs_Instance * instance, alias_Physics2DBundle * bundle, alias_R duration) {
-  (void)duration;
-  alias_ecs_execute_query(instance, bundle->cache_linear_speed_query, (alias_ecs_QueryCB) { _update2d_cache_linear_speed, NULL });
-}
-
-// =============================================================================================================================================================
-static void _update2d_apply_gravity(void * ud, alias_ecs_Instance * instance, alias_ecs_EntityHandle entity, void ** data) {
-  (void)instance;
-  (void)entity;
-
-  struct _update_data * udata = (struct _update_data *)ud;
-  alias_Physics2DLinearMass * mass = (alias_Physics2DLinearMass *)data[0];
-  const alias_Physics2DGravity * gravity = (const alias_Physics2DGravity *)data[1];
-
-  alias_R scale = mass->mass * gravity->global_gravity_scale;
-
-  mass->force.x = alias_fma(udata->gravity.x, scale, mass->force.x);
-  mass->force.y = alias_fma(udata->gravity.y, scale, mass->force.y);
-}
-
-void alias_physics_update2d_apply_gravity(alias_ecs_Instance * instance, alias_Physics2DBundle * bundle, alias_R duration) {
-  struct _update_data udata;
-  _fill_update_data(&udata, instance, bundle, duration);
-  alias_ecs_execute_query(instance, bundle->gravity_query, (alias_ecs_QueryCB) { _update2d_apply_gravity, &udata });
+void alias_physics_update2d_circle_mass(alias_ecs_Instance * instance, alias_Physics2DBundle * bundle) {
+  alias_ecs_execute_query(instance, bundle->circle_mass_query, (alias_ecs_QueryCB) { _update2d_circle_mass, NULL });
 }
 
 // =============================================================================================================================================================
-static void _update2d_apply_drag(void * ud, alias_ecs_Instance * instance, alias_ecs_EntityHandle entity, void ** data) {
+static void _update2d_rectangle_mass(void * ud, alias_ecs_Instance * instance, alias_ecs_EntityHandle entity, void ** data) {
   (void)ud;
   (void)instance;
   (void)entity;
 
-  alias_Physics2DLinearMass * mass = (alias_Physics2DLinearMass *)data[0];
-  const alias_Physics2DLinearMotion * motion = (const alias_Physics2DLinearMotion *)data[1];
-  const alias_Physics2DLinearSpeed * speed = (const alias_Physics2DLinearSpeed *)data[2];
-  const alias_Physics2DDrag * drag = (const alias_Physics2DDrag *)data[3];
+  alias_Physics2DBodyMotion * body = (alias_Physics2DBodyMotion *)data[0];
+  const alias_Physics2DRectangle * rectangle = (const alias_Physics2DRectangle *)data[1];
+  const alias_Physics2DMass * mass = (const alias_Physics2DMass *)data[2];
 
-  alias_R length = speed->speed;
-  alias_R scale = -(drag->velocity_drag_coefficient + drag->velocity_squared_drag_coefficient * length);
-
-  mass->force.x = alias_fma(motion->velocity.x, scale, mass->force.x);
-  mass->force.y = alias_fma(motion->velocity.y, scale, mass->force.y);
+  alias_R w = rectangle->width
+        , h = rectangle->height;
+  body->area_of_moment_of_ineria = alias_pga2d_mul_sb(mass->value, ((alias_pga2d_Bivector) { .e01 = (h * w*w*w) / 12, .e02 = (w * h*h*h) / 12, .e12 = 1 }));
 }
 
-void alias_physics_update2d_apply_drag(alias_ecs_Instance * instance, alias_Physics2DBundle * bundle, alias_R duration) {
-  (void)duration;
-  alias_ecs_execute_query(instance, bundle->drag_query, (alias_ecs_QueryCB) { _update2d_apply_drag, NULL });
+void alias_physics_update2d_rectangle_mass(alias_ecs_Instance * instance, alias_Physics2DBundle * bundle) {
+  alias_ecs_execute_query(instance, bundle->rectangle_mass_query, (alias_ecs_QueryCB) { _update2d_rectangle_mass, NULL });
 }
 
 // =============================================================================================================================================================
-static void _update2d_integrate_velocity(void * ud, alias_ecs_Instance * instance, alias_ecs_EntityHandle entity, void ** data) {
+static void _update2d_body_motion(void * ud, alias_ecs_Instance * instance, alias_ecs_EntityHandle entity, void ** data) {
   (void)instance;
   (void)entity;
 
   struct _update_data * udata = (struct _update_data *)ud;
 
-  alias_Physics2DLinearMotion * motion = (alias_Physics2DLinearMotion *)data[0];
-  alias_Physics2DLinearMass * mass = (alias_Physics2DLinearMass *)data[1];
+  alias_Physics2DMotion * motion = (alias_Physics2DMotion *)data[0];
+  alias_Physics2DBodyMotion * body = (alias_Physics2DBodyMotion *)data[1];
 
-  alias_R scale = mass->inverse_mass * udata->t;
+  alias_pga2d_Bivector I = body->area_of_moment_of_ineria;
 
-  motion->velocity.x = alias_fma(mass->force.x, scale, motion->velocity.x);
-  motion->velocity.y = alias_fma(mass->force.y, scale, motion->velocity.y);
-  mass->force.x = 0.0f;
-  mass->force.y = 0.0f;
+  alias_pga2d_Bivector a = alias_pga2d_add(alias_pga2d_commutator_product_bb(body->force, I), alias_pga2d_b(body->linear_force));
+
+  alias_pga2d_Bivector b = alias_pga2d_mul_bb(motion->velocity, a);
+  motion->velocity = alias_pga2d_lerp_b(motion->velocity, b, udata->t);
+
+  alias_memory_clear(&body->force, sizeof(body->force));
+  alias_memory_clear(&body->linear_force, sizeof(body->linear_force));
 }
 
-void alias_physics_update2d_integrate_velocity(alias_ecs_Instance * instance, alias_Physics2DBundle * bundle, alias_R duration) {
+void alias_physics_update2d_body_motion(alias_ecs_Instance * instance, alias_Physics2DBundle * bundle, alias_R duration) {
   struct _update_data udata;
   _fill_update_data(&udata, instance, bundle, duration);
-  alias_ecs_execute_query(instance, bundle->integrate_velocity_query, (alias_ecs_QueryCB) { _update2d_integrate_velocity, &udata });
+  alias_ecs_execute_query(instance, bundle->integrate_velocity_query, (alias_ecs_QueryCB) { _update2d_body_motion, &udata });
 }
 
 // =============================================================================================================================================================
 
 void alias_physics_update2d_serial_pre_transform(alias_ecs_Instance * instance, alias_Physics2DBundle * bundle, alias_R duration) {
-  alias_physics_update2d_integrate_position(instance, bundle, duration);
-  alias_physics_update2d_cache_linear_speed(instance, bundle, duration);
+  alias_physics_update2d_transform_motion(instance, bundle, duration);
+  alias_physics_update2d_circle_mass(instance, bundle);
+  alias_physics_update2d_rectangle_mass(instance, bundle);
 }
 
 void alias_physics_update2d_serial_post_transform(alias_ecs_Instance * instance, alias_Physics2DBundle * bundle, alias_R duration) {
-  alias_physics_update2d_apply_gravity(instance, bundle, duration);
-  alias_physics_update2d_apply_drag(instance, bundle, duration);
-  alias_physics_update2d_integrate_velocity(instance, bundle, duration);
+  alias_physics_update2d_body_motion(instance, bundle, duration);
 }
 
