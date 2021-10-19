@@ -23,10 +23,6 @@ typedef struct alias_LocalToWorld2D {
   alias_R orientation;
 } alias_LocalToWorld2D;
 
-typedef struct alias_WorldToLocal2D {
-  alias_pga2d_Motor value;
-} alias_WorldToLocal2D;
-
 typedef struct alias_Parent2D {
   alias_ecs_EntityHandle value;
 } alias_Parent2D;
@@ -37,14 +33,14 @@ typedef struct alias_TransformBundle {
   alias_ecs_ComponentHandle Transform2D_component;
 
   alias_ecs_ComponentHandle LocalToWorld2D_component;
-  alias_ecs_ComponentHandle WorldToLocal2D_component;
 
   alias_ecs_ComponentHandle Parent2D_component;
 
-  alias_ecs_Query * transform_query;
-  alias_ecs_Query * transform_child_query;
-  alias_ecs_Query * parent_query;
-  alias_ecs_Query * inverse_query;
+  alias_ecs_Query * translation_query;
+  alias_ecs_Query * rotation_query;
+  alias_ecs_Query * translation_rotation_query;
+  alias_ecs_Query * parent_world_query;
+  alias_ecs_Query * child_world_query;
 } alias_TransformBundle;
 
 alias_ecs_Result alias_TransformBundle_initialize(alias_ecs_Instance * instance, alias_TransformBundle * bundle);

@@ -105,6 +105,7 @@ static inline alias_pga2d_Motor alias_pga2d_translator(float distance, alias_pga
 #define alias_pga2d_sandwich_bm(x, y) alias_pga2d_grade_2(alias_pga2d_sandwich(alias_pga2d_b(x), alias_pga2d_m(y)))
 #define alias_pga2d_sandwich_bb(x, y) alias_pga2d_grade_2(alias_pga2d_sandwich(alias_pga2d_b(x), alias_pga2d_b(y)))
 #define alias_pga2d_lerp_b(x, y, t) alias_pga2d_lerp(alias_pga2d_b(x), alias_pga2d_b(y), t)
+#define alias_pga2d_lerp_m(x, y, t) alias_pga2d_lerp(alias_pga2d_m(x), alias_pga2d_m(y), t)
 
 #endif
 

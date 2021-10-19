@@ -92,7 +92,7 @@ alias_ecs_Result alias_Physics2DBundle_initialize(alias_ecs_Instance * instance,
 struct _update_data {
   alias_R t;
   alias_R half_t;
-  alias_pga2d_Direction gravity;
+  alias_pga2d_Vector gravity;
 };
 
 void _fill_update_data(struct _update_data * data, alias_ecs_Instance * instance, alias_Physics2DBundle * bundle, alias_R duration) {
@@ -111,8 +111,13 @@ static void _update2d_transform_motion(void * ud, alias_ecs_Instance * instance,
   alias_Transform2D * transform = (alias_Transform2D *)data[0];
   alias_Physics2DMotion * motion = (alias_Physics2DMotion *)data[1];
 
-  alias_pga2d_Bivector b = alias_pga2d_mul_bb(transform->bivector, motion->velocity);
-  transform->bivector = alias_pga2d_lerp_b(transform->bivector, b, udata->t);
+  transform->value = alias_pga2d_sub(
+      alias_pga2d_m(transform->value)
+    , alias_pga2d_mul(
+        alias_pga2d_s(udata->t)
+      , alias_pga2d_commutator_product_mb(transform->value, motion->value)
+      )
+    );
 }
 
 void alias_physics_update2d_transform_motion(alias_ecs_Instance * instance, alias_Physics2DBundle * bundle, alias_R duration) {
@@ -132,7 +137,7 @@ static void _update2d_circle_mass(void * ud, alias_ecs_Instance * instance, alia
   const alias_Physics2DMass * mass = (const alias_Physics2DMass *)data[2];
 
   alias_R r = circle->radius, x = alias_R_PI * r*r*r*r / 4;
-  body->area_of_moment_of_ineria = alias_pga2d_mul_sb(mass->value, ((alias_pga2d_Bivector) { .e01 = x, .e02 = x, .e12 = 1 }));
+  body->I = alias_pga2d_mul_sv(mass->value, ((alias_pga2d_Vector) { .e0 = 1, .e1 = x, .e2 = x }));
 }
 
 void alias_physics_update2d_circle_mass(alias_ecs_Instance * instance, alias_Physics2DBundle * bundle) {
@@ -151,7 +156,7 @@ static void _update2d_rectangle_mass(void * ud, alias_ecs_Instance * instance, a
 
   alias_R w = rectangle->width
         , h = rectangle->height;
-  body->area_of_moment_of_ineria = alias_pga2d_mul_sb(mass->value, ((alias_pga2d_Bivector) { .e01 = (h * w*w*w) / 12, .e02 = (w * h*h*h) / 12, .e12 = 1 }));
+  body->I = alias_pga2d_mul_sv(mass->value, ((alias_pga2d_Vector) { .e0 = 1, .e1 = (h * w*w*w) / 12, .e2 = (w * h*h*h) / 12 }));
 }
 
 void alias_physics_update2d_rectangle_mass(alias_ecs_Instance * instance, alias_Physics2DBundle * bundle) {
@@ -168,21 +173,24 @@ static void _update2d_body_motion(void * ud, alias_ecs_Instance * instance, alia
   alias_Physics2DMotion * motion = (alias_Physics2DMotion *)data[0];
   alias_Physics2DBodyMotion * body = (alias_Physics2DBodyMotion *)data[1];
 
-  alias_pga2d_Bivector I = body->area_of_moment_of_ineria;
+  alias_pga2d_Bivector velocity = motion->value;
 
-  alias_pga2d_Bivector a = alias_pga2d_add(alias_pga2d_commutator_product_bb(body->force, I), alias_pga2d_b(body->linear_force));
+  // velocity = add(velocity, mul(time_delta, dual(forque - commutator_product(dual(velocity), velocity))));
+  motion->value = alias_pga2d_add(
+      alias_pga2d_b(velocity),
+      alias_pga2d_mul(alias_pga2d_s(udata->t),
+                      alias_pga2d_dual(alias_pga2d_sub(
+                          alias_pga2d_v(body->forque),
+                          alias_pga2d_commutator_product(
+                              alias_pga2d_dual_b(velocity), alias_pga2d_b(velocity))))));
 
-  alias_pga2d_Bivector b = alias_pga2d_mul_bb(motion->velocity, a);
-  motion->velocity = alias_pga2d_lerp_b(motion->velocity, b, udata->t);
-
-  alias_memory_clear(&body->force, sizeof(body->force));
-  alias_memory_clear(&body->linear_force, sizeof(body->linear_force));
+  alias_memory_clear(&body->forque, sizeof(body->forque));
 }
 
 void alias_physics_update2d_body_motion(alias_ecs_Instance * instance, alias_Physics2DBundle * bundle, alias_R duration) {
   struct _update_data udata;
   _fill_update_data(&udata, instance, bundle, duration);
-  alias_ecs_execute_query(instance, bundle->integrate_velocity_query, (alias_ecs_QueryCB) { _update2d_body_motion, &udata });
+  alias_ecs_execute_query(instance, bundle->body_motion_query, (alias_ecs_QueryCB) { _update2d_body_motion, &udata });
 }
 
 // =============================================================================================================================================================

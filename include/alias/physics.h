@@ -9,9 +9,78 @@
 #define ALIAS_PHYSICS_2D_MAX_POLYGON_POINTS 32
 #endif
 
+#if 0
+(d - 1)-vectors
+forque   - join line through the contact point - F = .P
+momentum - sum of join lines                   - P = |F
+
+dual
+F = A*, F = m*a, t = m*rXF
+P = V*, P = m*v, L = I*w
+
+2-vectors
+acceleration - meet line through the motion center - A = .V
+velocity     - sum of meet lines                   - V = |A
+position     - motor (2k-refl)                     - M = |V
+
+.V* = F - !V X V
+.M = -(M X V)
+
+force(position, velocity) {
+   gravity = sandwich(state.gravity_line, reverse(position))
+   damping = -0.25 * dual(velocity);
+   hooke = spring_strength * sandwich(world_point, reverse(position)) & body_point
+   return gravity + damping + hooke;
+}
+differential_function(position, velocity, out_position, acceleration) {
+  out_position = -(position X velocity)
+  acceleration = dual(force(position, velocity) - dual(velocity) X velocity)
+}
+update(position, velocity, time_delta) {
+  out_position, acceleration = differential_function(position, velocity);
+  position += out_position * time_delta;
+  velocity += acceleration * time_delta;
+}
+
+transform:
+  position
+
+physics_motion:
+  velocity
+
+physics_body_motion:
+  forque
+  properties
+
+phase1 {
+  position = sub(position, mul(time_delta, commutator_product(position, velocity)));
+}
+
+force_gravity {
+  forque = add(forque, sandwich(gravity_line, reverse(position)));
+}
+
+force_damping {
+  forque = sub(forque, mul(damping_strength, dual(velocity)));
+}
+
+force_hooke {
+  forque = add(forque, mul(spring_strength, sandwich(external_point_in_world_space, reverse(position)) & own_point_in_body_space));
+}
+
+body_to_inertia_space(i, x) element_mul(dual(x), i)
+inertia_to_body_space(i, x) dual(element_div(x, i))
+
+phase2 {
+  //velocity = add(velocity, mul(time_delta, inertia_to_body_space(inertia, forque - commutator_product(body_to_inertia_space(inertia, velocity), velocity))));
+  velocity = add(velocity, mul(time_delta, dual(forque - commutator_product(dual(velocity), velocity))));
+  forque = 0;
+}
+#endif
+
 // an Entity without linear motion is not movable (static)
 typedef struct alias_Physics2DMotion {
-  alias_pga2d_Bivector velocity;
+  alias_pga2d_Bivector value;
 } alias_Physics2DMotion;
 
 // an Entity without mass is not movable by physics (kinematic)
@@ -35,7 +104,10 @@ typedef struct alias_Physics2DRectangle {
 typedef struct alias_Physics2DBundle {
   alias_TransformBundle * transform_bundle;
 
-  alias_pga2d_Direction gravity;
+  // not sure what this means but i remember this from the talk:
+  // this is a force line. a join of two points
+  // I am assuming this can be used to create a force line by joining origin point with a point at the strength desired
+  alias_pga2d_Vector gravity;
 
   alias_ecs_EntityHandle bvh_root;
 
