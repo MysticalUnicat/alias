@@ -69,6 +69,8 @@ typedef alias_pga2d_0010 alias_pga2d_Point;
 typedef alias_pga2d_0010 alias_pga2d_Direction;
 typedef alias_pga2d_1010 alias_pga2d_Motor;
 
+#define alias_pga2d_Motor_IDENTITY ((alias_pga2d_Motor) { .one = 1 })
+
 #define alias_pga2d_line(a, b, c) ((alias_pga2d_Line) { .e1 = a, .e2 = b, .e0 = c })
 #define alias_pga2d_line_a(l) l.e1
 #define alias_pga2d_line_b(l) l.e2
@@ -102,6 +104,8 @@ static inline alias_pga2d_Motor alias_pga2d_translator(float distance, alias_pga
 #define alias_pga2d_sandwich(x, y) alias_pga2d_mul(alias_pga2d_mul(y, x), alias_pga2d_reverse(y))
 #define alias_pga2d_lerp(x, y, t) alias_pga2d_add(alias_pga2d_mul(alias_pga2d_s(t), y), alias_pga2d_mul(alias_pga2d_sub(alias_pga2d_s(1), alias_pga2d_s(t)), x))
 
+#define alias_pga2d_sandwich_vm(x, y) alias_pga2d_grade_1(alias_pga2d_sandwich(alias_pga2d_v(x), alias_pga2d_m(y)))
+#define alias_pga2d_sandwich_vb(x, y) alias_pga2d_grade_1(alias_pga2d_sandwich(alias_pga2d_v(x), alias_pga2d_b(y)))
 #define alias_pga2d_sandwich_bm(x, y) alias_pga2d_grade_2(alias_pga2d_sandwich(alias_pga2d_b(x), alias_pga2d_m(y)))
 #define alias_pga2d_sandwich_bb(x, y) alias_pga2d_grade_2(alias_pga2d_sandwich(alias_pga2d_b(x), alias_pga2d_b(y)))
 #define alias_pga2d_lerp_b(x, y, t) alias_pga2d_lerp(alias_pga2d_b(x), alias_pga2d_b(y), t)

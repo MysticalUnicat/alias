@@ -169,7 +169,9 @@ BasisRef _mul_basis_ref(BasisRef a, BasisRef b) {
 
 BasisRef _dual(BasisRef a) {
   if(d) {
-    return (BasisRef) { .basis = num_basis - 1 - a.basis, .sign = a.sign };
+    BasisRef b = (BasisRef) { .basis = num_basis - 1 - a.basis, .sign = a.sign };
+    b.sign = _mul_basis_ref(a, b).sign;
+    return b;
   } else {
     return _mul_basis_ref(a, (BasisRef) { .basis = num_basis - 1, .sign = 1 });
   }
@@ -302,15 +304,30 @@ void generate(void) {
   _cayley_table = calloc(num_basis*num_basis, sizeof(BasisRef));
   _product_table = calloc(num_basis*num_basis, sizeof(BasisRef));
 
+  printf("// cayley table:\n");
   for(int i = 0; i < num_basis; i++) {
     BasisRef a = (BasisRef) { .basis = i, .sign = 1 };
+
+    printf("//");
     for(int j = 0; j < num_basis; j++) {
       BasisRef b = (BasisRef) { .basis = j, .sign = 1 };
       BasisRef c = _mul_basis_ref(a, b);
       _cayley_table[a.basis * num_basis + b.basis] = c;
       _product_table[c.basis * num_basis + a.basis].basis = b.basis;
       _product_table[c.basis * num_basis + a.basis].sign = c.sign;
+
+      if(c.sign == -1) {
+        printf(" -%-5s", basis[c.basis].name);
+      } else if(c.sign == 0) {
+        printf(" 0     ");
+      } else if(c.sign == 1) {
+        printf(" %-6s", basis[c.basis].name);
+      } else {
+        printf("err");
+      }
     }
+
+    printf("\n");
   }
 
   str_build = calloc(num_grades + 1, sizeof(*str_build));
@@ -335,6 +352,7 @@ void generate(void) {
       printf("; }; ");
     }
     printf("}; } %s_%s", prefix, str_build);
+
     if(i == 1 << 0) {
       printf(", %s_Scalar", prefix);
     } else if(i == 1 << 1) {
@@ -344,6 +362,17 @@ void generate(void) {
     } else if(i == 1 << 3) {
       printf(", %s_Trivector", prefix);
     }
+
+    if(i == 1 << (num_grades - 1)) {
+      printf(", %s_AntiScalar", prefix);
+    } else if(i == 1 << (num_grades - 2)) {
+      printf(", %s_AntiVector", prefix);
+    } else if(i == 1 << (num_grades - 3)) {
+      printf(", %s_AntiBivector", prefix);
+    } else if(i == 1 << (num_grades - 4)) {
+      printf(", %s_AntiTrivector", prefix);
+    }
+
     printf(";\n");
   }
   free(str_build);
@@ -610,17 +639,27 @@ void generate(void) {
   }
   printf("  , ## __VA_ARGS__)\n");
 
+  // 2D PGA needs to produce this:
+  // one = 0
+  // e0 = (Xe01*Ye1) - (Xe2*Ye02) - (Xe1*Ye01) + (Xe02*Ye2)
+  // e1 = (Xe12*Ye2) - (Xe2*Ye12)
+  // e2 = (Xe1*Ye12) - (Xe12*Ye1)
+  // e01 = (Xe0*Ye1) - (Xe1*Ye0) - (Xe02*Ye12) + (Xe12*Ye02)
+  // e02 = (Xe0*Ye2) - (Xe2*Ye0) + (Xe01*Ye12) - (Xe12*Ye01)
+  // e12 = (Xe1*Ye2) - (Xe2*Ye1)
+  // e012 = 0
+
   // commutator product
   printf("#define %s_OP_COMMUTATOR_PRODUCT(RETURN, ", PREFIX); values('X'); printf(", "); values('Y'); printf(", ...) RETURN(" NL);
   for(int i = 0; i < num_basis; i++) {
     printf("  %s0", i ? ", " : "  ");
     BasisRef c = (BasisRef) { i, 1 };
 
-    // instead of the Product table use Cayley table and select based on output (slower)
+    // instead of the Product table use Cayley table and select based on output
     for(int j = 0; j < num_basis; j++) {
       BasisRef a = (BasisRef) { j, 1 };
 
-      for(int k = j+1; k < num_basis; k++) {
+      for(int k = 0; k < num_basis; k++) {
         BasisRef b = (BasisRef) { k, 1 };
 
         BasisRef ab = _cayley_table[a.basis * num_basis + b.basis];
@@ -634,11 +673,9 @@ void generate(void) {
           continue;
         }
 
-        int sign = -1 * ab.sign * ba.sign;
-
-        if(sign == -1) {
+        if(ab.sign == -1) {
           printf(" %s_SUB_MUL(X%s,Y%s)", PREFIX, basis[a.basis].name, basis[b.basis].name);
-        } else if(sign == 1) {
+        } else if(ab.sign == 1) {
           printf(" %s_ADD_MUL(X%s,Y%s)", PREFIX, basis[a.basis].name, basis[b.basis].name);
         }
       }

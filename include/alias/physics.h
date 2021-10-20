@@ -24,16 +24,28 @@ velocity     - sum of meet lines                   - V = |A
 position     - motor (2k-refl)                     - M = |V
 
 .V* = F - !V X V
-.M = -(M X V)
+.M = -(M * V)
+
+P = I[B]
+momentum P - join line - (d-1)-vector
+inertia I[] - duality map
+rate B - hyperline 2-vector
+
+(e12, e01, e02)
+[ 0 m 0 ]
+[ 0 0 m ]
+[ I 0 0 ]
+
+changes meet lines to join lines
 
 force(position, velocity) {
-   gravity = sandwich(state.gravity_line, reverse(position))
+   gravity = dual(sandwich(state.gravity_line, reverse(position)))
    damping = -0.25 * dual(velocity);
    hooke = spring_strength * sandwich(world_point, reverse(position)) & body_point
    return gravity + damping + hooke;
 }
 differential_function(position, velocity, out_position, acceleration) {
-  out_position = -(position X velocity)
+  out_position = -(position * velocity)
   acceleration = dual(force(position, velocity) - dual(velocity) X velocity)
 }
 update(position, velocity, time_delta) {
@@ -53,11 +65,11 @@ physics_body_motion:
   properties
 
 phase1 {
-  position = sub(position, mul(time_delta, commutator_product(position, velocity)));
+  position = sub(position, mul(time_delta, mul(position, velocity)));
 }
 
 force_gravity {
-  forque = add(forque, sandwich(gravity_line, reverse(position)));
+  forque = add(forque, dual(sandwich(gravity_line, reverse(position))));
 }
 
 force_damping {
@@ -101,13 +113,26 @@ typedef struct alias_Physics2DRectangle {
   alias_R height;
 } alias_Physics2DRectangle;
 
+typedef struct alias_Physics2DGravity {
+  alias_R value;
+} alias_Physics2DGravity;
+
+typedef struct alias_Physics2DDampen {
+  alias_R value;
+} alias_Physics2DDampen;
+
+typedef struct alias_Physics2DBodyMotion {
+  alias_pga2d_AntiBivector forque;
+  alias_pga2d_AntiBivector I;
+} alias_Physics2DBodyMotion;
+
 typedef struct alias_Physics2DBundle {
   alias_TransformBundle * transform_bundle;
 
   // not sure what this means but i remember this from the talk:
   // this is a force line. a join of two points
   // I am assuming this can be used to create a force line by joining origin point with a point at the strength desired
-  alias_pga2d_Vector gravity;
+  alias_pga2d_Bivector gravity;
 
   alias_ecs_EntityHandle bvh_root;
 
@@ -116,6 +141,9 @@ typedef struct alias_Physics2DBundle {
   //alias_ecs_ComponentHandle Physics2DCollision_component; // requires alias_Physics2DBodyCollision
   alias_ecs_ComponentHandle Physics2DCircle_component; // effects Mass and Collision components, not required by either
   alias_ecs_ComponentHandle Physics2DRectangle_component;
+
+  alias_ecs_ComponentHandle Physics2DGravity_component;
+  alias_ecs_ComponentHandle Physics2DDampen_component;
 
   alias_ecs_ComponentHandle Physics2DBodyMotion_component; // requires alias_Physics2DMotion
   //alias_ecs_ComponentHandle Physics2DBodyCollision_component;
@@ -127,7 +155,8 @@ typedef struct alias_Physics2DBundle {
   //alias_ecs_Query * rectangle_collision_query;
   //alias_ecs_Query * bvh_build_query;
   //alias_ecs_Query * bvh_test_query;
-  //alias_ecs_Query * forces_queries;
+  alias_ecs_Query * force_gravity_query;
+  alias_ecs_Query * force_dampen_query;
   alias_ecs_Query * body_motion_query;
 } alias_Physics2DBundle;
 
