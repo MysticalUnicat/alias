@@ -242,8 +242,8 @@ const char * header =
   "#define %1$s_NEG(X) %1$s_IF(%1$s_IS_ZERO(X))( 0 )( (-X) )\n"
   "#define %1$s_ADD(X, Y) %1$s_IF2(%1$s_IS_ZERO(X), %1$s_IS_ZERO(Y))( 0 )(   Y  )( X )( X+Y )\n"
   "#define %1$s_SUB(X, Y) %1$s_IF2(%1$s_IS_ZERO(X), %1$s_IS_ZERO(Y))( 0 )( (-Y) )( X )( X-Y )\n"
-  "#define %1$s_ADD_MUL(X, Y) %1$s_IF(%1$s_OR(%1$s_IS_ZERO(X), %1$s_IS_ZERO(Y)))( )( +X*Y )\n"
-  "#define %1$s_SUB_MUL(X, Y) %1$s_IF(%1$s_OR(%1$s_IS_ZERO(X), %1$s_IS_ZERO(Y)))( )( -X*Y )\n"
+  "#define %1$s_ADD_MUL(X, Y) %1$s_IF(%1$s_OR(%1$s_IS_ZERO(X), %1$s_IS_ZERO(Y)))( )( +(X*Y) )\n"
+  "#define %1$s_SUB_MUL(X, Y) %1$s_IF(%1$s_OR(%1$s_IS_ZERO(X), %1$s_IS_ZERO(Y)))( )( -(X*Y) )\n"
   ;
 
 void generate(void) {
@@ -602,31 +602,39 @@ void generate(void) {
   printf("  , ## __VA_ARGS__)\n");
 
   // regressive product
+  // expected for 2d pga:
+  // one  = 0 + Xe012* Yone + Xe12*  Ye0 - Xe02* Ye1 + Xe01*  Ye2 + Xe2*Ye01 - Xe1*Ye02 + Xe0*Ye12 + Xone*Ye012
+  // e0   = 0 + Xe012*  Ye0 - Xe02* Ye01 + Xe01*Ye02 +  Xe0*Ye012
+  // e1   = 0 + Xe012*  Ye1 - Xe12* Ye01 + Xe01*Ye12 +  Xe1*Ye012
+  // e2   = 0 + Xe012*  Ye2 - Xe12* Ye02 + Xe02*Ye12 +  Xe2*Ye012
+  // e01  = 0 + Xe012* Ye01 + Xe01*Ye012
+  // e02  = 0 + Xe012* Ye02 + Xe02*Ye012
+  // e12  = 0 + Xe012* Ye12 + Xe12*Ye012
+  // e012 = 0 + Xe012*Ye012
   printf("#define %s_OP_REGRESSIVE_PRODUCT(RETURN, ", PREFIX); values('X'); printf(", "); values('Y'); printf(", ...) RETURN(" NL);
   for(int i = 0; i < num_basis; i++) {
     printf("  %s0", i ? ", " : "  ");
-    BasisRef c = (BasisRef) { i, 1 }, c_dual = _dual(c);
 
-    // instead of the Product table use Cayley table and select based on output (slower)
+    // instead of the Product table use Cayley table and select based on output
     for(int j = 0; j < num_basis; j++) {
-      BasisRef a = _dual((BasisRef) { j, 1 });
+      BasisRef a = (BasisRef) { j, 1 }, ad = _dual(a);
 
       for(int k = 0; k < num_basis; k++) {
-        BasisRef b = _dual((BasisRef) { k, 1 });
+        BasisRef b = (BasisRef) { k, 1 }, bd = _dual(b);
 
-        BasisRef prod = _cayley_table[a.basis * num_basis + b.basis];
+        BasisRef c = _cayley_table[ad.basis * num_basis + bd.basis], cd = _dual(c);
 
         // limit output to dual basis
-        if(prod.basis != c_dual.basis) {
+        if(cd.basis != i) {
           continue;
         }
 
         // and then non-dual grade selection of outer product
-        if(basis[a.basis].grade + basis[b.basis].grade != basis[prod.basis].grade) {
+        if(basis[ad.basis].grade + basis[bd.basis].grade != basis[c.basis].grade) {
           continue;
         }
 
-        int sign = a.sign * b.sign * prod.sign * c_dual.sign;
+        int sign = a.sign * b.sign * c.sign * cd.sign;
 
         if(sign == -1) {
           printf(" %s_SUB_MUL(X%s,Y%s)", PREFIX, basis[a.basis].name, basis[b.basis].name);
@@ -638,16 +646,6 @@ void generate(void) {
     printf(NL);
   }
   printf("  , ## __VA_ARGS__)\n");
-
-  // 2D PGA needs to produce this:
-  // one = 0
-  // e0 = (Xe01*Ye1) - (Xe2*Ye02) - (Xe1*Ye01) + (Xe02*Ye2)
-  // e1 = (Xe12*Ye2) - (Xe2*Ye12)
-  // e2 = (Xe1*Ye12) - (Xe12*Ye1)
-  // e01 = (Xe0*Ye1) - (Xe1*Ye0) - (Xe02*Ye12) + (Xe12*Ye02)
-  // e02 = (Xe0*Ye2) - (Xe2*Ye0) + (Xe01*Ye12) - (Xe12*Ye01)
-  // e12 = (Xe1*Ye2) - (Xe2*Ye1)
-  // e012 = 0
 
   // commutator product
   printf("#define %s_OP_COMMUTATOR_PRODUCT(RETURN, ", PREFIX); values('X'); printf(", "); values('Y'); printf(", ...) RETURN(" NL);

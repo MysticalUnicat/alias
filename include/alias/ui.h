@@ -27,8 +27,14 @@ typedef struct alias_ui_Constraint {
   alias_ui_Size max;
 } alias_ui_Constraint;
 
+typedef void (* alias_ui_TextSizeFn)(const char * buffer, alias_R size, alias_R max_width, alias_R * out_width, alias_R * out_height);
+typedef void (* alias_ui_TextDrawFn)(const char * buffer, alias_R x, alias_R y, alias_R width, alias_R size, alias_Color color);
+
 typedef struct alias_ui_Input {
   alias_ui_Size screen_size;
+
+  alias_ui_TextSizeFn text_size;
+  alias_ui_TextDrawFn text_draw;
 } alias_ui_Input;
 
 typedef struct alias_ui_OutputData {
@@ -58,6 +64,9 @@ alias_ui_Result alias_ui_end_frame(alias_ui * ui, alias_MemoryCB * mcb, alias_ui
 // alias_ui_center(...) -> alias_ui_align_fractions(ui, 0.5, 0.5)
 void alias_ui_center(alias_ui * ui);
 void alias_ui_override_size(alias_ui * ui, alias_R width, alias_R height);
+
+void alias_ui_begin_vertical(alias_ui * ui);
+void alias_ui_end(alias_ui * ui);
 
 // per scope parameters
 void alias_ui_font_size(alias_ui * ui, alias_R size);

@@ -127,14 +127,24 @@ struct alias_ash {
 
   uint32_t ds[ALIAS_ASH_DSTACK_SIZE];
   uint32_t dp;
+
+  void * user_data;
 };
 
 static inline void alias_ash_push(alias_ash * ash, uint32_t i) {
   ash->ds[ash->dp++] = i;
 }
 
+static inline void alias_ash_push_R(alias_ash * ash, float f) {
+  ash->ds[ash->dp++] = *(uint32_t *)&f;
+}
+
 static inline uint32_t alias_ash_pop(alias_ash * ash) {
   return ash->ds[--ash->dp];
+}
+
+static inline float alias_ash_pop_R(alias_ash * ash) {
+  return *(float *)&ash->ds[--ash->dp];
 }
 
 static inline void alias_ash_push_r(alias_ash * ash, uint32_t i) {
