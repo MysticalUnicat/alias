@@ -66,6 +66,8 @@ void alias_ui_center(alias_ui * ui);
 void alias_ui_override_size(alias_ui * ui, alias_R width, alias_R height);
 
 void alias_ui_begin_vertical(alias_ui * ui);
+void alias_ui_begin_horizontal(alias_ui * ui);
+void alias_ui_begin_stack(alias_ui * ui);
 void alias_ui_end(alias_ui * ui);
 
 // per scope parameters

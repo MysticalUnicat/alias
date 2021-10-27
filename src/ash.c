@@ -2,6 +2,8 @@
 
 #include <alias/log.h>
 
+#define ALIAS_ASH_TRACE_INSTRUCTION 0
+
 void alias_ash_Program_initialize(alias_ash_Program * p) {
   alias_memory_clear(p, sizeof(*p));
 }
@@ -246,7 +248,7 @@ bool alias_ash_step(alias_ash * ash) {
 
   op = ash->cs[ash->ip++];
 
-  #if 1
+  #if ALIAS_ASH_TRACE_INSTRUCTION
   struct {
     char * name;
     int d_pre;
@@ -374,7 +376,7 @@ bool alias_ash_step(alias_ash * ash) {
   case alias_ash_Op_f_cmp:  /*      a b -- (-,0,+)      */ F(1) = F(1) - F(0); --ash->dp;                                                                                     break;
   }
 
-  #if 1
+  #if ALIAS_ASH_TRACE_INSTRUCTION
   for(int i = 0; i < d_post; i++) {
     printf(" %g", fs[ash->dp - d_post + i]);
   }

@@ -108,56 +108,56 @@ static void _layout_shape_set_x(alias_ash * ash) {
   alias_ui * ui = (alias_ui *)ash->user_data;
   uint32_t ptr = alias_ash_pop(ash);
   SHAPE(ptr)->x = alias_ash_pop_R(ash);
-  ALIAS_TRACE("shape(%i)->x = %g", ptr, SHAPE(ptr)->x);
+  //ALIAS_TRACE("shape(%i)->x = %g", ptr, SHAPE(ptr)->x);
 }
 
 static void _layout_shape_set_y(alias_ash * ash) {
   alias_ui * ui = (alias_ui *)ash->user_data;
   uint32_t ptr = alias_ash_pop(ash);
   SHAPE(ptr)->y = alias_ash_pop_R(ash);
-  ALIAS_TRACE("shape(%i)->y = %g", ptr, SHAPE(ptr)->y);
+  //ALIAS_TRACE("shape(%i)->y = %g", ptr, SHAPE(ptr)->y);
 }
 
 static void _layout_shape_set_w(alias_ash * ash) {
   alias_ui * ui = (alias_ui *)ash->user_data;
   uint32_t ptr = alias_ash_pop(ash);
   SHAPE(ptr)->w = alias_ash_pop_R(ash);
-  ALIAS_TRACE("shape(%i)->w = %g", ptr, SHAPE(ptr)->w);
+  //ALIAS_TRACE("shape(%i)->w = %g", ptr, SHAPE(ptr)->w);
 }
 
 static void _layout_shape_set_h(alias_ash * ash) {
   alias_ui * ui = (alias_ui *)ash->user_data;
   uint32_t ptr = alias_ash_pop(ash);
   SHAPE(ptr)->h = alias_ash_pop_R(ash);
-  ALIAS_TRACE("shape(%i)->h = %g", ptr, SHAPE(ptr)->h);
+  //ALIAS_TRACE("shape(%i)->h = %g", ptr, SHAPE(ptr)->h);
 }
 
 static void _render_shape_get_x(alias_ash * ash) {
   alias_ui * ui = (alias_ui *)ash->user_data;
   uint32_t ptr = alias_ash_pop(ash);
   alias_ash_push_R(ash, SHAPE(ptr)->x);
-  ALIAS_TRACE("shape(%i)->x == %g", ptr, SHAPE(ptr)->x);
+  //ALIAS_TRACE("shape(%i)->x == %g", ptr, SHAPE(ptr)->x);
 }
 
 static void _render_shape_get_y(alias_ash * ash) {
   alias_ui * ui = (alias_ui *)ash->user_data;
   uint32_t ptr = alias_ash_pop(ash);
   alias_ash_push_R(ash, SHAPE(ptr)->y);
-  ALIAS_TRACE("shape(%i)->y == %g", ptr, SHAPE(ptr)->y);
+  //ALIAS_TRACE("shape(%i)->y == %g", ptr, SHAPE(ptr)->y);
 }
 
 static void _render_shape_get_w(alias_ash * ash) {
   alias_ui * ui = (alias_ui *)ash->user_data;
   uint32_t ptr = alias_ash_pop(ash);
   alias_ash_push_R(ash, SHAPE(ptr)->w);
-  ALIAS_TRACE("shape(%i)->w == %g", ptr, SHAPE(ptr)->w);
+  //ALIAS_TRACE("shape(%i)->w == %g", ptr, SHAPE(ptr)->w);
 }
 
 static void _render_shape_get_h(alias_ash * ash) {
   alias_ui * ui = (alias_ui *)ash->user_data;
   uint32_t ptr = alias_ash_pop(ash);
   alias_ash_push_R(ash, SHAPE(ptr)->h);
-  ALIAS_TRACE("shape(%i)->h == %g", ptr, SHAPE(ptr)->h);
+  //ALIAS_TRACE("shape(%i)->h == %g", ptr, SHAPE(ptr)->h);
 }
 
 static void _textv_layout(alias_ash * ash);
@@ -181,6 +181,12 @@ static void _standard_library(alias_ash_Program * program, alias_MemoryCB * mcb)
        , irot          // f(b d) a c
        , r_pop, call   // f(b d) f(a c)
        , swap)
+
+    , fn(f2_add // a b c d -- (a + c) (b + d)
+       , ( f_add ), f2_zip)
+
+    , fn(f2_sub// a b c d -- (a + c) (b + d)
+       , ( f_sub ), f2_zip)
 
     , fn(f2_min // a b c d -- min(a, c) min(b, d)
        , ( f_min ), f2_zip)
@@ -311,7 +317,7 @@ void alias_ui_center(alias_ui * ui) {
     , drop2               // a b c d -> a b
     , i(shape), getx      // a b e
     , i(shape), gety      // a b e f
-    , ( f_add ), f2_zip   // e f
+    , f2_add              // e f
     , i(shape), getw      // e f g h
     , i(shape), geth      // e f g h
     );
@@ -348,7 +354,7 @@ static inline void _vertical_begin_child(alias_ui * ui) {
   _scope(ui)->shape = shape;
 
   ALIAS_ASH_EMIT(&ui->layout_program, ui->mcb
-    // minw minh maxw maxh w h -- minw minh maxw maxh w h minw minh maxw maxh
+    // minw minh maxw maxh w h -- minw minh maxw maxh w h minw minh maxw maxh-h
     , i(5), pick
     , i(5), pick
     , i(5), pick
@@ -394,7 +400,7 @@ static inline void _vertical_end_scope(alias_ui * ui) {
   );
   
   ALIAS_ASH_EMIT(&ui->render_program, ui->mcb
-    // x1 y1 x2 y2 --
+    // x y w h --
     , drop2, drop2
   );
 
@@ -404,6 +410,133 @@ static inline void _vertical_end_scope(alias_ui * ui) {
 void alias_ui_begin_vertical(alias_ui * ui) {
   _begin_child(ui);
   _begin_scope(ui, _vertical_begin_child, _vertical_end_child, _vertical_end_scope);
+
+  ALIAS_ASH_EMIT(&ui->layout_program, ui->mcb
+    // setup: minw minh maxw maxh -- minw minh maxw maxh 0 0 (current width, height)
+    , i(0), dup
+    );
+}
+
+
+// ====================================================================================================================
+// horizontal layout
+static inline void _horizontal_begin_child(alias_ui * ui) {
+  int shape = _alloc(ui, sizeof(struct shape));
+  _scope(ui)->shape = shape;
+
+  ALIAS_ASH_EMIT(&ui->layout_program, ui->mcb
+    // minw minh maxw maxh w h -- minw minh maxw maxh w h minw minh maxw-w maxh
+    , i(5), pick
+    , i(5), pick
+    , i(5), pick
+    , i(4), pick, f_sub
+    , i(5), pick
+  );
+  
+  ALIAS_ASH_EMIT(&ui->render_program, ui->mcb
+    // x y w h -- x y w h (x+cx) (y+(h-ch)/2) cw ch
+    , i(3), pick          // x y w h x
+    , i(shape), getx      // x y w h x cx
+    , f_add               // x y w h cx
+    , i(3), pick          // x y w h cx y
+    , f(0.5f)             // x y w h cx y 0.5
+    , i(3), pick          // x y w h cx y 0.5 h
+    , i(shape), geth      // x y w h cx y 0.5 h ch
+    , f_sub, f_mul, f_add // x y w h cx cy
+    , i(shape), getw
+    , i(shape), geth
+  );
+}
+
+static inline void _horizontal_end_child(alias_ui * ui) {
+  int shape = _scope(ui)->shape;
+
+  ALIAS_ASH_EMIT(&ui->layout_program, ui->mcb
+    // minw minh maxw maxh w h childw childh -- minw minh maxw maxh max(w childw) (h + childh)
+    , dup, i(shape), seth        // a b maxw maxh w h childw childh
+    , swap, dup, i(shape), setw  // a b maxw maxh w h childh childw
+    , r_push                     // a b maxw maxh w h childh
+    , i(2), pick, i(shape), setx // a b maxw maxh w h childh (copy current w to x)
+    , f_max                      // a b maxw maxh w max(h childh)
+    , swap, r_pop                // a b maxw maxh max(h childh) w childw
+    , f_add, swap                // a b maxw maxh (w + childw) max(h childh)
+  );
+}
+
+static inline void _horizontal_end_scope(alias_ui * ui) {
+  ALIAS_ASH_EMIT(&ui->layout_program, ui->mcb
+    // minw minh maxw maxh sum(childw) max(childh) -- w h
+    , fit
+  );
+  
+  ALIAS_ASH_EMIT(&ui->render_program, ui->mcb
+    // x y w h --
+    , drop2, drop2
+  );
+
+  _end_child(ui);
+}
+
+void alias_ui_begin_horizontal(alias_ui * ui) {
+  _begin_child(ui);
+  _begin_scope(ui, _horizontal_begin_child, _horizontal_end_child, _horizontal_end_scope);
+
+  ALIAS_ASH_EMIT(&ui->layout_program, ui->mcb
+    // setup: minw minh maxw maxh -- minw minh maxw maxh 0 0 (current width, height)
+    , i(0), dup
+    );
+}
+
+
+// ====================================================================================================================
+// stack layout
+static inline void _stack_begin_child(alias_ui * ui) {
+  int shape = _alloc(ui, sizeof(struct shape));
+  _scope(ui)->shape = shape;
+
+  ALIAS_ASH_EMIT(&ui->layout_program, ui->mcb
+    // minw minh maxw maxh w h -- minw minh maxw maxh w h 0 0 maxw maxh
+    , f(0), dup
+    , i(5), pick
+    , i(5), pick
+  );
+  
+  ALIAS_ASH_EMIT(&ui->render_program, ui->mcb
+    // x y w h -- x y w h (x+cx) (y+cy) cw ch
+    , over2
+    , i(shape), getw
+    , i(shape), geth
+  );
+}
+
+static inline void _stack_end_child(alias_ui * ui) {
+  int shape = _scope(ui)->shape;
+
+  ALIAS_ASH_EMIT(&ui->layout_program, ui->mcb
+    // minw minh maxw maxh w h childw childh -- minw minh maxw maxh max(w childw) max(h childh)
+    , dup, i(shape), seth
+    , swap, dup, i(shape), setw, swap 
+    , f2_max
+  );
+}
+
+static inline void _stack_end_scope(alias_ui * ui) {
+  ALIAS_ASH_EMIT(&ui->layout_program, ui->mcb
+    // minw minh maxw maxh max(childw) max(childh) -- w h
+    , fit
+  );
+  
+  ALIAS_ASH_EMIT(&ui->render_program, ui->mcb
+    // x1 y1 x2 y2 --
+    , drop2, drop2
+  );
+
+  _end_child(ui);
+}
+
+void alias_ui_begin_stack(alias_ui * ui) {
+  _begin_child(ui);
+  _begin_scope(ui, _stack_begin_child, _stack_end_child, _stack_end_scope);
 
   ALIAS_ASH_EMIT(&ui->layout_program, ui->mcb
     // setup: minw minh maxw maxh -- minw minh maxw maxh 0 0 (current width, height)
@@ -440,7 +573,7 @@ static void _textv_layout(alias_ash * ash) {
   alias_ash_push_R(ash, alias_max(minw, alias_min(maxw, w)));
   alias_ash_push_R(ash, alias_max(minh, alias_min(maxh, h)));
 
-  ALIAS_TRACE("textv_layout '%s' %g %g -> %g %g", _mem(ui, text), size, maxw, w, h);
+  //ALIAS_TRACE("textv_layout '%s' %g %g -> %g %g", _mem(ui, text), size, maxw, w, h);
 }
 
 static void _textv_render(alias_ash * ash) {
@@ -458,7 +591,7 @@ static void _textv_render(alias_ash * ash) {
   alias_ui * ui = (alias_ui *)ash->user_data;
   ui->text_draw(_mem(ui, text), minx, miny, maxx - minx, size, (alias_Color){ r, g, b, a });
 
-  ALIAS_TRACE("textv_draw '%s' %g %g %g", _mem(ui, text), minx, miny, size);
+  //ALIAS_TRACE("textv_draw '%s' %g %g %g", _mem(ui, text), minx, miny, size);
 }
 
 void alias_ui_textv(alias_ui * ui, const char * format, va_list ap) {
