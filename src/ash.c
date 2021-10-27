@@ -246,7 +246,7 @@ bool alias_ash_step(alias_ash * ash) {
 
   op = ash->cs[ash->ip++];
 
-  #if 0
+  #if 1
   struct {
     char * name;
     int d_pre;
@@ -256,8 +256,8 @@ bool alias_ash_step(alias_ash * ash) {
   } opinfo[] = {
       [alias_ash_Op_end]    = { "end", 0, 0, 0, 0 } 
     , [alias_ash_Op_i]      = { "i", 0, 1, 0, 0 } 
-    , [alias_ash_Op_pick]   = { "pick", 1, 0, 0, 0 } 
-    , [alias_ash_Op_roll]   = { "roll", 1, 0, 0, 0 } 
+    , [alias_ash_Op_pick]   = { "pick", 2, 1, 0, 0 } 
+    , [alias_ash_Op_roll]   = { "roll", 0, 1, 0, 0 } 
     , [alias_ash_Op_dup]    = { "dup", 0, 1, 0, 0 } 
     , [alias_ash_Op_q_dup]  = { "q_dup", 0, 1, 0, 0 } 
     , [alias_ash_Op_drop]   = { "drop", 1, 0, 0, 0 } 
@@ -298,26 +298,32 @@ bool alias_ash_step(alias_ash * ash) {
     , [alias_ash_Op_f_max]  = { "f_max", 2, 1, 0, 0 } 
     , [alias_ash_Op_f_cmp]  = { "f_cmp", 2, 1, 0, 0 } 
   };
+  int d_pre = opinfo[op].d_pre, d_post = opinfo[op].d_post, r_pre = opinfo[op].r_pre, r_post = opinfo[op].r_post;
   int printf(const char *, ...);
   if(op == alias_ash_Op_i) {
-    printf("% 8i i(%i)", ash->ip - 1, *(uint32_t *)&ash->cs[ash->ip]);
+    printf("% 4i i(%i)", ash->ip - 1, *(uint32_t *)&ash->cs[ash->ip]);
   } else if(op == alias_ash_Op_cfun) {
     void * cfun = *(void **)&ash->cs[ash->ip];
-    printf("% 8i cfun(%p)", ash->ip - 1, cfun);
+    printf("% 4i cfun(%p)", ash->ip - 1, cfun);
   } else if(op <= sizeof(opinfo)/sizeof(opinfo[0])) {
-    printf("% 8i %s", ash->ip - 1, opinfo[op].name);
+    printf("% 4i %s", ash->ip - 1, opinfo[op].name);
   } else {
-    printf("% 8i unknown opcode %i", ash->ip - 1, op);
+    printf("% 4i unknown opcode %i", ash->ip - 1, op);
   }
 
-  for(int i = 0; i < opinfo[op].d_pre; i++) {
-    printf(" %i", ds[ash->dp - opinfo[op].d_pre + i]);
+  if(op == alias_ash_Op_pick || op == alias_ash_Op_roll) {
+    d_pre += D(0);
+    d_post += D(0);
   }
-  if(opinfo[op].r_pre) {
+
+  for(int i = 0; i < d_pre; i++) {
+    printf(" %g", fs[ash->dp - d_pre + i]);
+  }
+  if(r_pre) {
     printf(" r:");
   }
-  for(int i = 0; i < opinfo[op].r_pre; i++) {
-    printf(" %i", rs[ash->rp - opinfo[op].r_pre + i]);
+  for(int i = 0; i < r_pre; i++) {
+    printf(" %i", rs[ash->rp - r_pre + i]);
   }
   printf(" --");
   #endif
@@ -353,8 +359,8 @@ bool alias_ash_step(alias_ash * ash) {
   case alias_ash_Op_i_neg:  /*        a -- (-a)         */ D(0) = -D(0);                                                                                                      break;
   case alias_ash_Op_i_mul:  /*      a b -- (a * b)      */ D(1) *= D(0); --ash->dp;                                                                                           break;
   case alias_ash_Op_i_div:  /*      a b -- (a / b)      */ D(1) /= D(0); --ash->dp;                                                                                           break;
-  case alias_ash_Op_i_min:  /*      a b -- min(a, b)    */ a = D(1); b = D(0); D(0) = a < b ? a : b; --ash->dp;                                                               break;
-  case alias_ash_Op_i_max:  /*      a b -- max(a, b)    */ a = D(1); b = D(0); D(0) = a > b ? a : b; --ash->dp;                                                               break;
+  case alias_ash_Op_i_min:  /*      a b -- min(a, b)    */ a = D(1); b = D(0); D(1) = a < b ? a : b; --ash->dp;                                                               break;
+  case alias_ash_Op_i_max:  /*      a b -- max(a, b)    */ a = D(1); b = D(0); D(1) = a > b ? a : b; --ash->dp;                                                               break;
   case alias_ash_Op_b_and:  /*      a b -- (a & b)      */ D(1) &= D(0); --ash->dp;                                                                                           break;
   case alias_ash_Op_b_or:   /*      a b -- (a | b)      */ D(1) |= D(0); --ash->dp;                                                                                           break;
   case alias_ash_Op_b_xor:  /*      a b -- (a ^ b)      */ D(1) ^= D(0); --ash->dp;                                                                                           break;
@@ -363,20 +369,20 @@ bool alias_ash_step(alias_ash * ash) {
   case alias_ash_Op_f_neg:  /*        a -- (-a)         */ F(0) = -F(0);                                                                                                      break;
   case alias_ash_Op_f_mul:  /*      a b -- (a * b)      */ F(1) *= F(0); --ash->dp;                                                                                           break;
   case alias_ash_Op_f_div:  /*      a b -- (a / b)      */ F(1) /= F(0); --ash->dp;                                                                                           break;
-  case alias_ash_Op_f_min:  /*      a b -- min(a, b)    */ A = F(1); B = F(0); F(0) = A < B ? A : B; --ash->dp;                                                               break;
-  case alias_ash_Op_f_max:  /*      a b -- max(a, b)    */ A = F(1); B = F(0); F(0) = A > B ? A : B; --ash->dp;                                                               break;
+  case alias_ash_Op_f_min:  /*      a b -- min(a, b)    */ A = F(1); B = F(0); F(1) = A < B ? A : B; --ash->dp;                                                               break;
+  case alias_ash_Op_f_max:  /*      a b -- max(a, b)    */ A = F(1); B = F(0); F(1) = A > B ? A : B; --ash->dp;                                                               break;
   case alias_ash_Op_f_cmp:  /*      a b -- (-,0,+)      */ F(1) = F(1) - F(0); --ash->dp;                                                                                     break;
   }
 
-  #if 0
-  for(int i = 0; i < opinfo[op].d_post; i++) {
-    printf(" %i", ds[ash->dp - opinfo[op].d_post + i]);
+  #if 1
+  for(int i = 0; i < d_post; i++) {
+    printf(" %g", fs[ash->dp - d_post + i]);
   }
-  if(opinfo[op].r_post) {
+  if(r_post) {
     printf(" r:");
   }
-  for(int i = 0; i < opinfo[op].r_post; i++) {
-    printf(" %i", rs[ash->rp - opinfo[op].r_post + i]);
+  for(int i = 0; i < r_post; i++) {
+    printf(" %i", rs[ash->rp - r_post + i]);
   }
   printf("\n");
   #endif
