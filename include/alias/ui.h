@@ -60,9 +60,8 @@ alias_ui_Result alias_ui_begin_frame(alias_ui * ui, alias_MemoryCB * mcb, const 
 alias_ui_Result alias_ui_end_frame(alias_ui * ui, alias_MemoryCB * mcb, alias_ui_Output * output);
 
 // layouting
-// alias_ui_align_fractions(ui, x [0..1], y [0..1])
-// alias_ui_center(...) -> alias_ui_align_fractions(ui, 0.5, 0.5)
-void alias_ui_center(alias_ui * ui);
+void alias_ui_align_fractions(alias_ui * ui, float x, float y);
+
 void alias_ui_override_size(alias_ui * ui, alias_R width, alias_R height);
 
 void alias_ui_begin_vertical(alias_ui * ui);

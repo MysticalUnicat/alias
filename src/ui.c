@@ -18,6 +18,8 @@ struct scope {
 
   uint32_t shape;
 
+  alias_R args[8];
+
   alias_R flex;
   alias_R total_flex;
   
@@ -275,15 +277,21 @@ alias_ui_Result alias_ui_begin_frame(alias_ui * ui, alias_MemoryCB * mcb, const 
 }
 
 // ====================================================================================================================
-// center
-static inline void _center_end_child(alias_ui * ui) {
-  uint32_t shape = _scope(ui)->shape;
+// align fractions (center)
+static inline void _align_fractions_end_child(alias_ui * ui) {
+  struct scope * scope = _scope(ui);
+  uint32_t shape = scope->shape;
   
   ALIAS_ASH_EMIT(&ui->layout_program, ui->mcb
     // end child: maxw maxh childw childh -- maxw maxh
     , over2                            // a b c d a b
     , over2                            // a b c d a b c d
-    , ( f_sub, f(0.5), f_mul ), f2_zip // a b c d e f -- (max - child) * 0.5
+    //, ( f_sub, f(0.5), f_mul ), f2_zip // a b c d e f -- (max - child) * 0.5
+    , rot, swap
+    , f_sub, f(scope->args[1]), f_mul
+    , irot
+    , f_sub, f(scope->args[0]), f_mul
+    , swap
     , i(shape), sety                   // a b c d e
     , i(shape), setx                   // a b c d
     , i(shape), seth                   // a b c
@@ -297,12 +305,16 @@ static inline void _center_end_child(alias_ui * ui) {
   _end_child(ui);
 }
 
-void alias_ui_center(alias_ui * ui) {
+void alias_ui_align_fractions(alias_ui * ui, float x, float y) {
   _begin_child(ui);
-  _begin_scope(ui, NULL, _center_end_child, NULL);
+  _begin_scope(ui, NULL, _align_fractions_end_child, NULL);
+
+  struct scope * scope = _scope(ui);
 
   uint32_t shape = _alloc(ui, sizeof(struct shape));
-  _scope(ui)->shape = shape;
+  scope->shape = shape;
+  scope->args[0] = x;
+  scope->args[1] = y;
 
   ALIAS_ASH_EMIT(&ui->layout_program, ui->mcb
     // setup: minw minh maxw maxh -- maxw maxh
