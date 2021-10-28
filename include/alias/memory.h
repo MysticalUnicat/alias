@@ -38,7 +38,9 @@ typedef enum alias_memory_Format {
 
   alias_memory_Format_Float16,
   alias_memory_Format_Float32,
-  alias_memory_Format_Float64
+  alias_memory_Format_Float64,
+
+  alias_memory_Format_COUNT
 } alias_memory_Format;
 
 ALIAS_DECLARE_CLOSURE(alias_MemoryCB, void *, void * ptr, size_t old_size, size_t new_size, size_t alignment)
@@ -74,6 +76,9 @@ static inline alias_memory_SubBuffer alias_memory_SubBuffer_from_Buffer(
 }
 
 void alias_memory_SubBuffer_copy_from_SubBuffer(alias_memory_SubBuffer * dst, const alias_memory_SubBuffer * src, uint32_t count);
+
+int alias_memory_SubBuffer_write(alias_memory_SubBuffer * dst, uint32_t index, uint32_t count, alias_memory_Format format, uint32_t src_stride, const void * src);
+int alias_memory_SubBuffer_read(const alias_memory_SubBuffer * src, uint32_t index, uint32_t count, alias_memory_Format format, uint32_t dst_stride, void * dst);
 
 static inline void * alias_malloc(alias_MemoryCB * cb, size_t size, size_t alignment) {
   return alias_Closure_call(cb, NULL, 0, size, alignment);

@@ -70,6 +70,7 @@ add_library(alias STATIC
   src/physics.c
   src/physics_bvh_2d.c
   src/color.c
+  src/memory.c
 
   src/ash.c
 

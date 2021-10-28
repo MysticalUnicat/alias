@@ -37,6 +37,7 @@ struct alias_ui {
   alias_ash_Program render_program;
 
   alias_MemoryCB * mcb;
+  alias_ui_Output * output;
 
   uint32_t scope_index_p1;
   struct scope scopes[MAX_SCOPES];
@@ -165,6 +166,40 @@ static void _render_shape_get_h(alias_ash * ash) {
 static void _textv_layout(alias_ash * ash);
 static void _textv_render(alias_ash * ash);
 
+static int _emit_point(alias_ui * ui, float x, float y, float r, float g, float b, float a, float s, float t) {
+  float xy[] = { x, y };
+  float rgba[] = { r, g, b, a };
+  float st[] = { s, t };
+  alias_memory_SubBuffer_write(&ui->output->xy_sub_buffer, ui->output->num_vertexes, 1, alias_memory_Format_Float32, 0, xy);
+  alias_memory_SubBuffer_write(&ui->output->rgba_sub_buffer, ui->output->num_vertexes, 1, alias_memory_Format_Float32, 0, rgba);
+  alias_memory_SubBuffer_write(&ui->output->st_sub_buffer, ui->output->num_vertexes, 1, alias_memory_Format_Float32, 0, st);
+  return ui->output->num_vertexes++;
+}
+
+static void _emit_triangle(alias_ui * ui, int p1, int p2, int p3) {
+  int p[] = { p1, p2, p3 };
+  alias_memory_SubBuffer_write(&ui->output->index_sub_buffer, ui->output->num_indexes, 3, alias_memory_Format_Sint32, 0, p);
+  ui->output->num_indexes += 3;
+}
+
+static void _rect_fill(alias_ash * ash) {
+  float a = alias_ash_pop_R(ash);
+  float b = alias_ash_pop_R(ash);
+  float g = alias_ash_pop_R(ash);
+  float r = alias_ash_pop_R(ash);
+  float h = alias_ash_pop_R(ash);
+  float w = alias_ash_pop_R(ash);
+  float y = alias_ash_pop_R(ash);
+  float x = alias_ash_pop_R(ash);
+  alias_ui * ui = (alias_ui *)ash->user_data;
+  int p1 = _emit_point(ui, x, y, r, g, b, a, 0, 0);
+  int p2 = _emit_point(ui, x+w, y, r, g, b, a, 1, 0);
+  int p3 = _emit_point(ui, x+w, y+h, r, g, b, a, 1, 1);
+  int p4 = _emit_point(ui, x, y+h, r, g, b, a, 0, 1);
+  _emit_triangle(ui, p2, p1, p3);
+  _emit_triangle(ui, p3, p1, p4);
+}
+
 static void _standard_library(alias_ash_Program * program, alias_MemoryCB * mcb) {
   ALIAS_ASH_EMIT(program, mcb
     , fn(dip // [a] b f([a] -- ?) -- ? b
@@ -227,6 +262,7 @@ alias_ui_Result alias_ui_initialize(alias_MemoryCB * mcb, alias_ui * * ui_ptr) {
   alias_ash_Program_define_cfun(&ui->render_program, mcb, "getw", _render_shape_get_w);
   alias_ash_Program_define_cfun(&ui->render_program, mcb, "geth", _render_shape_get_h);
   alias_ash_Program_define_cfun(&ui->render_program, mcb, "textv_render", _textv_render);
+  alias_ash_Program_define_cfun(&ui->render_program, mcb, "rect_fill", _rect_fill);
   _standard_library(&ui->render_program, mcb);
   alias_ash_Program_end_library(&ui->render_program);
 
@@ -539,7 +575,7 @@ static inline void _stack_end_scope(alias_ui * ui) {
   );
   
   ALIAS_ASH_EMIT(&ui->render_program, ui->mcb
-    // x1 y1 x2 y2 --
+    // x y w h --
     , drop2, drop2
   );
 
@@ -595,13 +631,13 @@ static void _textv_render(alias_ash * ash) {
   float r = alias_ash_pop_R(ash);
   float size = alias_ash_pop_R(ash);
   uint32_t text = alias_ash_pop(ash);
-  float maxy = alias_ash_pop_R(ash);
-  float maxx = alias_ash_pop_R(ash);
-  float miny = alias_ash_pop_R(ash);
-  float minx = alias_ash_pop_R(ash);
-  (void)maxy;
+  float h = alias_ash_pop_R(ash);
+  float w = alias_ash_pop_R(ash);
+  float y = alias_ash_pop_R(ash);
+  float x = alias_ash_pop_R(ash);
+  (void)h;
   alias_ui * ui = (alias_ui *)ash->user_data;
-  ui->text_draw(_mem(ui, text), minx, miny, maxx - minx, size, (alias_Color){ r, g, b, a });
+  ui->text_draw(_mem(ui, text), x, y, w, size, (alias_Color){ r, g, b, a });
 
   //ALIAS_TRACE("textv_draw '%s' %g %g %g", _mem(ui, text), minx, miny, size);
 }
@@ -624,14 +660,10 @@ void alias_ui_textv(alias_ui * ui, const char * format, va_list ap) {
     , i(text)
     , f(_scope(ui)->font_size)
     , textv_layout
-      /*
-    , i(text), f(_scope(ui)->font_size), ( over ), dip2, text_size
-    , fit
-      */
     );
 
   ALIAS_ASH_EMIT(&ui->render_program, ui->mcb
-    // self: minx miny maxx maxy --
+    // self: minx miny w h --
     , i(text) 
     , f(_scope(ui)->font_size)
     , f(_scope(ui)->font_color.r)
@@ -639,17 +671,27 @@ void alias_ui_textv(alias_ui * ui, const char * format, va_list ap) {
     , f(_scope(ui)->font_color.b)
     , f(_scope(ui)->font_color.a)
     , textv_render
-        /*
-    , r_push            // x y c R: d
-    , drop              // x y R: d
-    , ( i(text) ), dip2 // text x y R: d
-    , dup               // text x y y R: d
-    , r_pop             // text x y y d
-    , swap, f_sub       // text x y w 
-    , f(_scope(ui)->font_size)
-    , i(alias_Color_to_rgba_u8_packed(_scope(ui)->font_color)
-    , text_draw
-        */
+    );
+
+  _end_child(ui);
+}
+
+// ====================================================================================================================
+void alias_ui_fill(alias_ui * ui, alias_Color color) {
+  _begin_child(ui);
+
+  ALIAS_ASH_EMIT(&ui->layout_program, ui->mcb
+    // self: minw minh maxw mwxh -- w h
+    , swap2, drop2
+    );
+
+  ALIAS_ASH_EMIT(&ui->render_program, ui->mcb
+    // self: x y w h --
+    , f(color.r)
+    , f(color.g)
+    , f(color.b)
+    , f(color.a)
+    , rect_fill
     );
 
   _end_child(ui);
@@ -658,9 +700,8 @@ void alias_ui_textv(alias_ui * ui, const char * format, va_list ap) {
 // ====================================================================================================================
 // frame (end)
 alias_ui_Result alias_ui_end_frame(alias_ui * ui, alias_MemoryCB * mcb, alias_ui_Output * output) {
-  (void)output;
-
   _end_scope(ui);
+  ui->output = output;
 
   alias_ash_Program_end_shader(&ui->layout_program, mcb);
   alias_ash_Program_end_shader(&ui->render_program, mcb);
@@ -676,3 +717,4 @@ alias_ui_Result alias_ui_end_frame(alias_ui * ui, alias_MemoryCB * mcb, alias_ui
 
   return alias_ui_Success;
 }
+

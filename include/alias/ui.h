@@ -42,7 +42,7 @@ typedef struct alias_ui_OutputData {
 } alias_ui_OutputData;
 
 typedef struct alias_ui_Output {
-  uint32_t num_triangles;
+  uint32_t num_indexes;
   alias_memory_SubBuffer index_sub_buffer;
 
   uint32_t num_vertexes;
