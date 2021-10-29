@@ -53,7 +53,7 @@ TEST(ui, "ui layouts") {
 
   alias_ui_begin_frame(ui, alias_default_MemoryCB(), &input);
   alias_ui_end_frame(ui, alias_default_MemoryCB(), &output);
-  TEST_EQ(output.num_triangles, 0, "");
+  TEST_EQ(output.num_indexes, 0, "");
   TEST_EQ(output.num_vertexes, 0, "");
 
   /*
