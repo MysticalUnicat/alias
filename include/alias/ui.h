@@ -37,11 +37,17 @@ typedef struct alias_ui_Input {
   alias_ui_TextDrawFn text_draw;
 } alias_ui_Input;
 
-typedef struct alias_ui_OutputData {
+typedef struct alias_ui_OutputGroup {
+  uint32_t texture_id;
+  uint32_t index;
   uint32_t length;
-} alias_ui_OutputData;
+} alias_ui_OutputGroup;
 
 typedef struct alias_ui_Output {
+  uint32_t num_groups;
+  uint32_t max_groups;
+  alias_ui_OutputGroup * groups;
+  
   uint32_t num_indexes;
   alias_memory_SubBuffer index_sub_buffer;
 
@@ -76,6 +82,7 @@ void alias_ui_font_color(alias_ui * ui, alias_Color color);
 // create elements
 void alias_ui_textv(alias_ui * ui, const char * format, va_list ap);
 void alias_ui_fill(alias_ui * ui, alias_Color color);
+void alias_ui_image(alias_ui * ui, alias_R width, alias_R height, alias_R s0, alias_R t0, alias_R s1, alias_R t1, uint32_t texture_id);
 
 static inline void alias_ui_text(alias_ui * ui, const char * format, ...) {
   va_list ap;

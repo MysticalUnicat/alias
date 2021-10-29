@@ -182,7 +182,20 @@ static void _emit_triangle(alias_ui * ui, int p1, int p2, int p3) {
   ui->output->num_indexes += 3;
 }
 
-static void _rect_fill(alias_ash * ash) {
+static void _set_texture(alias_ash * ash) {
+  uint32_t texture_id = alias_ash_pop(ash);
+  alias_ui * ui = (alias_ui *)ash->user_data;
+  if(ui->output->groups[ui->output->num_groups - 1].texture_id != texture_id) {
+    if(ui->output->groups[ui->output->num_groups - 1].index != ui->output->num_indexes) {
+      ui->output->groups[ui->output->num_groups - 1].length = ui->output->num_indexes - ui->output->groups[ui->output->num_groups - 1].index;
+      ui->output->num_groups++;
+    }
+    ui->output->groups[ui->output->num_groups - 1].texture_id = texture_id;
+    ui->output->groups[ui->output->num_groups - 1].index = ui->output->num_indexes;
+  }
+}
+
+static void _rect_fill_c(alias_ash * ash) {
   float a = alias_ash_pop_R(ash);
   float b = alias_ash_pop_R(ash);
   float g = alias_ash_pop_R(ash);
@@ -196,6 +209,24 @@ static void _rect_fill(alias_ash * ash) {
   int p2 = _emit_point(ui, x+w, y, r, g, b, a, 1, 0);
   int p3 = _emit_point(ui, x+w, y+h, r, g, b, a, 1, 1);
   int p4 = _emit_point(ui, x, y+h, r, g, b, a, 0, 1);
+  _emit_triangle(ui, p2, p1, p3);
+  _emit_triangle(ui, p3, p1, p4);
+}
+
+static void _rect_fill_st(alias_ash * ash) {
+  float t1 = alias_ash_pop_R(ash);
+  float s1 = alias_ash_pop_R(ash);
+  float t0 = alias_ash_pop_R(ash);
+  float s0 = alias_ash_pop_R(ash);
+  float h = alias_ash_pop_R(ash);
+  float w = alias_ash_pop_R(ash);
+  float y = alias_ash_pop_R(ash);
+  float x = alias_ash_pop_R(ash);
+  alias_ui * ui = (alias_ui *)ash->user_data;
+  int p1 = _emit_point(ui, x, y, 1, 1, 1, 1, s0, t0);
+  int p2 = _emit_point(ui, x+w, y, 1, 1, 1, 1, s1, t0);
+  int p3 = _emit_point(ui, x+w, y+h, 1, 1, 1, 1, s1, t1);
+  int p4 = _emit_point(ui, x, y+h, 1, 1, 1, 1, s0, t1);
   _emit_triangle(ui, p2, p1, p3);
   _emit_triangle(ui, p3, p1, p4);
 }
@@ -262,7 +293,9 @@ alias_ui_Result alias_ui_initialize(alias_MemoryCB * mcb, alias_ui * * ui_ptr) {
   alias_ash_Program_define_cfun(&ui->render_program, mcb, "getw", _render_shape_get_w);
   alias_ash_Program_define_cfun(&ui->render_program, mcb, "geth", _render_shape_get_h);
   alias_ash_Program_define_cfun(&ui->render_program, mcb, "textv_render", _textv_render);
-  alias_ash_Program_define_cfun(&ui->render_program, mcb, "rect_fill", _rect_fill);
+  alias_ash_Program_define_cfun(&ui->render_program, mcb, "set_texture", _set_texture);
+  alias_ash_Program_define_cfun(&ui->render_program, mcb, "rect_fill_c", _rect_fill_c);
+  alias_ash_Program_define_cfun(&ui->render_program, mcb, "rect_fill_st", _rect_fill_st);
   _standard_library(&ui->render_program, mcb);
   alias_ash_Program_end_library(&ui->render_program);
 
@@ -687,11 +720,36 @@ void alias_ui_fill(alias_ui * ui, alias_Color color) {
 
   ALIAS_ASH_EMIT(&ui->render_program, ui->mcb
     // self: x y w h --
+    , i(0), set_texture
     , f(color.r)
     , f(color.g)
     , f(color.b)
     , f(color.a)
-    , rect_fill
+    , rect_fill_c
+    );
+
+  _end_child(ui);
+}
+
+// ====================================================================================================================
+void alias_ui_image(alias_ui * ui, alias_R width, alias_R height, alias_R s0, alias_R t0, alias_R s1, alias_R t1, uint32_t texture_id) {
+  _begin_child(ui);
+
+  ALIAS_ASH_EMIT(&ui->layout_program, ui->mcb
+    // self: minw minh maxw mwxh -- w h
+    , f(width)
+    , f(height)
+    , fit
+    );
+
+  ALIAS_ASH_EMIT(&ui->render_program, ui->mcb
+    // self: x y w h --
+    , i(texture_id), set_texture
+    , f(s0)
+    , f(t0)
+    , f(s1)
+    , f(t1)
+    , rect_fill_st
     );
 
   _end_child(ui);
@@ -712,8 +770,19 @@ alias_ui_Result alias_ui_end_frame(alias_ui * ui, alias_MemoryCB * mcb, alias_ui
   alias_ash_initialize(&ash, &ui->layout_program);
   while(alias_ash_step(&ash)) ;
 
+  if(output->num_groups > 0) {
+    output->groups[output->num_groups - 1].length = output->num_indexes - output->groups[output->num_groups - 1].index;
+  }
+
+  output->groups[output->num_groups].index = output->num_indexes;
+  output->groups[output->num_groups].length = 0;
+  output->groups[output->num_groups].texture_id = 0;
+  output->num_groups++;
+
   alias_ash_initialize(&ash, &ui->render_program);
   while(alias_ash_step(&ash)) ;
+
+  output->groups[output->num_groups - 1].length = output->num_indexes - output->groups[output->num_groups - 1].index;
 
   return alias_ui_Success;
 }
