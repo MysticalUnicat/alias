@@ -90,7 +90,7 @@ alias_ecs_Result alias_ecs_set_entity_layer(
   if(!alias_Vector_space_for(&instance->layer.data[layer_index].entities, &instance->memory_cb, entity_index)) {
     return ALIAS_ECS_ERROR_OUT_OF_MEMORY;
   }
-  *alias_Vector_pop(&instance->layer.data[layer_index].entities) = entity_index;
+  *alias_Vector_push(&instance->layer.data[layer_index].entities) = entity_index;
 
   return ALIAS_ECS_SUCCESS;
 }

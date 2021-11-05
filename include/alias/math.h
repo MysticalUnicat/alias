@@ -12,13 +12,13 @@
 #if ALIAS_REAL_PRECISION == 32
 typedef float alias_R;
 
-#define alias_sin sinf
-#define alias_cos cosf
-#define alias_fma fmaf
-#define alias_pow powf
-#define alias_sqrt sqrtf
-#define alias_nan nanf
-#define alias_abs fabsf
+#define alias_R_sin sinf
+#define alias_R_cos cosf
+#define alias_R_fma fmaf
+#define alias_R_pow powf
+#define alias_R_sqrt sqrtf
+#define alias_R_nan nanf
+#define alias_R_abs fabsf
 
 #define alias_R_EPSILON  FLT_EPSILON
 #define alias_R_MIN      FLT_MIN
@@ -42,12 +42,14 @@ typedef double alias_R;
 #error "invalid Alias real precision"
 #endif
 
+#define alias_R_isqrt(X) alias_R_pow(X, -0.5)
+
 static inline bool alias_R_is_zero(alias_R a) {
-  return alias_abs(a) < alias_R_MIN;
+  return alias_R_abs(a) < alias_R_MIN;
 }
 
 static inline bool alias_R_fuzzy_eq(alias_R a, alias_R b) {
-  return alias_abs(a - b) < alias_R_MIN;
+  return alias_R_abs(a - b) < alias_R_MIN;
 }
 
 #define ALIAS_MIN_PAIR(A, B) ((A) < (B) ? (A) : (B))
@@ -99,10 +101,19 @@ static inline alias_pga2d_Motor alias_pga2d_translator(float distance, alias_pga
   return (alias_pga2d_Motor) { .one = 1, .e02 = direction.e02 * distance, .e01 = direction.e01 * distance };
 }
 
+static inline alias_pga2d_Motor alias_pga2d_translator_to(alias_pga2d_Point point) {
+  float distance = 0.5f;
+  return (alias_pga2d_Motor) { .one = 1, .e02 = point.e02 * distance, .e01 = point.e01 * distance };
+}
+
 #define alias_pga2d_motor(angle, direction) alias_pga2d_mul_mm(alias_pga2d_rotor(angle), alias_pga2d_translator(1, direction))
 
 #define alias_pga2d_sandwich(x, y) alias_pga2d_mul(alias_pga2d_mul(y, x), alias_pga2d_reverse(y))
 #define alias_pga2d_lerp(x, y, t) alias_pga2d_add(alias_pga2d_mul(alias_pga2d_s(t), y), alias_pga2d_mul(alias_pga2d_sub(alias_pga2d_s(1), alias_pga2d_s(t)), x))
+#define alias_pga2d_euc_norm(x) alias_pga2d_s(sqrtf((alias_pga2d_dot(x, x)).one))
+#define alias_pga2d_euc_normalized(x) alias_pga2d_div(x, alias_pga2d_euc_norm(x))
+#define alias_pga2d_ideal_norm(x) alias_pga2d_euc_norm(alias_pga2d_dual(x))
+#define alias_pga2d_ideal_normalized(x) alias_pga2d_div(x, alias_pga2d_ideal_norm(x))
 
 #define alias_pga2d_sandwich_vm(x, y) alias_pga2d_grade_1(alias_pga2d_sandwich(alias_pga2d_v(x), alias_pga2d_m(y)))
 #define alias_pga2d_sandwich_vb(x, y) alias_pga2d_grade_1(alias_pga2d_sandwich(alias_pga2d_v(x), alias_pga2d_b(y)))

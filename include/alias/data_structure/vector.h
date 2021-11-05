@@ -9,19 +9,24 @@
 
 #define alias_Vector(T) struct { uint32_t capacity; uint32_t length; T * data; }
 
+#define alias_Vector_clear(V) \
+  do {                        \
+    (V)->length = 0;          \
+  } while(0)
+
+#define alias_Vector_init(V) \
+  do {                       \
+    alias_Vector_clear(V);   \
+    (V)->capacity = 0;       \
+    (V)->data = NULL;        \
+  } while(0)
+
 #define alias_Vector_free(V, CB)                                                          \
   do {                                                                                    \
     if((V)->data != NULL) {                                                               \
       alias_free(CB, (V)->data, (V)->capacity * sizeof(*(V)->data), alignof(*(V)->data)); \
     }                                                                                     \
-    (V)->length = 0;                                                                      \
-    (V)->capacity = 0;                                                                    \
-    (V)->data = NULL;                                                                     \
-  } while(0)
-
-#define alias_Vector_clear(V) \
-  do {                        \
-    (V)->length = 0;          \
+    alias_Vector_init(V);                                                                 \
   } while(0)
 
 #define alias_Vector_pop(V) ((V)->data + (--(V)->length))
