@@ -1,30 +1,6 @@
-/* This is free and unencumbered software released into the public domain.
- *
- * Anyone is free to copy, modify, publish, use, compile, sell, or
- * distribute this software, either in source code form or as a compiled
- * binary, for any purpose, commercial or non-commercial, and by any
- * means.
- *
- * In jurisdictions that recognize copyright laws, the author or authors
- * of this software dedicate any and all copyright interest in the
- * software to the public domain. We make this dedication for the benefit
- * of the public at large and to the detriment of our heirs and
- * successors. We intend this dedication to be an overt act of
- * relinquishment in perpetuity of all present and future rights to this
- * software under copyright law.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
- * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
- * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
- * IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR
- * OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
- * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
- * OTHER DEALINGS IN THE SOFTWARE.
- *
- * For more information, please refer to <https://unlicense.org>
- */
-// alias_gen_geometric_algebra
-// author Sarah Burns <mystical.unicat@gmail.com>
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 #define _GNU_SOURCE
 
@@ -819,32 +795,10 @@ void generate(void) {
   printf("#endif // _%s_H_\n", PREFIX);
 }
 
-const char * unlicense =
-  "/* This is free and unencumbered software released into the public domain.\n"
-  " * \n"
-  " * Anyone is free to copy, modify, publish, use, compile, sell, or\n"
-  " * distribute this software, either in source code form or as a compiled\n"
-  " * binary, for any purpose, commercial or non-commercial, and by any\n"
-  " * means.\n"
-  " * \n"
-  " * In jurisdictions that recognize copyright laws, the author or authors\n"
-  " * of this software dedicate any and all copyright interest in the\n"
-  " * software to the public domain. We make this dedication for the benefit\n"
-  " * of the public at large and to the detriment of our heirs and\n"
-  " * successors. We intend this dedication to be an overt act of\n"
-  " * relinquishment in perpetuity of all present and future rights to this\n"
-  " * software under copyright law.\n"
-  " * \n"
-  " * THE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND,\n"
-  " * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF\n"
-  " * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.\n"
-  " * IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR\n"
-  " * OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,\n"
-  " * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR\n"
-  " * OTHER DEALINGS IN THE SOFTWARE.\n"
-  " * \n"
-  " * For more information, please refer to <https://unlicense.org>\n"
-  " */\n"
+const char * license =
+  "// This Source Code Form is subject to the terms of the Mozilla Public\n"
+  "// License, v. 2.0. If a copy of the MPL was not distributed with this\n"
+  "// file, You can obtain one at http://mozilla.org/MPL/2.0/.\n"
   ;
 
 int main(int argc, char * argv []) {
@@ -859,7 +813,7 @@ int main(int argc, char * argv []) {
     , { NULL, no_argument, NULL, 0 }
   };
 
-  printf("%s", unlicense);
+  printf("%s", license);
   printf("// generated with alias_gen_geometric_algebra (author Sarah Burns <mystical.unicat@gmail.com>)\n");
   printf("// options:");
   for(int i = 1; i < argc; i++) {
