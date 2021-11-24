@@ -77,6 +77,9 @@ alias_ecs_Result alias_ecs_resolve_archetype(
   sizes[0] = sizeof(uint32_t);
   for(uint32_t i = 0; i < components.count; i++) {
     sizes[i + 1] = instance->component.data[components.index[i]].size;
+
+    archetype->any_init |= !alias_Closure_is_empty(&instance->component.data[components.index[i]].init);
+    archetype->any_cleanup |= !alias_Closure_is_empty(&instance->component.data[components.index[i]].cleanup);
   }
 
   alias_PagedSOA_initialize(&archetype->paged_soa, &instance->memory_cb, sizeof(uint32_t), 1 + components.count, sizes);

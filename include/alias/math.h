@@ -115,9 +115,9 @@ static inline alias_pga2d_Motor alias_pga2d_translator_to(alias_pga2d_Point poin
 #define alias_pga2d_sandwich(x, y) alias_pga2d_mul(alias_pga2d_mul(y, x), alias_pga2d_reverse(y))
 #define alias_pga2d_lerp(x, y, t) alias_pga2d_add(alias_pga2d_mul(alias_pga2d_s(t), y), alias_pga2d_mul(alias_pga2d_sub(alias_pga2d_s(1), alias_pga2d_s(t)), x))
 #define alias_pga2d_euc_norm(x) alias_pga2d_s(sqrtf((alias_pga2d_dot(x, x)).one))
-#define alias_pga2d_euc_normalized(x) alias_pga2d_div(x, alias_pga2d_euc_norm(x))
+#define alias_pga2d_euc_normalized(x) alias_pga2d_mul(x, alias_pga2d_s(1 / alias_pga2d_euc_norm(x).one))
 #define alias_pga2d_ideal_norm(x) alias_pga2d_euc_norm(alias_pga2d_dual(x))
-#define alias_pga2d_ideal_normalized(x) alias_pga2d_div(x, alias_pga2d_ideal_norm(x))
+#define alias_pga2d_ideal_normalized(x) alias_pga2d_mul(x, alias_pga2d_s(1 / alias_pga2d_ideal_norm(x).one))
 
 #define alias_pga2d_sandwich_vm(x, y) alias_pga2d_grade_1(alias_pga2d_sandwich(alias_pga2d_v(x), alias_pga2d_m(y)))
 #define alias_pga2d_sandwich_vb(x, y) alias_pga2d_grade_1(alias_pga2d_sandwich(alias_pga2d_v(x), alias_pga2d_b(y)))

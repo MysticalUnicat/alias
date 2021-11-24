@@ -31,15 +31,20 @@ struct Vertex {
 
 TEST(ui, "ui layouts") {
   alias_ui_Input input;
+  alias_ui_OutputGroup output_groups[4];
   alias_ui_Output output;
   alias_ui * ui;
 
   input.screen_size.width = 100;
   input.screen_size.height = 100;
 
+  output.num_groups = 0;
+  output.max_groups = 4;
+  output.groups = output_groups;
+
   output.index_sub_buffer = alias_memory_SubBuffer_from_Buffer(
       (alias_memory_Buffer){ triangles, sizeof(triangles) }
-    , 0, 0, 0, alias_memory_Format_Uint16, 1);
+    , 0, 0, sizeof(uint16_t), alias_memory_Format_Uint16, 1);
 
   output.xy_sub_buffer = alias_memory_SubBuffer_from_Buffer(
       (alias_memory_Buffer){ vertexes, sizeof(vertexes) }

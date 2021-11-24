@@ -116,8 +116,16 @@ alias_ecs_Result alias_ecs_destroy_layer(
 );
 
 /** components are represented by a single 32-bit integer */
-
 typedef uint32_t alias_ecs_ComponentHandle;
+
+/** entities are represented by a single 64-bit integer */
+typedef uint64_t alias_ecs_EntityHandle;
+
+typedef void (* alias_ecs_ComponentInitFN)(void * ud, alias_ecs_Instance * instance, alias_ecs_EntityHandle entity, void ** data);
+typedef alias_Closure(alias_ecs_ComponentInitFN) alias_ecs_ComponentInitCB;
+
+typedef void (* alias_ecs_ComponentCleanupFN)(void * ud, alias_ecs_Instance * instance, alias_ecs_EntityHandle entity, void ** data);
+typedef alias_Closure(alias_ecs_ComponentCleanupFN) alias_ecs_ComponentCleanupCB;
 
 /** flags used to describe behaviour of a component when creating it */
 typedef enum alias_ecs_ComponentCreateFlags {
@@ -137,6 +145,9 @@ typedef struct alias_ecs_ComponentCreateInfo {
 
   /** pointer to memory of `num_required_components` aeComponents */
   const alias_ecs_ComponentHandle * required_components;
+
+  alias_ecs_ComponentInitCB init;
+  alias_ecs_ComponentCleanupCB cleanup;
 } alias_ecs_ComponentCreateInfo;
   
 /** register a component with the instance
@@ -159,9 +170,6 @@ alias_ecs_Result alias_ecs_register_component(
   , const alias_ecs_ComponentCreateInfo * create_info
   , alias_ecs_ComponentHandle           * component_ptr
 );
-
-/** entities are represented by a single 64-bit integer */
-typedef uint64_t alias_ecs_EntityHandle;
 
 /** this structure is used exclusivly by aeEntitySpawnInfo */
 typedef struct alias_ecs_EntitySpawnComponent {

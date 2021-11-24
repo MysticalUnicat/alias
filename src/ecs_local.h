@@ -36,6 +36,8 @@ typedef struct alias_ecs_Component {
   uint32_t size;
   uint32_t num_required_components;
   const alias_ecs_ComponentHandle * required_components;
+  alias_ecs_ComponentInitCB init;
+  alias_ecs_ComponentCleanupCB cleanup;
 } alias_ecs_Component;
 
 typedef struct alias_ecs_ComponentSet {
@@ -48,6 +50,9 @@ typedef struct alias_ecs_ComponentSet {
 
 typedef struct alias_ecs_Archetype {
   alias_ecs_ComponentSet components;
+  uint32_t               any_init : 1;
+  uint32_t               any_cleanup : 1;
+  uint32_t               _reserved : 30;
   alias_Vector(uint32_t) free_codes;
   alias_PagedSOA         paged_soa;
 } alias_ecs_Archetype;
@@ -121,6 +126,14 @@ struct alias_ecs_Query {
 #define ENTITY_DATA_BLOCK(I, E)             ENTITY_ARCHETYPE_DATA(I, E)->paged_soa.pages[ENTITY_ARCHETYPE_CODE_PAGE(I, E)]
 #define ENTITY_DATA_BLOCK_DATA(I, E)        ((void *)(ENTITY_DATA_BLOCK(I, E) + sizeof(uint32_t)))
 #define ENTITY_DATA_ENTITY_INDEX(I, E)      ((uint32_t *)ENTITY_DATA_BLOCK_DATA(I, E))[ENTITY_ARCHETYPE_CODE_INDEX(I, E)]
+
+static inline alias_ecs_EntityHandle alias_ecs_construct_entity_handle(uint32_t generation, uint32_t index) {
+  return ((uint64_t)generation << 32) | (uint64_t)index;
+}
+
+static inline alias_ecs_EntityHandle alias_ecs_construct_entity_handle_index_only(alias_ecs_Instance * instance, uint32_t index) {
+  return alias_ecs_construct_entity_handle(ENTITY_GENERATION(instance, index), index);
+}
 
 static inline void * alias_ecs_raw_access(
     alias_ecs_Instance * instance
@@ -207,6 +220,11 @@ void * alias_ecs_bsearch(
 
 // ============================================================================
 // component.c
+alias_ecs_Result alias_ecs_init_component(alias_ecs_Instance * instance, uint32_t entity_index, uint32_t archetype_index, uint32_t component_index);
+alias_ecs_Result alias_ecs_init_components(alias_ecs_Instance * instance, uint32_t entity_index, uint32_t archetype_index);
+alias_ecs_Result alias_ecs_cleanup_component(alias_ecs_Instance * instance, uint32_t entity_index, uint32_t archetype_index, uint32_t component_index);
+alias_ecs_Result alias_ecs_cleanup_components(alias_ecs_Instance * instance, uint32_t entity_index, uint32_t archetype_index);
+
 alias_ecs_Result alias_ecs_ComponentSet_init(
     alias_ecs_Instance              * instance
   , alias_ecs_ComponentSet          * set
