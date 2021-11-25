@@ -116,7 +116,7 @@ alias_ecs_Result alias_ecs_init_components(alias_ecs_Instance * instance, uint32
       continue;
     }
     for(uint32_t j = 0; j < 1 + component->num_required_components; j++) {
-      uint32_t rindex = alias_ecs_ComponentSet_order_of(&archetype->components, j ? component->required_components[j - 1] : j);
+      uint32_t rindex = j ? alias_ecs_ComponentSet_order_of(&archetype->components, component->required_components[j - 1]) : i;
       pointers2[j] = pointers1[rindex];
     }
     alias_Closure_call(&component->init, instance, alias_ecs_construct_entity_handle_index_only(instance, entity_index), pointers2);
@@ -184,7 +184,7 @@ alias_ecs_Result alias_ecs_cleanup_components(alias_ecs_Instance * instance, uin
       continue;
     }
     for(uint32_t j = 0; j < 1 + component->num_required_components; j++) {
-      uint32_t rindex = alias_ecs_ComponentSet_order_of(&archetype->components, j ? component->required_components[j - 1] : j);
+      uint32_t rindex = j ? alias_ecs_ComponentSet_order_of(&archetype->components, component->required_components[j - 1]) : i;
       pointers2[j] = pointers1[rindex];
     }
     alias_Closure_call(&component->cleanup, instance, alias_ecs_construct_entity_handle_index_only(instance, entity_index), pointers2);
