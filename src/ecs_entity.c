@@ -147,6 +147,29 @@ alias_ecs_Result alias_ecs_spawn(
     }
   }
 
+  for(uint32_t i = 0; i < archetype->components.count; i++) {
+    uint32_t j;
+    for(j = 0; j < spawn_info->num_components && spawn_info->components[j].component != archetype->components.index[i]; j++) ;
+    if(j < spawn_info->num_components) {
+      continue;
+    }
+    uint32_t component_size, component_offset;
+    alias_PagedSOA_decode_column(&archetype->paged_soa, i + 1, &component_size, &component_offset);
+    for(j = 0; j < spawn_info->count; j++) {
+      uint32_t entity_index = (uint32_t)(entities_ptr[j] & 0xFFFFFFFF);
+      uint32_t code = ENTITY_ARCHETYPE_CODE(instance, entity_index);
+      uint32_t page, index;
+      alias_PagedSOA_decode_code(&archetype->paged_soa, code, &page, &index);
+      void * write = alias_PagedSOA_raw_write(&archetype->paged_soa, page, index, component_size, component_offset);
+      memset(write, 0, component_size);
+    }
+  }
+
+  for(uint32_t j = 0; j < spawn_info->count; j++) {
+    uint32_t entity_index = (uint32_t)(entities_ptr[j] & 0xFFFFFFFF);
+    alias_ecs_init_components(instance, entity_index, archetype_index);
+  }
+
   if(free_out_entities) {
     FREE(instance, spawn_info->count, entities_ptr);
   }
@@ -199,6 +222,8 @@ alias_ecs_Result alias_ecs_add_component_to_entity(
     memset(alias_ecs_write(instance, entity_index, component_index), 0, component->size);
   }
 
+  alias_ecs_init_component(instance, entity_index, new_archetype, component_index);
+
   return ALIAS_ECS_SUCCESS;
 }
 
@@ -215,13 +240,15 @@ alias_ecs_Result alias_ecs_remove_component_from_entity(
   return_if_ERROR(alias_ecs_validate_entity_handle(instance, entity, &entity_index));
   return_ERROR_INVALID_ARGUMENT_if(component_handle >= instance->component.length);
 
-  alias_ecs_Archetype * archetype = ENTITY_ARCHETYPE_DATA(instance, entity_index);
+  uint32_t archetype_index = ENTITY_ARCHETYPE_INDEX(instance, entity_index);
+  alias_ecs_Archetype * archetype = &instance->archetype.data[archetype_index];
 
   uint32_t component_index = alias_ecs_ComponentSet_order_of(&archetype->components, component_handle);
 
   if(component_index == UINT32_MAX) {
     return ALIAS_ECS_ERROR_COMPONENT_DOES_NOT_EXIST;
   }
+  alias_ecs_cleanup_component(instance, entity_index, archetype_index, component_index);
 
   alias_ecs_ArchetypeHandle new_archetype;
   {
@@ -306,6 +333,30 @@ alias_ecs_Result alias_ecs_despawn(
   for(uint32_t i = 0; i < count; i++) {
     return_if_ERROR(alias_ecs_validate_entity_handle(instance, entity[i], &entity_index));
 
+    alias_ecs_cleanup_components(instance, entity_index, ENTITY_ARCHETYPE_INDEX(instance, entity_index));
+    alias_ecs_unset_entity_layer(instance, entity_index);
+    alias_ecs_unset_entity_archetype(instance, entity_index);
+    alias_ecs_free_entity(instance, entity_index);
+  }
+
+  return ALIAS_ECS_SUCCESS;
+}
+
+alias_ecs_Result alias_ecs_despawn_indexes(
+    alias_ecs_Instance * instance
+  , uint32_t             count
+  , const uint32_t     * entity_indexes
+) {
+  uint32_t entity_index;
+  
+  return_ERROR_INVALID_ARGUMENT_if(instance == NULL);
+  return_ERROR_INVALID_ARGUMENT_if(count > instance->entity.length);
+  return_ERROR_INVALID_ARGUMENT_if(entity_indexes == NULL);
+
+  for(uint32_t i = 0; i < count; i++) {
+    entity_index = entity_indexes[i];
+
+    alias_ecs_cleanup_components(instance, entity_index, ENTITY_ARCHETYPE_INDEX(instance, entity_index));
     alias_ecs_unset_entity_layer(instance, entity_index);
     alias_ecs_unset_entity_archetype(instance, entity_index);
     alias_ecs_free_entity(instance, entity_index);

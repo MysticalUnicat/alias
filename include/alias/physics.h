@@ -96,7 +96,10 @@ phase2 {
 
 // an Entity without linear motion is not movable (static)
 typedef struct alias_Physics2DMotion {
-  alias_pga2d_Bivector value;
+  union {
+    alias_pga2d_Bivector value;
+    alias_pga2d_Bivector B;
+  };
 } alias_Physics2DMotion;
 
 // an Entity without mass is not movable by physics (kinematic)
@@ -126,7 +129,10 @@ typedef struct alias_Physics2DDampen {
 } alias_Physics2DDampen;
 
 typedef struct alias_Physics2DBodyMotion {
-  alias_pga2d_AntiBivector forque;
+  union {
+    alias_pga2d_AntiBivector forque;
+    alias_pga2d_AntiBivector F;
+  };
   alias_pga2d_AntiBivector I;
 } alias_Physics2DBodyMotion;
 

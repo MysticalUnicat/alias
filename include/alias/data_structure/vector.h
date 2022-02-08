@@ -13,6 +13,8 @@
 
 #define alias_Vector(T) struct { uint32_t capacity; uint32_t length; T * data; }
 
+#define ALIAS_VECTOR_INIT { 0, 0, NULL }
+
 #define alias_Vector_clear(V) \
   do {                        \
     (V)->length = 0;          \

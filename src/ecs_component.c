@@ -31,6 +31,8 @@ alias_ecs_Result alias_ecs_register_component(
     , .size = create_info->size
     , .num_required_components = create_info->num_required_components
     , .required_components = required_components
+    , .init = create_info->init
+    , .cleanup = create_info->cleanup
   };
 
   if(!alias_Vector_space_for(&instance->component, &instance->memory_cb, 1)) {
@@ -40,6 +42,156 @@ alias_ecs_Result alias_ecs_register_component(
   *component_ptr = instance->component.length;
 
   *alias_Vector_push(&instance->component) = component_data;
+
+  return ALIAS_ECS_SUCCESS;
+}
+
+static inline void * alias_ecs_raw_access(
+    alias_ecs_Instance * instance
+  , uint32_t             archetype_index
+  , uint32_t             component_index
+  , uint32_t             page
+  , uint32_t             index
+);
+
+static inline void * alias_ecs_write(
+    alias_ecs_Instance * instance
+  , uint32_t             entity_index
+  , uint32_t             component_index
+);
+
+alias_ecs_Result alias_ecs_init_component(alias_ecs_Instance * instance, uint32_t entity_index, uint32_t archetype_index, uint32_t component_index) {
+  struct alias_ecs_Component * component = &instance->component.data[component_index];
+  
+  if(alias_Closure_is_empty(&component->init)) {
+    return ALIAS_ECS_SUCCESS;
+  }
+
+  uint32_t page = ENTITY_ARCHETYPE_CODE_PAGE(instance, entity_index);
+  uint32_t index = ENTITY_ARCHETYPE_CODE_INDEX(instance, entity_index);
+
+  void * * pointers;
+
+  ALLOC(instance, 1 + component->num_required_components, pointers);
+  struct alias_ecs_Archetype * archetype = &instance->archetype.data[archetype_index];
+
+  pointers[0] = alias_ecs_raw_access(instance, entity_index, component_index, page, index);
+
+  for(uint32_t i = 0; i < component->num_required_components; i++) {
+    uint32_t rindex = alias_ecs_ComponentSet_order_of(&archetype->components, component->required_components[i]);
+    pointers[1 + i] = alias_ecs_raw_access(instance, entity_index, rindex, page, index);
+  }
+
+  alias_Closure_call(&component->init, instance, alias_ecs_construct_entity_handle_index_only(instance, entity_index), pointers);
+
+  FREE(instance, 1 + component->num_required_components, pointers);
+
+  return ALIAS_ECS_SUCCESS;
+}
+
+alias_ecs_Result alias_ecs_init_components(alias_ecs_Instance * instance, uint32_t entity_index, uint32_t archetype_index) {
+  struct alias_ecs_Archetype * archetype = &instance->archetype.data[archetype_index];
+
+  if(!archetype->any_init) {
+    return ALIAS_ECS_SUCCESS;
+  }
+
+  uint32_t page = ENTITY_ARCHETYPE_CODE_PAGE(instance, entity_index);
+  uint32_t index = ENTITY_ARCHETYPE_CODE_INDEX(instance, entity_index);
+
+  void * * pointers1;
+  void * * pointers2;
+
+  ALLOC(instance, archetype->components.count, pointers1);
+  ALLOC(instance, archetype->components.count, pointers2);
+
+  for(uint32_t i = 0; i < archetype->components.count; i++) {
+    pointers1[i] = alias_ecs_raw_access(instance, entity_index, i, page, index);
+  }
+
+  for(uint32_t i = 0; i < archetype->components.count; i++) {
+    uint32_t component_index = archetype->components.index[i];
+    struct alias_ecs_Component * component = &instance->component.data[component_index];
+    if(alias_Closure_is_empty(&component->init)) {
+      continue;
+    }
+    for(uint32_t j = 0; j < 1 + component->num_required_components; j++) {
+      uint32_t rindex = j ? alias_ecs_ComponentSet_order_of(&archetype->components, component->required_components[j - 1]) : i;
+      pointers2[j] = pointers1[rindex];
+    }
+    alias_Closure_call(&component->init, instance, alias_ecs_construct_entity_handle_index_only(instance, entity_index), pointers2);
+  }
+
+  FREE(instance, archetype->components.count, pointers1);
+  FREE(instance, archetype->components.count, pointers2);
+
+  return ALIAS_ECS_SUCCESS;
+}
+
+alias_ecs_Result alias_ecs_cleanup_component(alias_ecs_Instance * instance, uint32_t entity_index, uint32_t archetype_index, uint32_t component_index) {
+  struct alias_ecs_Component * component = &instance->component.data[component_index];
+  
+  if(alias_Closure_is_empty(&component->cleanup)) {
+    return ALIAS_ECS_SUCCESS;
+  }
+
+  uint32_t page = ENTITY_ARCHETYPE_CODE_PAGE(instance, entity_index);
+  uint32_t index = ENTITY_ARCHETYPE_CODE_INDEX(instance, entity_index);
+
+  void * * pointers;
+
+  ALLOC(instance, 1 + component->num_required_components, pointers);
+  struct alias_ecs_Archetype * archetype = &instance->archetype.data[archetype_index];
+
+  pointers[0] = alias_ecs_raw_access(instance, entity_index, component_index, page, index);
+
+  for(uint32_t i = 0; i < component->num_required_components; i++) {
+    uint32_t rindex = alias_ecs_ComponentSet_order_of(&archetype->components, component->required_components[i]);
+    pointers[1 + i] = alias_ecs_raw_access(instance, entity_index, rindex, page, index);
+  }
+
+  alias_Closure_call(&component->cleanup, instance, alias_ecs_construct_entity_handle_index_only(instance, entity_index), pointers);
+
+  FREE(instance, 1 + component->num_required_components, pointers);
+
+  return ALIAS_ECS_SUCCESS;
+}
+
+alias_ecs_Result alias_ecs_cleanup_components(alias_ecs_Instance * instance, uint32_t entity_index, uint32_t archetype_index) {
+  struct alias_ecs_Archetype * archetype = &instance->archetype.data[archetype_index];
+
+  if(!archetype->any_cleanup) {
+    return ALIAS_ECS_SUCCESS;
+  }
+
+  uint32_t page = ENTITY_ARCHETYPE_CODE_PAGE(instance, entity_index);
+  uint32_t index = ENTITY_ARCHETYPE_CODE_INDEX(instance, entity_index);
+
+  void * * pointers1;
+  void * * pointers2;
+
+  ALLOC(instance, archetype->components.count, pointers1);
+  ALLOC(instance, archetype->components.count, pointers2);
+
+  for(uint32_t i = 0; i < archetype->components.count; i++) {
+    pointers1[i] = alias_ecs_raw_access(instance, entity_index, i, page, index);
+  }
+
+  for(uint32_t i = 0; i < archetype->components.count; i++) {
+    uint32_t component_index = archetype->components.index[i];
+    struct alias_ecs_Component * component = &instance->component.data[component_index];
+    if(alias_Closure_is_empty(&component->cleanup)) {
+      continue;
+    }
+    for(uint32_t j = 0; j < 1 + component->num_required_components; j++) {
+      uint32_t rindex = j ? alias_ecs_ComponentSet_order_of(&archetype->components, component->required_components[j - 1]) : i;
+      pointers2[j] = pointers1[rindex];
+    }
+    alias_Closure_call(&component->cleanup, instance, alias_ecs_construct_entity_handle_index_only(instance, entity_index), pointers2);
+  }
+
+  FREE(instance, archetype->components.count, pointers1);
+  FREE(instance, archetype->components.count, pointers2);
 
   return ALIAS_ECS_SUCCESS;
 }

@@ -17,7 +17,10 @@ typedef struct alias_Rotation2D {
 } alias_Rotation2D;
 
 typedef struct alias_Transform2D {
-  alias_pga2d_Motor value;
+  union {
+    alias_pga2d_Motor value;
+    alias_pga2d_Motor M;
+  };
 } alias_Transform2D;
 
 typedef struct alias_LocalToWorld2D {

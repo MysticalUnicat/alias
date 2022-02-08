@@ -138,6 +138,12 @@ alias_ecs_Result alias_ecs_create_layer(
   return ALIAS_ECS_SUCCESS;
 }
 
+alias_ecs_Result alias_ecs_despawn_indexes(
+    alias_ecs_Instance * instance
+  , uint32_t             count
+  , const uint32_t     * entity_indexes
+);
+
 alias_ecs_Result alias_ecs_destroy_layer(
     alias_ecs_Instance          * instance
   , alias_ecs_LayerHandle         layer
@@ -146,11 +152,15 @@ alias_ecs_Result alias_ecs_destroy_layer(
   uint32_t layer_index;
   return_if_ERROR(alias_ecs_validate_layer_handle(instance, layer, &layer_index));
   alias_ecs_Layer * data = &instance->layer.data[layer_index];
-  for(uint32_t i = 0; i < data->entities.length; i++) {
-    if(flags & ALIAS_ECS_LAYER_DESTROY_REMOVE_ENTITIES) {
+  if(flags & ALIAS_ECS_LAYER_DESTROY_REMOVE_ENTITIES) {
+    return_if_ERROR(alias_ecs_despawn_indexes(instance, data->entities.length, data->entities.data));
+  } else {
+    // send them back to global layer
+    for(uint32_t i = 0; i < data->entities.length; i++) {
       alias_ecs_set_entity_layer(instance, data->entities.data[i], 0);
     }
   }
+  alias_Vector_free(&data->entities, &instance->memory_cb);
   return ALIAS_ECS_SUCCESS;
 }
 

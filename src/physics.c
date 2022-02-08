@@ -4,6 +4,18 @@
 
 #include "physics_local.h"
 
+// motion       | M  | hyperplane (grade 1)
+// rate         | B  | meet line  (grade 2)
+// acceleration | ΔB | meet line
+// momentum     | P  | join line  (grade d-1)
+// forque       | F  | join line
+// input        |    | point      (grade d)
+// 
+// ΔP    =   F
+// Ib[B] === sum(p.mass * p.position V (p.position X B) for p in point_mass)
+// ΔBb   =   Ib-1[Bb X Ib[Bb] + Fb]
+// ΔM    =   -0.5 * M * Bb
+
 alias_ecs_Result alias_Physics2DBundle_initialize(alias_ecs_Instance * instance, alias_Physics2DBundle * bundle, alias_TransformBundle * transform_bundle) {
   alias_ecs_register_component(instance, &(alias_ecs_ComponentCreateInfo) {
       .size = sizeof(alias_Physics2DMotion)
@@ -151,14 +163,19 @@ static void _update2d_transform_motion(void * ud, alias_ecs_Instance * instance,
   alias_Transform2D * transform = (alias_Transform2D *)data[0];
   alias_Physics2DMotion * motion = (alias_Physics2DMotion *)data[1];
 
-  // position = sub(position, mul(time_delta / 2, mul(position, velocity)));
-  transform->value = alias_pga2d_sub(
-      alias_pga2d_m(transform->value)
+  alias_pga2d_Motor M = transform->M;
+  alias_pga2d_Bivector B = motion->B;
+
+  M = alias_pga2d_sub(
+      alias_pga2d_m(M)
     , alias_pga2d_mul(
         alias_pga2d_s(udata->t / 2)
-      , alias_pga2d_mul_mb(transform->value, motion->value)
+      , alias_pga2d_mul_mb(M, B)
       )
     );
+
+  alias_R d = alias_pga2d_norm(alias_pga2d_m(M));
+  transform->M = alias_pga2d_mul(alias_pga2d_s(1.0 / d), alias_pga2d_m(M));
 }
 
 void alias_physics_update2d_transform_motion(alias_ecs_Instance * instance, alias_Physics2DBundle * bundle, alias_R duration) {
@@ -215,7 +232,6 @@ static void _update2d_force_gravity(void * ud, alias_ecs_Instance * instance, al
   const alias_Transform2D * position = (const alias_Transform2D *)data[1];
   const alias_Physics2DGravity * gravity = (const alias_Physics2DGravity *)data[2];
 
-  // gravity = mul(gravity_scale, dual(sandwich(gravity_line, reverse(position))))
   body->forque = alias_pga2d_add(
       alias_pga2d_v(body->forque),
       alias_pga2d_mul(alias_pga2d_s(gravity->value),
@@ -240,7 +256,6 @@ static void _update2d_force_dampen(void * ud, alias_ecs_Instance * instance, ali
   const alias_Physics2DMotion * velocity = (const alias_Physics2DMotion *)data[1];
   const alias_Physics2DDampen * dampen = (const alias_Physics2DDampen *)data[2];
 
-  // damping = -0.25 * dual(velocity);
   body->forque = alias_pga2d_sub(
       alias_pga2d_v(body->forque),
       alias_pga2d_mul(
@@ -264,18 +279,21 @@ static void _update2d_body_motion(void * ud, alias_ecs_Instance * instance, alia
   alias_Physics2DMotion * motion = (alias_Physics2DMotion *)data[0];
   alias_Physics2DBodyMotion * body = (alias_Physics2DBodyMotion *)data[1];
 
-  alias_pga2d_Bivector velocity = motion->value;
-  alias_pga2d_AntiBivector forque = body->forque;
+  alias_pga2d_Bivector B = motion->B;
+  alias_pga2d_AntiBivector F = body->F;
 
-  // velocity = add(velocity, mul(time_delta, dual(sub(forque, commutator_product(dual(velocity), velocity)))));
-  alias_pga2d_AntiBivector momentum = alias_pga2d_commutator_product(
-      alias_pga2d_dual_b(velocity), alias_pga2d_b(velocity));
+  alias_pga2d_Bivector dB = alias_pga2d_undual(alias_pga2d_sub(
+      alias_pga2d_v(F)
+    , alias_pga2d_commutator_product(alias_pga2d_dual_b(B), alias_pga2d_b(B))
+  //  , alias_pga2d_grade_1(alias_pga2d_mul(alias_pga2d_s(0.5), alias_pga2d_sub(
+  //      alias_pga2d_mul(alias_pga2d_dual_b(B), alias_pga2d_b(B)),
+  //      alias_pga2d_mul(alias_pga2d_b(B), alias_pga2d_dual_b(B))
+  //    )))
+  ));
 
   motion->value = alias_pga2d_add(
-      alias_pga2d_b(velocity),
-      alias_pga2d_mul(
-          alias_pga2d_s(udata->t),
-          alias_pga2d_dual(alias_pga2d_sub_vv(forque, momentum))));
+      alias_pga2d_b(B),
+      alias_pga2d_mul_sb(udata->t, dB));
   
   alias_memory_clear(&body->forque, sizeof(body->forque));
 }

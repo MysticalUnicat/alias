@@ -439,6 +439,23 @@ void generate(void) {
   }
   printf("  , ## __VA_ARGS__)\n");
 
+  // undual
+  printf("#define %s_OP_UNDUAL(RETURN, ", PREFIX); values('X'); printf(", ...) RETURN(" NL);
+  for(int i = 0; i < num_basis; i++) {
+    BasisRef dual = _dual((BasisRef) { .basis = i, .sign = 1 });
+    BasisRef dual2 = _dual((BasisRef) { .basis = num_basis - i - 1, .sign = 1 });
+    printf(i ? "  , " : "    ");
+    if(dual2.sign == -1) {
+      printf("%s_NEG(X%s)", PREFIX, basis[dual.basis].name);
+    } else if(dual2.sign == 1) {
+      printf("X%s", basis[dual.basis].name);
+    } else {
+      printf("0");
+    }
+    printf(NL);
+  }
+  printf("  , ## __VA_ARGS__)\n");
+
   // polar
   if(d) {
     printf("#define %s_OP_POLAR(RETURN, ", PREFIX); values('X'); printf(", ...) RETURN(" NL);
@@ -578,15 +595,6 @@ void generate(void) {
   printf("  , ## __VA_ARGS__)\n");
 
   // regressive product
-  // expected for 2d pga:
-  // one  = 0 + Xe012* Yone + Xe12*  Ye0 - Xe02* Ye1 + Xe01*  Ye2 + Xe2*Ye01 - Xe1*Ye02 + Xe0*Ye12 + Xone*Ye012
-  // e0   = 0 + Xe012*  Ye0 - Xe02* Ye01 + Xe01*Ye02 +  Xe0*Ye012
-  // e1   = 0 + Xe012*  Ye1 - Xe12* Ye01 + Xe01*Ye12 +  Xe1*Ye012
-  // e2   = 0 + Xe012*  Ye2 - Xe12* Ye02 + Xe02*Ye12 +  Xe2*Ye012
-  // e01  = 0 + Xe012* Ye01 + Xe01*Ye012
-  // e02  = 0 + Xe012* Ye02 + Xe02*Ye012
-  // e12  = 0 + Xe012* Ye12 + Xe12*Ye012
-  // e012 = 0 + Xe012*Ye012
   printf("#define %s_OP_REGRESSIVE_PRODUCT(RETURN, ", PREFIX); values('X'); printf(", "); values('Y'); printf(", ...) RETURN(" NL);
   for(int i = 0; i < num_basis; i++) {
     printf("  %s0", i ? ", " : "  ");
@@ -610,7 +618,7 @@ void generate(void) {
           continue;
         }
 
-        int sign = a.sign * b.sign * c.sign * cd.sign;
+        int sign = ad.sign * bd.sign * c.sign * cd.sign;
 
         if(sign == -1) {
           printf(" %s_SUB_MUL(X%s,Y%s)", PREFIX, basis[a.basis].name, basis[b.basis].name);
@@ -720,6 +728,7 @@ void generate(void) {
   } op[] = {
       { "negate",             "NEGATE",             1 }
     , { "dual",               "DUAL",               1 }
+    , { "undual",             "UNDUAL",             1 }
     , { "polar",              "POLAR",              1 }
     , { "reverse",            "REVERSE",            1 }
     , { "involute",           "INVOLUTE",           1 }
