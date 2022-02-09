@@ -8,20 +8,27 @@ project(Alias
   LANGUAGES C
 )
 
-option(ALIAS_BUILD_DOCS "Build documents if Doxygen is found" ON)
-option(ALIAS_BUILD_TESTS "Build tests for Alias" ON)
-option(ALIAS_BUILD_EXAMPLES "Build examples for Alias" ON)
-option(ALIAS_COVERAGE "Build tests and generate reports for coverage" ON)
+option(ALIAS_BUILD_DOCS "Build documents if Doxygen is found" OFF)
+option(ALIAS_BUILD_TESTS "Build tests for Alias" OFF)
+option(ALIAS_BUILD_EXAMPLES "Build examples for Alias" OFF)
+option(ALIAS_COVERAGE "Build tests and generate reports for coverage" OFF)
+option(ALIAS_PROFILING "enable profiling output" OFF)
 
 #add_subdirectory(ext/glfw)
 
-add_library(coverage_config INTERFACE)
+add_library(alias-config INTERFACE)
+
 if(ALIAS_COVERAGE AND CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
-  target_compile_options(coverage_config INTERFACE -O0 -g --coverage)
+  target_compile_options(alias-config INTERFACE -O0 -g --coverage)
   if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.13)
-    target_link_options(coverage_config INTERFACE --coverage)
-  else()
-    target_link_libraries(coverage_config INTERFACE --coverage)
+    target_link_options(alias-config INTERFACE --coverage)
+  endif()
+endif()
+
+if(ALIAS_PROFILING AND CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
+  target_compile_options(alias-config INTERFACE -pg)
+  if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.13)
+    target_link_options(alias-config INTERFACE -pg)
   endif()
 endif()
 
@@ -95,7 +102,7 @@ target_include_directories(alias
   PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include ${CMAKE_CURRENT_BINARY_DIR}/include
 	PRIVATE ext/shishua
 )
-target_link_libraries(alias PUBLIC coverage_config)
+target_link_libraries(alias PUBLIC alias-config)
 
 if(ALIAS_BUILD_TESTS)
   set(TEST_SOURCES test/main.c)
