@@ -23,6 +23,7 @@ typedef float alias_R;
 #define alias_R_sqrt sqrtf
 #define alias_R_nan nanf
 #define alias_R_abs fabsf
+#define alias_R_isnan isnan
 
 #define alias_R_EPSILON  FLT_EPSILON
 #define alias_R_MIN      FLT_MIN
@@ -31,7 +32,7 @@ typedef float alias_R;
 #define alias_R_ONE      1.0f
 #define alias_R_TWO      2.0f
 #define alias_R_PI       3.14159265358979323846264338327950288f
-#define alias_R_NAN      alias_nan("")
+#define alias_R_NAN      alias_R_nan("")
 #define alais_R_INFINITY INFINITY
 
 #elif ALIAS_REAL_PRECISION == 64

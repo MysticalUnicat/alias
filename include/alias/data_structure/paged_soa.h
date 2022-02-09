@@ -76,7 +76,7 @@ static inline bool alias_PagedSOA_set_capacity(alias_PagedSOA * soa, alias_Memor
 static inline bool alias_PagedSOA_space_for(alias_PagedSOA * soa, alias_MemoryCB * mcb, uint32_t count) {
   uint32_t new_num_pages = (soa->length + count + soa->rows_per_page - 1) / soa->rows_per_page;
   if(new_num_pages > soa->num_pages) {
-    return alias_PagedSOA_set_capacity(soa, mcb, new_num_pages);
+    return alias_PagedSOA_set_capacity(soa, mcb, soa->length + count);
   }
   return true;
 }

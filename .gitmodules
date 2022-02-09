@@ -1,3 +1,6 @@
 [submodule "ext/glfw"]
 	path = ext/glfw
 	url = https://github.com/glfw/glfw.git
+[submodule "ext/shishua"]
+	path = ext/shishua
+	url = https://github.com/espadrine/shishua.git

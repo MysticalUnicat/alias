@@ -283,6 +283,7 @@ alias_ecs_Result alias_ecs_read_entity_component(
 
   uint32_t component_index = alias_ecs_ComponentSet_order_of(&archetype->components, component_handle);
   if(component_index == UINT32_MAX) {
+    *ptr = NULL;
     return ALIAS_ECS_ERROR_COMPONENT_DOES_NOT_EXIST;
   }
 
@@ -309,6 +310,7 @@ alias_ecs_Result alias_ecs_write_entity_component(
 
   uint32_t component_index = alias_ecs_ComponentSet_order_of(&archetype->components, component_handle);
   if(component_index == UINT32_MAX) {
+    *ptr = NULL;
     return ALIAS_ECS_ERROR_COMPONENT_DOES_NOT_EXIST;
   }
 
