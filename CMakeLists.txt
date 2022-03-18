@@ -8,6 +8,8 @@ project(Alias
   LANGUAGES C
 )
 
+include(ExternalProject)
+
 option(ALIAS_BUILD_DOCS "Build documents if Doxygen is found" OFF)
 option(ALIAS_BUILD_TESTS "Build tests for Alias" OFF)
 option(ALIAS_BUILD_EXAMPLES "Build examples for Alias" OFF)
@@ -32,32 +34,39 @@ if(ALIAS_PROFILING AND CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
   endif()
 endif()
 
-add_executable(alias_gen_geometric_algebra gen/geometric_algebra.c)
+#add_executable(alias_gen_geometric_algebra gen/geometric_algebra.c)
+# TODO : rename gen to tools
+ExternalProject_add(
+  alias-tools
+  SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/gen"
+  BINARY_DIR "${CMAKE_CURRENT_BINARY_DIR}/alias-tools"
+  STEP_TARGETS build
+)
 
 file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/include/alias)
 
 add_custom_command(
   OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/include/alias/pga2d.h
-  COMMAND alias_gen_geometric_algebra -p 2 -d 1 > ${CMAKE_CURRENT_BINARY_DIR}/include/alias/pga2d.h --binary meet outer_product --binary join regressive_product --code m02
-  DEPENDS alias_gen_geometric_algebra
+  COMMAND ${CMAKE_CURRENT_BINARY_DIR}/alias-tools/alias_gen_geometric_algebra -p 2 -d 1 > ${CMAKE_CURRENT_BINARY_DIR}/include/alias/pga2d.h --binary meet outer_product --binary join regressive_product --code m02
+  DEPENDS alias-tools-build
 )
 
 add_custom_command(
   OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/include/alias/pga3d.h
-  COMMAND alias_gen_geometric_algebra -p 3 -d 1 > ${CMAKE_CURRENT_BINARY_DIR}/include/alias/pga3d.h --binary meet outer_product --binary join regressive_product --code m024
-  DEPENDS alias_gen_geometric_algebra
+  COMMAND ${CMAKE_CURRENT_BINARY_DIR}/alias-tools/alias_gen_geometric_algebra -p 3 -d 1 > ${CMAKE_CURRENT_BINARY_DIR}/include/alias/pga3d.h --binary meet outer_product --binary join regressive_product --code m024
+  DEPENDS alias-tools-build
 )
 
 add_custom_command(
   OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/include/alias/cga2d.h
-  COMMAND alias_gen_geometric_algebra -p 3 -n 1 > ${CMAKE_CURRENT_BINARY_DIR}/include/alias/cga2d.h --binary meet outer_product --binary join regressive_product
-  DEPENDS alias_gen_geometric_algebra
+  COMMAND ${CMAKE_CURRENT_BINARY_DIR}/alias-tools/alias_gen_geometric_algebra -p 3 -n 1 > ${CMAKE_CURRENT_BINARY_DIR}/include/alias/cga2d.h --binary meet outer_product --binary join regressive_product
+  DEPENDS alias-tools-build
 )
 
 add_custom_command(
   OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/include/alias/cga3d.h
-  COMMAND alias_gen_geometric_algebra -p 4 -n 1 > ${CMAKE_CURRENT_BINARY_DIR}/include/alias/cga3d.h --binary meet outer_product --binary join regressive_product
-  DEPENDS alias_gen_geometric_algebra
+  COMMAND ${CMAKE_CURRENT_BINARY_DIR}/alias-tools/alias_gen_geometric_algebra -p 4 -n 1 > ${CMAKE_CURRENT_BINARY_DIR}/include/alias/cga3d.h --binary meet outer_product --binary join regressive_product
+  DEPENDS alias-tools-build
 )
 
 add_library(alias STATIC
