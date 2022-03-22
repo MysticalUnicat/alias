@@ -41,6 +41,7 @@ ExternalProject_add(
   SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/gen"
   BINARY_DIR "${CMAKE_CURRENT_BINARY_DIR}/alias-tools"
   STEP_TARGETS build
+  INSTALL_COMMAND cmake -E echo "skipping tool install"
 )
 
 file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/include/alias)

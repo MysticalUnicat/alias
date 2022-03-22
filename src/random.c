@@ -46,8 +46,8 @@ void alias_random_State_fill(alias_random_State * state) {
 #include <time.h>
 
 static __attribute__((constructor)) void _init_GLOBAL(void) {
-  struct timespec ts;
-  timespec_get(&ts, TIME_UTC);
-  alias_random_State_init(&alias_random_State_GLOBAL, (uint8_t *)&ts, sizeof(ts));
+  time_t t;
+  time(&t);
+  alias_random_State_init(&alias_random_State_GLOBAL, (uint8_t *)&t, sizeof(t));
 }
 

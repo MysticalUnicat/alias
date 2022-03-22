@@ -164,7 +164,7 @@ static inline void * alias_ecs_write(
 #define return_ERROR_INVALID_ARGUMENT_if(X) do { if(X) { return ALIAS_ECS_ERROR_INVALID_ARGUMENT; } } while(0)
 #define ASSERT(X) do { if(!(X)) { return ALIAS_ECS_ERROR_INVALID_ARGUMENT; } } while(0)
 
-#if 1
+#if 0
 int printf(const char *, ...);
 #define TRACE(F, ...) printf("%s:%i - " F "\n", __FILE__, __LINE__, ## __VA_ARGS__)
 #else
