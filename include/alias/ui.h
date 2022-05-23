@@ -78,6 +78,7 @@ void alias_ui_begin_vertical(alias_ui * ui);
 void alias_ui_begin_horizontal(alias_ui * ui);
 void alias_ui_begin_stack(alias_ui * ui);
 void alias_ui_end(alias_ui * ui);
+void alias_ui_stats(alias_ui * ui, uint32_t * num_vertexes, uint32_t * num_indexes, uint32_t * num_groups);
 
 // per scope parameters
 void alias_ui_font_size(alias_ui * ui, alias_R size);

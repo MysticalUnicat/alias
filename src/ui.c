@@ -50,6 +50,10 @@ struct alias_ui {
 
   alias_ui_TextSizeFn text_size;
   alias_ui_TextDrawFn text_draw;
+
+  uint32_t max_num_vertexes;
+  uint32_t max_num_indexes;
+  uint32_t max_num_groups;
 };
 
 // ====================================================================================================================
@@ -633,6 +637,12 @@ void alias_ui_end(alias_ui * ui) {
   _end_scope(ui);
 }
 
+void alias_ui_stats(alias_ui * ui, uint32_t * num_vertexes, uint32_t * num_indexes, uint32_t * num_groups) {
+  *num_vertexes = ui->max_num_vertexes;
+  *num_indexes = ui->max_num_indexes;
+  *num_groups = ui->max_num_groups;
+}
+
 // ====================================================================================================================
 // font
 void alias_ui_font_size(alias_ui * ui, alias_R size) {
@@ -681,16 +691,21 @@ static void _textv_render(alias_ash * ash) {
 
 void alias_ui_textv(alias_ui * ui, const char * format, va_list ap) {
   uint32_t text;
+  size_t length;
   {
     va_list ap2;
     va_copy(ap2, ap);
-    size_t length = vsnprintf(NULL, 0, format, ap2);
+    length = vsnprintf(NULL, 0, format, ap2);
     va_end(ap2);
     text = _alloc(ui, length + 1);
     vsnprintf(_mem(ui, text), length + 1, format, ap);
   }
 
   _begin_child(ui);
+
+  ui->max_num_vertexes += 4 * length;
+  ui->max_num_indexes += 6 * length;
+  ui->max_num_groups++;
 
   ALIAS_ASH_EMIT(&ui->layout_program, ui->mcb
     // self: minw minh maxw mwxh -- w h
@@ -717,6 +732,10 @@ void alias_ui_textv(alias_ui * ui, const char * format, va_list ap) {
 void alias_ui_fill(alias_ui * ui, alias_Color color) {
   _begin_child(ui);
 
+  ui->max_num_vertexes += 4;
+  ui->max_num_indexes += 6;
+  ui->max_num_groups++;
+
   ALIAS_ASH_EMIT(&ui->layout_program, ui->mcb
     // self: minw minh maxw mwxh -- w h
     , swap2, drop2
@@ -738,6 +757,10 @@ void alias_ui_fill(alias_ui * ui, alias_Color color) {
 // ====================================================================================================================
 void alias_ui_image(alias_ui * ui, alias_R width, alias_R height, alias_R s0, alias_R t0, alias_R s1, alias_R t1, uint32_t texture_id) {
   _begin_child(ui);
+
+  ui->max_num_vertexes += 4;
+  ui->max_num_indexes += 6;
+  ui->max_num_groups++;
 
   ALIAS_ASH_EMIT(&ui->layout_program, ui->mcb
     // self: minw minh maxw mwxh -- w h

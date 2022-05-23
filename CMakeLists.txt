@@ -35,10 +35,9 @@ if(ALIAS_PROFILING AND CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
 endif()
 
 #add_executable(alias_gen_geometric_algebra gen/geometric_algebra.c)
-# TODO : rename gen to tools
 ExternalProject_add(
   alias-tools
-  SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/gen"
+  SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/tools"
   BINARY_DIR "${CMAKE_CURRENT_BINARY_DIR}/alias-tools"
   STEP_TARGETS build
   INSTALL_COMMAND cmake -E echo "skipping tool install"
@@ -93,6 +92,8 @@ add_library(alias STATIC
   src/ash.c
 
   src/ui.c
+
+  src/ff_qoi.c
 
   ${CMAKE_CURRENT_BINARY_DIR}/include/alias/pga2d.h
   ${CMAKE_CURRENT_BINARY_DIR}/include/alias/pga3d.h

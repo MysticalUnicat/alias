@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include <getopt.h>
 #include <string.h>
+#include <signal.h>
 
 static void * _stub_allocator(void * ud, void * ptr, size_t old_size, size_t new_size, size_t alignment) {
   (void)ud;
@@ -39,11 +40,31 @@ struct StubAllocator g_stub_allocator = {
 
 struct Test * g_tests = NULL;
 
+struct Test * current_test = NULL;
+
+void sig_handler(int code) {
+  fprintf(
+      stdout
+    , "SIG%s - %s\n"
+    , code == SIGABRT ? "ABRT" :
+      code == SIGFPE  ? "FPE"  :
+      code == SIGILL  ? "ILL"  :
+      code == SIGINT  ? "INT"  :
+      code == SIGSEGV ? "SEGV" :
+      code == SIGTERM ? "TERM" : "UNK"
+    , current_test->ident
+  );
+
+  SIG_DFL(code);
+}
+
 void _run(int * result, struct Test * test) {
   int success = 1;
 
+  current_test = test;
+
   g_stub_allocator_reset();
-  
+
   test->fn(&success);
 
   if(success == 0) {
@@ -63,6 +84,8 @@ void _run(int * result, struct Test * test) {
   } else {
     fprintf(stdout, " OK - %s\n", test->ident);
   }
+
+  current_test = NULL;
 }
 
 void _run_by_ident(int * result, const char * ident) {
@@ -100,6 +123,13 @@ int main(int argc, char * argv []) {
 
   int result = 0;
   int ran_tests = 0;
+
+  signal(SIGABRT, sig_handler);
+  signal(SIGFPE,  sig_handler);
+  signal(SIGILL,  sig_handler);
+  signal(SIGINT,  sig_handler);
+  signal(SIGSEGV, sig_handler);
+  signal(SIGTERM, sig_handler);
 
   for(;;) {
     int option_index = 0;

@@ -8,4 +8,4 @@ project(Alias-gen
   LANGUAGES C
 )
 
-add_executable(alias_gen_geometric_algebra geometric_algebra.c)
+add_executable(alias_gen_geometric_algebra gen_geometric_algebra.c)
