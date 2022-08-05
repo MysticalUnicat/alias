@@ -87,8 +87,10 @@ add_library(alias STATIC
   src/physics_bvh_2d.c
   src/color.c
   src/memory.c
-	src/random.c
+  src/random.c
+	src/string32.c
 
+  src/lexer.c
   src/ash.c
 
   src/ui.c
@@ -111,7 +113,7 @@ set_property(TARGET alias PROPERTY C_STANDARD 11)
 target_compile_options(alias PRIVATE -pedantic -Wall -Wextra -Werror -std=gnu11 ${ALLOW_WARNINGS})
 target_include_directories(alias
   PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include ${CMAKE_CURRENT_BINARY_DIR}/include
-	PRIVATE ext/shishua
+  PRIVATE ext/shishua
 )
 target_link_libraries(alias PUBLIC alias-config)
 
@@ -145,6 +147,8 @@ if(ALIAS_BUILD_TESTS)
   alias_test(ash)
 
   alias_test(ui)
+
+  alias_test(lexer)
 
   list(REVERSE TEST_SOURCES)
 
