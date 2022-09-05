@@ -3,13 +3,9 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 #define _GNU_SOURCE
+#include <tabula.h>
 
 #include <getopt.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include <ctype.h>
-#include <stdint.h>
 
 #define NL " \\\n"
 //#define NL ""
@@ -865,13 +861,13 @@ int main(int argc, char * argv []) {
       }
       break;
     case 'p':
-      p = atoi(optarg);
+      p = atoi(optarg, NULL);
       break;
     case 'n':
-      n = atoi(optarg);
+      n = atoi(optarg, NULL);
       break;
     case 'd':
-      d = atoi(optarg);
+      d = atoi(optarg, NULL);
       break;
     }
   }
@@ -900,9 +896,9 @@ int main(int argc, char * argv []) {
   }
 
   if(Prefix == NULL) {
-    int length = snprintf(NULL, 0, "ALIAS_GA%i_%i_%i", p, n, d);
+    int length = cprintf("ALIAS_GA%i_%i_%i", p, n, d);
     Prefix = calloc(length + 1, 1);
-    snprintf(Prefix, length + 1, "ALIAS_GA%i_%i_%i", p, n, d);
+    sprintf(Prefix, length + 1, "ALIAS_GA%i_%i_%i", p, n, d);
   }
 
   int prefix_length = strlen(Prefix);

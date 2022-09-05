@@ -8,4 +8,8 @@ project(Alias-gen
   LANGUAGES C
 )
 
+file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/tabula)
+add_subdirectory(../tabula ${CMAKE_CURRENT_BINARY_DIR}/tabula)
+
 add_executable(alias_gen_geometric_algebra gen_geometric_algebra.c)
+target_link_libraries(alias_gen_geometric_algebra tabula)

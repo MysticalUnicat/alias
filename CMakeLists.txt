@@ -34,13 +34,16 @@ if(ALIAS_PROFILING AND CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
   endif()
 endif()
 
-#add_executable(alias_gen_geometric_algebra gen/geometric_algebra.c)
+add_subdirectory(tabula)
+target_link_libraries(alias-config INTERFACE tabula)
+
 ExternalProject_add(
   alias-tools
   SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/tools"
   BINARY_DIR "${CMAKE_CURRENT_BINARY_DIR}/alias-tools"
   STEP_TARGETS build
-  INSTALL_COMMAND cmake -E echo "skipping tool install"
+  CMAKE_ARGS -DCMAKE_BUILD_TYPE=Debug
+  INSTALL_COMMAND ${CMAKE_COMMAND} cmake -E echo "skipping tool install"
 )
 
 file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/include/alias)
@@ -110,7 +113,7 @@ else()
 endif()
 
 set_property(TARGET alias PROPERTY C_STANDARD 11)
-target_compile_options(alias PRIVATE -pedantic -Wall -Wextra -Werror -std=gnu11 ${ALLOW_WARNINGS})
+target_compile_options(alias PRIVATE -Wall -Wextra -Werror -std=gnu11 ${ALLOW_WARNINGS})
 target_include_directories(alias
   PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include ${CMAKE_CURRENT_BINARY_DIR}/include
   PRIVATE ext/shishua
