@@ -27,7 +27,25 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <ctype.h>
+
+#if 0
 #include <uchar.h>
+#else
+typedef uint16_t tabula_char16_t;
+typedef uint32_t tabula_char32_t;
+
+#define char16_t tabula_char16_t;
+#define char32_t tabula_char32_t;
+
+// missing:
+//  - mbstate_t
+//  - mbrtoc16
+//  - c16rtomb
+//  - mbrtoc32
+//  - c32rtomb
+//  - mbrtoc8
+//  - c8rtomb
+#endif
 // atoi
 intmax_t tabula_atoi(const char * restrict in, const char ** restrict out_ptr);
 uintmax_t tabula_atou(const char * restrict in, const char ** restrict out_ptr);

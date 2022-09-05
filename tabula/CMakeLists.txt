@@ -8,32 +8,10 @@ project(Alias-tabula
   LANGUAGES C
 )
 
-include(CTest)
-
-set(FILES atoi format)
-
-set(C_FILES ${FILES})
-list(TRANSFORM C_FILES APPEND ".c")
-
-set(H_FILES ${FILES})
-list(TRANSFORM H_FILES APPEND ".h")
-
-set(FILES header.h ${H_FILES} middle.h ${C_FILES} footer.h)
-list(TRANSFORM FILES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/src/")
-message(${FILES})
-
-add_custom_command(
-  OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/include/tabula.h
-  COMMAND ${CMAKE_COMMAND} -E cat -- ${FILES} > ${CMAKE_CURRENT_SOURCE_DIR}/include/tabula.h
-  DEPENDS ${FILES}
-  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-)
-
 add_library(tabula INTERFACE)
-target_sources(tabula INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/include/tabula.h)
 target_include_directories(tabula SYSTEM INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
-add_executable(tabula-format-conformance-test test/format_conformance_test.c)
+add_executable(tabula-format-conformance-test format_conformance_test.c)
 target_link_libraries(tabula-format-conformance-test tabula)
 
 add_test(NAME standard COMMAND tabula-format-conformance-test)

@@ -1,5 +1,6 @@
 #define TABULA_NO_REPLACEMENT_MACROS
-#include "tabula.h"
+#define TABULA_IMPLEMENTATION
+#include <tabula.h>
 
 unsigned int tests_run = 0;
 unsigned int tests_failed = 0;

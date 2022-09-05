@@ -1,0 +1,24 @@
+FROM debian AS builder
+
+RUN set -ex; \
+    apt-get update; \
+    apt-get install -y cmake gcc; \
+    mkdir -p /usr/build;
+
+COPY . /usr/source
+
+RUN set -ex; \
+    cd /usr/build; \
+    cmake /usr/source; \
+    make;
+
+FROM debian AS runtime
+RUN set -ex; \
+    apt-get update; \
+    mkdir -p /usr/test;
+
+COPY --from=builder /usr/build/alias-test /usr/test
+
+WORKDIR /usr/test
+
+CMD [ "alias-test" ]

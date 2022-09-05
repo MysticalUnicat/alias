@@ -3,6 +3,7 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 #define _GNU_SOURCE
+#define TABULA_IMPLEMENTATION
 #include <tabula.h>
 
 #include <getopt.h>

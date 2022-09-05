@@ -1,3 +1,0 @@
-#endif
-
-#ifdef TABULA_IMPLEMENTATION
