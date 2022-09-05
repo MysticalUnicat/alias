@@ -2,15 +2,15 @@ FROM debian AS builder
 
 RUN set -ex; \
     apt-get update; \
-    apt-get install -y cmake gcc; \
+    apt-get install -y cmake clang; \
     mkdir -p /usr/build;
 
 COPY . /usr/source
 
 RUN set -ex; \
     cd /usr/build; \
-    cmake /usr/source; \
-    make;
+    cmake /usr/source -DALIAS_BUILD_TESTS=ON; \
+    make alias-test;
 
 FROM debian AS runtime
 RUN set -ex; \

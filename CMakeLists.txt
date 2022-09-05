@@ -43,7 +43,7 @@ ExternalProject_add(
   BINARY_DIR "${CMAKE_CURRENT_BINARY_DIR}/alias-tools"
   STEP_TARGETS build
   CMAKE_ARGS -DCMAKE_BUILD_TYPE=Debug
-  INSTALL_COMMAND ${CMAKE_COMMAND} cmake -E echo "skipping tool install"
+  INSTALL_COMMAND ${CMAKE_COMMAND} -E echo "skipping tool install"
 )
 
 file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/include/alias)

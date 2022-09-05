@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.18)
+cmake_minimum_required(VERSION 3.0)
 # - 3.1 for C_STANDARD
 
 project(Alias-tabula

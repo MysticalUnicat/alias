@@ -28,7 +28,7 @@
 #include <stdbool.h>
 #include <ctype.h>
 
-#if 0
+#if 1
 #include <uchar.h>
 #else
 typedef uint16_t tabula_char16_t;
