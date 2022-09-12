@@ -90,7 +90,7 @@ void _add_code(char code, uint32_t grades) {
   num_codes++;
 }
 
-int _sort_basis(const void * ap, const void * bp) {
+int _sort_basis(const void * ap, const void * bp, void * ud) {
   const Basis * a = (const Basis *)ap;
   const Basis * b = (const Basis *)bp;
   int len_diff = (int)strlen(a->name) - (int)strlen(b->name);
@@ -245,8 +245,8 @@ void generate(void) {
     basis[i].bits = i;
     basis[i].grade = __builtin_popcount(i);
   }
-  qsort(basis + 1, num_basis - 1, sizeof(*basis), _sort_basis);
-  free(str_build);
+  qsort(basis + 1, num_basis - 1, sizeof(*basis), _sort_basis, NULL);
+   free(str_build);
 
   for(int i = 0; i < num_basis; i++) {
     basis_by_bits[basis[i].bits] = i;
@@ -376,7 +376,7 @@ void generate(void) {
     printf(" ## X%i", i);
   }
   printf("\n");
-  
+
   // unary ====================================================================================================================================================
   printf("#define %s_UNARY(OP, X) %s_UNARY0(OP, %s_UNPACK X)\n", PREFIX, PREFIX, PREFIX);
   printf("#define %s_UNARY0(...) %s_UNARY1(__VA_ARGS__)\n", PREFIX, PREFIX);
@@ -389,7 +389,7 @@ void generate(void) {
   printf("  )\n");
   printf("#define %s_UNARY2(OP, ", PREFIX); values('X'); printf(","); grades('X'); printf(",X) OP(%s_UNARY3, ", PREFIX); values('X'); printf(", "); grades('X'); printf(",X)\n");
   printf("#define %s_UNARY3(", PREFIX); values('Z'); printf(","); grades('X'); printf(",X) %s_GRADE(%s_UNARY4, ", PREFIX, PREFIX); values('Z'); printf(", "); values('Z'); printf(","); grades('X'); printf(",X)\n");
-  printf("#define %s_UNARY4(", PREFIX); grades('Z'); printf(","); values('Z'); printf(","); grades('X'); printf(",X) ("); grades('Z'); printf(", __extension__ ({" NL); 
+  printf("#define %s_UNARY4(", PREFIX); grades('Z'); printf(","); values('Z'); printf(","); grades('X'); printf(",X) ("); grades('Z'); printf(", __extension__ ({" NL);
   printf("  %s_TYPE(", PREFIX); grades('X'); printf(") _x = X;" NL);
   printf("  (%s_TYPE(", PREFIX); grades('Z'); printf(")) {" NL);
   printf("    ._ = 0" NL);
@@ -527,7 +527,7 @@ void generate(void) {
   printf("  )\n");
   printf("#define %s_BINARY2(OP, ", PREFIX); values('X'); printf(","); values('Y'); printf(","); grades('X'); printf(",X, "); grades('Y'); printf(",Y) OP(%s_BINARY3, ", PREFIX); values('X'); printf(","); values('Y'); printf(", "); grades('X'); printf(",X, "); grades('Y'); printf(",Y)\n");
   printf("#define %s_BINARY3(", PREFIX); values('Z'); printf(","); grades('X'); printf(",X, "); grades('Y'); printf(",Y) %s_GRADE(%s_BINARY4, ", PREFIX, PREFIX); values('Z'); printf(", "); values('Z'); printf(","); grades('X'); printf(",X, "); grades('Y'); printf(",Y)\n");
-  printf("#define %s_BINARY4(", PREFIX); grades('Z'); printf(","); values('Z'); printf(","); grades('X'); printf(",X, "); grades('Y'); printf(",Y) ("); grades('Z'); printf(", __extension__ ({" NL); 
+  printf("#define %s_BINARY4(", PREFIX); grades('Z'); printf(","); values('Z'); printf(","); grades('X'); printf(",X, "); grades('Y'); printf(",Y) ("); grades('Z'); printf(", __extension__ ({" NL);
   printf("  %s_TYPE(", PREFIX); grades('X'); printf(") _x = X;" NL);
   printf("  %s_TYPE(", PREFIX); grades('Y'); printf(") _y = Y;" NL);
   printf("  (%s_TYPE(", PREFIX); grades('Z'); printf(")) {" NL);
@@ -766,7 +766,7 @@ void generate(void) {
     if(op[i].argument_count == 0) {
       continue;
     }
-    
+
     if(op[i].argument_count == 1) {
       printf("#define %s_%s(X) %s_UNARY(%s_OP_%s, X)\n", prefix, op[i].lower, PREFIX, PREFIX, op[i].upper);
       for(int j = 0; j < num_codes; j++) {
@@ -872,6 +872,9 @@ int main(int argc, char * argv []) {
       break;
     }
   }
+
+  p = 2;
+  d = 1;
 
   _add_op_alias("neg", "negate", 0);
   _add_op_alias("sub", "subtract", 1);

@@ -270,33 +270,70 @@ bool tabula_binary_search(const void *key, const void *ptr, size_t count, size_t
 static inline void tabula_quicksort_swap(void *ptr, size_t size, size_t index_a, size_t index_b) {
   uint8_t *a = ptr + index_a * size;
   uint8_t *b = ptr + index_b * size;
-  while(size) {
+  while(size--) {
     uint8_t c = *a;
     *a++ = *b;
     *b++ = c;
   }
 }
 
-static inline size_t tabula_quicksort_partition(void *ptr, size_t size, size_t low, size_t high, int (*comp)(const void *, const void *, void *ud), void *ud) {
-  size_t pivot = high;
-  size_t index = low;
-  for(size_t i = low + 1; i < high; i++) {
-    if(comp(ptr + i * size, ptr + pivot * size, ud) < 0) {
-      tabula_quicksort_swap(ptr, size, i, index);
-      index++;
-    }
-  }
-  tabula_quicksort_swap(ptr, size, index, pivot);
-  return index;
-}
-
 void tabula_quicksort(void *ptr, size_t size, size_t low, size_t high, int (*comp)(const void *, const void *, void *ud), void *ud) {
   if(high >= low) {
     return;
   }
-  size_t pivot = tabula_quicksort_partition(ptr, size, low, high, comp, ud);
-  tabula_quicksort(ptr, size, low, pivot - 1, comp, ud);
-  tabula_quicksort(ptr, size, pivot + 1, high, comp, ud);
+
+  size_t count = high - low;
+
+  if(count == 1) {
+    return;
+  }
+
+  #define COMP(I, J) (comp(ptr + I * size, ptr + J * size, ud) <= 0)
+  #define SWAP(I, J) tabula_quicksort_swap(ptr, size, I, J)
+
+  if(count == 2) {
+    if(COMP(high, low)) {
+      SWAP(high, low);
+    }
+    return;
+  }
+
+  size_t mid = (low >> 1) + (high >> 1);
+
+  if(COMP(mid, low)) {
+    SWAP(low, mid);
+  }
+  if(COMP(high, low)) {
+    SWAP(low, high);
+  }
+  if(COMP(high, mid)) {
+    SWAP(mid, high);
+  }
+  // low < high < mid
+
+  size_t i = low;
+  size_t j = high;
+  while(i < j) {
+    while(COMP(i, mid)) {
+      i++;
+    }
+    while(COMP(mid, j)) {
+      j--;
+    }
+    if(i <= j) {
+      SWAP(i, j);
+    }
+  }
+
+  if(low < j) {
+    tabula_quicksort(ptr, size, low, j, comp, ud);
+  }
+  if(i < high) {
+    tabula_quicksort(ptr, size, i, high, comp, ud);
+  }
+
+  #undef COMP
+  #undef SWAP
 }
 
 static inline int tabula_format_is_digit(int c) { return (c >= '0') && (c <= '9') ? (c - '0') + 1 : 0; }
