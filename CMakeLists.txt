@@ -93,7 +93,7 @@ add_library(alias STATIC
   src/random.c
 	src/string32.c
 
-  src/lexer.c
+  # src/lexer.c
   src/ash.c
 
   src/ui.c
@@ -151,7 +151,7 @@ if(ALIAS_BUILD_TESTS)
 
   alias_test(ui)
 
-  alias_test(lexer)
+  # alias_test(lexer)
 
   list(REVERSE TEST_SOURCES)
 

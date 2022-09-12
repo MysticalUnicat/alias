@@ -86,18 +86,12 @@ size_t tabula_c32rtomb(char *restrict s, char32_t c32, mbstate_t *restrict ps);
 
 bool tabula_binary_search(const void *key, const void *ptr, size_t count, size_t size, int (*comp)(const void *, const void *, void *ud), void *ud,
                           const void **found, size_t *not_found);
-void tabula_quicksort(void *ptr, size_t size, size_t low, size_t high, int (*comp)(const void *, const void *, void *ud), void *ud);
+void tabula_qsort(void *ptr, size_t count, size_t size, int (*comp)(const void *, const void *, void *ud), void *ud);
 
 static inline void *tabula_bsearch(const void *key, const void *ptr, size_t count, size_t size, int (*comp)(const void *, const void *, void *ud), void *ud) {
   const void *found;
   size_t not_found;
   return tabula_bsearch_index(key, ptr, count, size, comp, ud, &found, &not_found) ? (void *)found : NULL;
-}
-
-static inline void tabula_qsort(void *ptr, size_t count, size_t size, int (*comp)(const void *, const void *, void *ud), void *ud) {
-  if(count > 1) {
-    tabula_quicksort(ptr, size, 0, count - 1, comp, ud);
-  }
 }
 
 #if !TABULA_NO_REPLACEMENT_MACROS
@@ -267,73 +261,73 @@ bool tabula_binary_search(const void *key, const void *ptr, size_t count, size_t
   return false;
 }
 
-static inline void tabula_quicksort_swap(void *ptr, size_t size, size_t index_a, size_t index_b) {
-  uint8_t *a = ptr + index_a * size;
-  uint8_t *b = ptr + index_b * size;
+static inline void tabula_quicksort_swap(uint8_t *a, uint8_t * b, size_t size) {
   while(size--) {
     uint8_t c = *a;
-    *a++ = *b;
-    *b++ = c;
+    *a = *b;
+    *b = c;
+    a++;
+    b++;
   }
 }
 
-void tabula_quicksort(void *ptr, size_t size, size_t low, size_t high, int (*comp)(const void *, const void *, void *ud), void *ud) {
-  if(high >= low) {
+void tabula_quicksort(uint8_t *low, uint8_t * high, size_t size, int (*comp)(const void *, const void *, void *ud), void *ud) {
+  if(low >= high) {
     return;
   }
 
-  size_t count = high - low;
+  size_t count = ((high - low) / size) + 1;
 
-  if(count == 1) {
-    return;
-  }
+  #define LESS_THAN_EQUAL(I, J) (comp(I, J, ud) <= 0)
+  #define SWAP(I, J) tabula_quicksort_swap(I, J, size)
+  #define SORT2(I, J) do { \
+    if(LESS_THAN_EQUAL(J, I)) { \
+      SWAP(I, J); \
+    } \
+	} while(false)
 
-  #define COMP(I, J) (comp(ptr + I * size, ptr + J * size, ud) <= 0)
-  #define SWAP(I, J) tabula_quicksort_swap(ptr, size, I, J)
-
+  SORT2(low, high);
   if(count == 2) {
-    if(COMP(high, low)) {
-      SWAP(high, low);
-    }
     return;
   }
 
-  size_t mid = (low >> 1) + (high >> 1);
+  // find mid
+  uint8_t * mid = low + ((high - low) / (size << 1)) * size;
 
-  if(COMP(mid, low)) {
-    SWAP(low, mid);
-  }
-  if(COMP(high, low)) {
-    SWAP(low, high);
-  }
-  if(COMP(high, mid)) {
-    SWAP(mid, high);
-  }
-  // low < high < mid
+  // make sure low < mid
+  SORT2(low, mid);
 
-  size_t i = low;
-  size_t j = high;
-  while(i < j) {
-    while(COMP(i, mid)) {
-      i++;
-    }
-    while(COMP(mid, j)) {
-      j--;
-    }
-    if(i <= j) {
-      SWAP(i, j);
+  // if count 3, make sure low < mid < high then return
+  if(count == 3) {
+    SORT2(mid, high);
+    return;
+  }
+
+  // start partiion
+  // place in this order: low < high < mid (using position high as pivot)
+  SORT2(high, mid);
+  uint8_t * pivot = low - size;
+
+  for(uint8_t * scan = low; scan < high; scan += size) {
+    if(LESS_THAN_EQUAL(scan, high)) {
+      pivot += size;
+      SWAP(pivot, scan);
     }
   }
+  pivot += size;
+  SWAP(pivot, high);
+  // done partition
+   
+  tabula_quicksort(         low, pivot - size, size, comp, ud);
+  tabula_quicksort(pivot + size,         high, size, comp, ud);
 
-  if(low < j) {
-    tabula_quicksort(ptr, size, low, j, comp, ud);
-  }
-  if(i < high) {
-    tabula_quicksort(ptr, size, i, high, comp, ud);
-  }
-
-  #undef COMP
+  #undef LESS_THAN_EQUAL
   #undef SWAP
+  #undef SORT2
+}
+
+void tabula_qsort(void *ptr, size_t count, size_t size, int (*comp)(const void *, const void *, void *ud), void *ud) {
+  tabula_quicksort((uint8_t *)ptr, (uint8_t *)ptr + (count - 1) * size, size, comp, ud);
 }
 
 static inline int tabula_format_is_digit(int c) { return (c >= '0') && (c <= '9') ? (c - '0') + 1 : 0; }

@@ -11,14 +11,13 @@ project(Alias-tabula
 add_library(tabula INTERFACE)
 target_include_directories(tabula SYSTEM INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
-add_executable(tabula-format-conformance-test format_conformance_test.c)
-target_link_libraries(tabula-format-conformance-test tabula)
+add_executable(tabula-test test.c)
+target_link_libraries(tabula-test tabula)
 
-add_test(NAME standard COMMAND tabula-format-conformance-test)
-add_test(NAME arguments COMMAND tabula-format-conformance-test --arguments)
-add_test(NAME flags COMMAND tabula-format-conformance-test --flags)
+add_test(NAME format COMMAND tabula-test --format)
+add_test(NAME quicksort COMMAND tabula-test --quicksort)
 
-set_tests_properties(standard arguments flags PROPERTIES
+set_tests_properties(format quicksort PROPERTIES
   PASS_REGULAR_EXPRESSION "all OK"
   FAIL_REGULAR_EXPRESSION "failed"
 )
