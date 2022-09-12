@@ -5,11 +5,10 @@
 #ifndef _ALIAS_LEXER_H_
 #define _ALIAS_LEXER_H_
 
+#include <tabula.h>
+
 #include <alias/data_structure/vector.h>
 #include <alias/utils.h>
-
-#include <uchar.h>
-
 struct alias_lexer_Character {
   char32_t character;
   uint32_t location;

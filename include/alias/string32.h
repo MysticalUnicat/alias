@@ -5,9 +5,7 @@
 #ifndef _ALIAS_STRING32_H_
 #define _ALIAS_STRING32_H_
 
-#include <uchar.h>
-#include <stdbool.h>
-#include <stdint.h>
+#include <tabula.h>
 
 // character classification
 bool alias_char32_is_alnum(char32_t);

@@ -2,7 +2,7 @@
 BasedOnStyle: LLVM
 AlignConsecutiveAssignments: 'false'
 AlignConsecutiveDeclarations: 'false'
-ColumnLimit: '120'
+ColumnLimit: '160'
 SpaceBeforeParens: Never
 SpaceInEmptyParentheses: 'false'
 SpacesInAngles: 'false'

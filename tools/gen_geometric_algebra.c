@@ -862,13 +862,13 @@ int main(int argc, char * argv []) {
       }
       break;
     case 'p':
-      p = atoi(optarg, NULL);
+      p = atoi(optarg);
       break;
     case 'n':
-      n = atoi(optarg, NULL);
+      n = atoi(optarg);
       break;
     case 'd':
-      d = atoi(optarg, NULL);
+      d = atoi(optarg);
       break;
     }
   }
