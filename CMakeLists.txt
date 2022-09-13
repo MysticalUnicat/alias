@@ -10,6 +10,10 @@ project(Alias
 
 include(ExternalProject)
 
+if(MSVC)
+  message(FATAL_ERROR "Microsoft's C compiler is incompatible here")
+endif()
+
 option(ALIAS_BUILD_DOCS "Build documents if Doxygen is found" OFF)
 option(ALIAS_BUILD_TESTS "Build tests for Alias" OFF)
 option(ALIAS_BUILD_EXAMPLES "Build examples for Alias" OFF)
@@ -48,27 +52,29 @@ ExternalProject_add(
 
 file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/include/alias)
 
+set(ALIAS_GEN_GA ${CMAKE_CURRENT_BINARY_DIR}/alias-tools/alias_gen_geometric_algebra)
+
 add_custom_command(
   OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/include/alias/pga2d.h
-  COMMAND ${CMAKE_CURRENT_BINARY_DIR}/alias-tools/alias_gen_geometric_algebra -p 2 -d 1 > ${CMAKE_CURRENT_BINARY_DIR}/include/alias/pga2d.h --binary meet outer_product --binary join regressive_product --code m02
+  COMMAND ${ALIAS_GEN_GA} -p 2 -d 1 > ${CMAKE_CURRENT_BINARY_DIR}/include/alias/pga2d.h --binary meet outer_product --binary join regressive_product --code m02
   DEPENDS alias-tools-build
 )
 
 add_custom_command(
   OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/include/alias/pga3d.h
-  COMMAND ${CMAKE_CURRENT_BINARY_DIR}/alias-tools/alias_gen_geometric_algebra -p 3 -d 1 > ${CMAKE_CURRENT_BINARY_DIR}/include/alias/pga3d.h --binary meet outer_product --binary join regressive_product --code m024
+  COMMAND ${ALIAS_GEN_GA} -p 3 -d 1 > ${CMAKE_CURRENT_BINARY_DIR}/include/alias/pga3d.h --binary meet outer_product --binary join regressive_product --code m024
   DEPENDS alias-tools-build
 )
 
 add_custom_command(
   OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/include/alias/cga2d.h
-  COMMAND ${CMAKE_CURRENT_BINARY_DIR}/alias-tools/alias_gen_geometric_algebra -p 3 -n 1 > ${CMAKE_CURRENT_BINARY_DIR}/include/alias/cga2d.h --binary meet outer_product --binary join regressive_product
+  COMMAND ${ALIAS_GEN_GA} -p 3 -n 1 > ${CMAKE_CURRENT_BINARY_DIR}/include/alias/cga2d.h --binary meet outer_product --binary join regressive_product
   DEPENDS alias-tools-build
 )
 
 add_custom_command(
   OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/include/alias/cga3d.h
-  COMMAND ${CMAKE_CURRENT_BINARY_DIR}/alias-tools/alias_gen_geometric_algebra -p 4 -n 1 > ${CMAKE_CURRENT_BINARY_DIR}/include/alias/cga3d.h --binary meet outer_product --binary join regressive_product
+  COMMAND ${ALIAS_GEN_GA} -p 4 -n 1 > ${CMAKE_CURRENT_BINARY_DIR}/include/alias/cga3d.h --binary meet outer_product --binary join regressive_product
   DEPENDS alias-tools-build
 )
 
@@ -118,6 +124,7 @@ target_include_directories(alias
   PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include ${CMAKE_CURRENT_BINARY_DIR}/include
   PRIVATE ext/shishua
 )
+
 target_link_libraries(alias PUBLIC alias-config)
 
 if(ALIAS_BUILD_TESTS)

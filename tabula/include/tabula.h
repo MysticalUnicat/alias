@@ -24,6 +24,8 @@
 //  - restrict keyword
 
 #define restrict __restrict
+
+#define TABULA_HAS_GETOPT 0
 #elif defined(__MINGW32__)
 // issues encountered while using MingW:
 //  - printf positional arguments
@@ -34,6 +36,10 @@
 
 #ifndef TABULA_HAS_UCHAR
 #define TABULA_HAS_UCHAR 1
+#endif
+
+#ifndef TABULA_HAS_GETOPT
+#define TABULA_HAS_GETOPT 1
 #endif
 
 #include <assert.h>
@@ -52,6 +58,10 @@
 #include <uchar.h>
 #else
 #include <wchar.h>
+#endif
+
+#if TABULA_HAS_GETOPT
+#include <getopt.h>
 #endif
 
 #ifdef TABULA_NO_REPLACEMENT_MACROS
@@ -84,6 +94,57 @@ size_t tabula_c32rtomb(char *restrict s, char32_t c32, mbstate_t *restrict ps);
 #define c32rtomb tabula_c32rtomb
 #endif
 
+// getopt
+typedef struct {
+  char *arg;
+  int ind;
+  int err;
+  int opt;
+  int nreset;
+} tabula_getopt_state;
+
+#if !TABULA_HAS_GETOPT
+#define TABULA_GETOPT_STRUCT_NAME option
+#else
+#define TABULA_GETOPT_STRUCT_NAME
+#endif
+
+typedef struct TABULA_GETOPT_STRUCT_NAME {
+  const char *name;
+  int has_arg;
+  int *flag;
+  int val;
+} tabula_getopt_option;
+
+int tabula_getopt(int argc, char *const *argv, const char *optstring, tabula_getopt_state *state);
+int tabula_getopt_long(int argc, char *const *argv, const char *optstring, const tabula_getopt_option *longopts, int *longindex, tabula_getopt_state *state);
+int tabula_getopt_long_only(int argc, char *const *argv, const char *optstring, const tabula_getopt_option *longopts, int *longindex, tabula_getopt_state *state);
+
+extern tabula_getopt_state tabula_global_getopt_state;
+
+static const int tabula_no_argument = 0;
+static const int tabula_required_argument = 1;
+static const int tabula_optional_argument = 2;
+
+#if !TABULA_NO_REPLACEMENT_MACROS
+#define getopt tabula_getopt
+#define getopt_long tabula_getopt_long
+#define getopt_long_only tabula_getopt_long_only
+
+#define no_argument tabula_no_argument
+#define required_argument tabula_required_argument
+#define optional_argument tabula_optional_argument
+#elif !TABULA_HAS_GETOPT
+#define getopt(A, B, C) tabula_getopt(A, B, C, &tabula_global_getopt_state)
+#define getopt_long(A, B, C, D) tabula_getopt_long(A, B, C, D, &tabula_global_getopt_state)
+#define getopt_long_only(A, B, C, D) tabula_getopt_long_only(A, B, C, D, &tabula_global_getopt_state)
+
+static const int no_argument = 0;
+static const int required_argument = 1;
+static const int optional_argument = 2;
+#endif
+
+// stdlib
 bool tabula_binary_search(const void *key, const void *ptr, size_t count, size_t size, int (*comp)(const void *, const void *, void *ud), void *ud,
                           const void **found, size_t *not_found);
 void tabula_qsort(void *ptr, size_t count, size_t size, int (*comp)(const void *, const void *, void *ud), void *ud);
@@ -232,13 +293,180 @@ static inline int tabula_cprintf(const char *format, ...) {
 #define vsnprintf tabula_vsnprintf
 #define asprintf tabula_asprintf
 #endif
+
+// compiler
+// TODO
+
+// generic GCC popcount for uint32
+static inline uint_least8_t tabula_bits_popcount_uint32(uint32_t x) {
+  uint_least8_t result = 0;
+  for(int i = 0; i < 32; i++) {
+    result += (x & (1 << i)) != 0;
+  }
+  return result;
+}
 #endif
 
+// ============================================================================================================================================================
 #ifdef TABULA_IMPLEMENTATION
 #define TABULA_CAT2(A, B) TABULA_CAT2_0(A, B)
 #define TABULA_CAT2_0(A, B) TABULA_CAT2_1(A, B)
 #define TABULA_CAT2_1(A, B) A##B
 
+// getopt
+tabula_getopt_state tabula_global_getopt_state;
+
+int tabula_getopt(int argc, char * const * argv, const char * optstring, tabula_getopt_state * state) {
+  if(state->nreset == 0) {
+    state->ind = 1;
+    state->err = 1;
+    state->nreset = 1;
+  }
+  if(*optstring == ':') {
+    state->err = 0;
+  }
+  size_t short_length = strlen(optstring);
+  while(state->ind < argc) {
+    const char *arg = argv[state->ind];
+    if(arg[0] != '-' || arg[1] == 0) {
+      continue;
+    }
+    if(arg[1] == '-') {
+      return -1;
+    }
+    int c = arg[1];
+    for(int i = 0; i < short_length; i++) {
+      if(optstring[i] != c) {
+        continue;
+      }
+      state->opt = c;
+      state->ind++;
+      bool argument = optstring[i] == ':' ? (i++, true) : false;
+      bool required = (argument && optstring[i] == ':') ? (i++, false) : true;
+      if(argument) {
+        state->arg = arg + 2;
+        if(required && *state->arg == '\0') {
+          if(state->ind >= argc) {
+            return ':';
+          }
+          state->arg = argv[state->ind++];
+        }
+      }
+      return c;
+    }
+    return '?';
+  }
+  return -1;
+}
+
+int tabula_getopt_long(int argc, char * const * argv, const char * optstring, const tabula_getopt_option * longopts, int * longindex,
+                          tabula_getopt_state * state) {
+  if(state->nreset == 0) {
+    state->ind = 1;
+    state->err = 1;
+    state->nreset = 1;
+  }
+  if(*optstring == ':') {
+    state->err = 0;
+  }
+  size_t short_length = strlen(optstring);
+  while(state->ind < argc) {
+    const char *arg = argv[state->ind];
+
+    if(arg[0] == '-') {
+      if(arg[1] == '-') {
+        // TODO
+        if(arg[2] == '\0') {
+          state->ind = argc;
+          return 0;
+        }
+
+        // find a long option that matches
+        for(int i = 0; longopts[i].name != NULL; i++) {
+          size_t opt_name_len = strlen(longopts[i].name);
+
+          int cmp = strcmp(longopts[i].name, arg + 2);
+
+
+          if(cmp != '\0') {
+            if(arg[opt_name_len + 2] == '=') {
+              if(strncmp(longopts[i].name, arg + 2, opt_name_len) == 0) {
+                cmp = '=';
+              } else {
+                continue;
+              }
+            } else {
+              continue;
+            }
+          }
+
+          int result = longopts[i].flag == NULL ? longopts[i].val : 0;
+          
+          state->ind++;
+
+          if(cmp == '\0') {
+            if(state->ind >= argc) {
+              if(longopts[i].has_arg == 1) {
+                return '?';
+              }
+              if(longopts[i].has_arg == 2) {
+                result = ':';
+              }
+            } else if(longopts[i].has_arg == 1 || longopts[i].has_arg == 2) {
+              state->arg = argv[state->ind++];
+            }
+          } else {
+            state->arg = argv[state->ind - 1] + opt_name_len + 3;
+          }
+
+          if(longopts[i].flag != NULL) {
+            *longopts[i].flag = longopts[i].val;
+          } else {
+            result = longopts[i].val;
+          }
+
+          if(longindex != NULL) {
+            *longindex = i;
+          }
+          return result;
+        }
+
+        return '?';
+      } else if(arg[1] != 0) {
+        int c = arg[1];
+        for(int i = 0; i < short_length; i++) {
+          if(optstring[i] != c) {
+            continue;
+          }
+          state->opt = c;
+          state->ind++;
+          i++;
+          bool argument = optstring[i] == ':' ? (i++, true) : false;
+          bool required = (argument && optstring[i] == ':') ? (i++, false) : argument;
+          if(argument) {
+            state->arg = arg + 2;
+            if(required && *state->arg == '\0') {
+              if(state->ind >= argc) {
+                return ':';
+              }
+              state->arg = argv[state->ind++];
+            }
+          }
+          return c;
+        }
+        return '?';
+      }
+    }
+  }
+  return -1;
+}
+
+int tabula_getopt_long_only(int argc, char * const * argv, const char * optstring, const tabula_getopt_option * longopts, int * longindex,
+                               tabula_getopt_state * state) {
+  return -1;
+}
+
+// stdlib
 bool tabula_binary_search(const void *key, const void *ptr, size_t count, size_t size, int (*comp)(const void *, const void *, void *ud), void *ud,
                           const void **found, size_t *not_found) {
   size_t low = 0;
