@@ -7,8 +7,8 @@
 
 #include <stdarg.h>
 
-#include <alias/memory.h>
 #include <alias/color.h>
+#include <alias/memory.h>
 
 #ifndef ALIAS_UI_INDEX_SIZE
 #define ALIAS_UI_INDEX_SIZE 16
@@ -16,10 +16,7 @@
 
 typedef struct alias_ui alias_ui;
 
-typedef enum alias_ui_Result {
-  alias_ui_Success,
-  alias_ui_ErrorOutOfMemory
-} alias_ui_Result;
+typedef enum alias_ui_Result { alias_ui_Success, alias_ui_ErrorOutOfMemory } alias_ui_Result;
 
 typedef struct alias_ui_Size {
   alias_R width;
@@ -31,8 +28,11 @@ typedef struct alias_ui_Constraint {
   alias_ui_Size max;
 } alias_ui_Constraint;
 
-typedef void (* alias_ui_TextSizeFn)(const char * buffer, alias_R size, alias_R max_width, alias_R * out_width, alias_R * out_height);
-typedef void (* alias_ui_TextDrawFn)(const char * buffer, alias_R x, alias_R y, alias_R width, alias_R size, alias_Color color);
+void alias_ui_SetTexture(alias_ui *ui, uint32_t texture_id);
+void alias_ui_EmitRect(alias_ui *ui, float x, float y, float w, float h, float s0, float t0, float s1, float t1, float r, float g, float b, float a);
+
+typedef void (*alias_ui_TextSizeFn)(alias_ui *ui, const char *buffer, alias_R size, alias_R max_width, alias_R *out_width, alias_R *out_height);
+typedef void (*alias_ui_TextDrawFn)(alias_ui *ui, const char *buffer, alias_R x, alias_R y, alias_R width, alias_R size, alias_Color color);
 
 typedef struct alias_ui_Input {
   alias_ui_Size screen_size;
@@ -50,8 +50,8 @@ typedef struct alias_ui_OutputGroup {
 typedef struct alias_ui_Output {
   uint32_t num_groups;
   uint32_t max_groups;
-  alias_ui_OutputGroup * groups;
-  
+  alias_ui_OutputGroup *groups;
+
   uint32_t num_indexes;
   alias_memory_SubBuffer index_sub_buffer;
 
@@ -62,38 +62,38 @@ typedef struct alias_ui_Output {
 } alias_ui_Output;
 
 // lifetime
-alias_ui_Result alias_ui_initialize(alias_MemoryCB * mcb, alias_ui * * ui_ptr);
-alias_ui_Result alias_ui_free(alias_ui * ui, alias_MemoryCB * mcb);
+alias_ui_Result alias_ui_initialize(alias_MemoryCB *mcb, alias_ui **ui_ptr);
+alias_ui_Result alias_ui_free(alias_ui *ui, alias_MemoryCB *mcb);
 
 // frame
-alias_ui_Result alias_ui_begin_frame(alias_ui * ui, alias_MemoryCB * mcb, const alias_ui_Input * input);
-alias_ui_Result alias_ui_end_frame(alias_ui * ui, alias_MemoryCB * mcb, alias_ui_Output * output);
+alias_ui_Result alias_ui_begin_frame(alias_ui *ui, alias_MemoryCB *mcb, const alias_ui_Input *input);
+alias_ui_Result alias_ui_end_frame(alias_ui *ui, alias_MemoryCB *mcb, alias_ui_Output *output);
 
 // layouting
-void alias_ui_align_fractions(alias_ui * ui, float x, float y);
+void alias_ui_align_fractions(alias_ui *ui, float x, float y);
 
-void alias_ui_override_size(alias_ui * ui, alias_R width, alias_R height);
+void alias_ui_override_size(alias_ui *ui, alias_R width, alias_R height);
 
-void alias_ui_begin_vertical(alias_ui * ui);
-void alias_ui_begin_horizontal(alias_ui * ui);
-void alias_ui_begin_stack(alias_ui * ui);
-void alias_ui_end(alias_ui * ui);
-void alias_ui_stats(alias_ui * ui, uint32_t * num_vertexes, uint32_t * num_indexes, uint32_t * num_groups);
+void alias_ui_begin_vertical(alias_ui *ui);
+void alias_ui_begin_horizontal(alias_ui *ui);
+void alias_ui_begin_stack(alias_ui *ui);
+void alias_ui_end(alias_ui *ui);
+void alias_ui_stats(alias_ui *ui, uint32_t *num_vertexes, uint32_t *num_indexes, uint32_t *num_groups);
 
 // per scope parameters
-void alias_ui_font_size(alias_ui * ui, alias_R size);
-void alias_ui_font_color(alias_ui * ui, alias_Color color);
+void alias_ui_font_size(alias_ui *ui, alias_R size);
+void alias_ui_font_color(alias_ui *ui, alias_Color color);
 
 // create elements
-void alias_ui_textv(alias_ui * ui, const char * format, va_list ap);
-void alias_ui_fill(alias_ui * ui, alias_Color color);
-void alias_ui_image(alias_ui * ui, alias_R width, alias_R height, alias_R s0, alias_R t0, alias_R s1, alias_R t1, uint32_t texture_id);
+void alias_ui_textv(alias_ui *ui, const char *format, va_list ap);
+void alias_ui_fill(alias_ui *ui, alias_Color color);
+void alias_ui_image(alias_ui *ui, alias_R width, alias_R height, alias_R s0, alias_R t0, alias_R s1, alias_R t1, uint32_t texture_id);
 
-static inline void alias_ui_text(alias_ui * ui, const char * format, ...) {
+static inline void alias_ui_text(alias_ui *ui, const char *format, ...) {
   va_list ap;
   va_start(ap, format);
   alias_ui_textv(ui, format, ap);
   va_end(ap);
 }
- 
+
 #endif
