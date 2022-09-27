@@ -27,9 +27,12 @@ struct scope {
   alias_R flex;
   alias_R total_flex;
 
+  alias_R alignment;
+
   void (*begin_child)(alias_ui *);
   void (*end_child)(alias_ui *);
   void (*end_scope)(alias_ui *);
+  void (*align)(alias_ui *, float x, float y);
 };
 
 struct shape {
@@ -85,6 +88,8 @@ static inline void _begin_scope(alias_ui *ui, void (*begin_child)(alias_ui *), v
   s->begin_child = begin_child;
   s->end_child = end_child;
   s->end_scope = end_scope;
+  s->alignment = 0.5f;
+  s->align = NULL;
 }
 
 static inline void _end_scope(alias_ui *ui) {
@@ -409,6 +414,11 @@ static inline void _align_fractions_end_child(alias_ui *ui) {
 }
 
 void alias_ui_align_fractions(alias_ui *ui, float x, float y) {
+  if(_scope(ui)->align != NULL) {
+    _scope(ui)->align(ui, x, y);
+    return;
+  }
+
   _begin_child(ui);
   _begin_scope(ui, NULL, _align_fractions_end_child, NULL);
 
@@ -493,7 +503,7 @@ static inline void _vertical_begin_child(alias_ui *ui) {
                  ,
                  i(3), pick // x y w h x
                  ,
-                 f(0.5f) // x y w h x 0.5
+                 f(_scope(ui)->alignment) // x y w h x 0.5
                  ,
                  i(3), pick // x y w h x 0.5 w
                  ,
@@ -506,6 +516,8 @@ static inline void _vertical_begin_child(alias_ui *ui) {
                  i(shape), gety // x y w h cx y cy
                  ,
                  f_add, i(shape), getw, i(shape), geth);
+
+  _scope(ui)->alignment = 0.5f;
 }
 
 static inline void _vertical_end_child(alias_ui *ui) {
@@ -547,9 +559,17 @@ static inline void _vertical_end_scope(alias_ui *ui) {
   _end_child(ui);
 }
 
+static inline void _vertical_align(alias_ui *ui, float x, float y) {
+  (void)y;
+  _scope(ui)->alignment = x;
+}
+
 void alias_ui_begin_vertical(alias_ui *ui) {
   _begin_child(ui);
   _begin_scope(ui, _vertical_begin_child, _vertical_end_child, _vertical_end_scope);
+
+  _scope(ui)->align = _vertical_align;
+  _scope(ui)->alignment = 0.5f;
 
   ALIAS_ASH_EMIT(&ui->layout_program,
                  ui->mcb
@@ -582,7 +602,7 @@ static inline void _horizontal_begin_child(alias_ui *ui) {
                  ,
                  i(3), pick // x y w h cx y
                  ,
-                 f(0.5f) // x y w h cx y 0.5
+                 f(_scope(ui)->alignment) // x y w h cx y 0.5
                  ,
                  i(3), pick // x y w h cx y 0.5 h
                  ,
@@ -591,6 +611,8 @@ static inline void _horizontal_begin_child(alias_ui *ui) {
                  f_sub, f_mul, f_add // x y w h cx cy
                  ,
                  i(shape), getw, i(shape), geth);
+
+  _scope(ui)->alignment = 0.5f;
 }
 
 static inline void _horizontal_end_child(alias_ui *ui) {
@@ -632,9 +654,17 @@ static inline void _horizontal_end_scope(alias_ui *ui) {
   _end_child(ui);
 }
 
+static inline void _horizontal_align(alias_ui *ui, float x, float y) {
+  (void)x;
+  _scope(ui)->alignment = y;
+}
+
 void alias_ui_begin_horizontal(alias_ui *ui) {
   _begin_child(ui);
   _begin_scope(ui, _horizontal_begin_child, _horizontal_end_child, _horizontal_end_scope);
+
+  _scope(ui)->align = _horizontal_align;
+  _scope(ui)->alignment = 0.5f;
 
   ALIAS_ASH_EMIT(&ui->layout_program,
                  ui->mcb
