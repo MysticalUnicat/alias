@@ -73,6 +73,11 @@ alias_ui_Result alias_ui_end_frame(alias_ui *ui, alias_MemoryCB *mcb, alias_ui_O
 void alias_ui_align_fractions(alias_ui *ui, float x, float y);
 
 void alias_ui_override_size(alias_ui *ui, alias_R width, alias_R height);
+void alias_ui_override_width(alias_ui *ui, alias_R width);
+void alias_ui_override_height(alias_ui *ui, alias_R height);
+
+void alias_ui_margin(alias_ui *ui, alias_R left, alias_R right, alias_R top, alias_R bottom);
+void alias_ui_padding(alias_ui *ui, alias_R left, alias_R right, alias_R top, alias_R bottom);
 
 void alias_ui_begin_vertical(alias_ui *ui);
 void alias_ui_begin_horizontal(alias_ui *ui);

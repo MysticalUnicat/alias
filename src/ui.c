@@ -462,7 +462,7 @@ void alias_ui_align_fractions(alias_ui *ui, float x, float y) {
 // override size
 // state: w h
 static inline void _override_size_end_child(alias_ui *ui) {
-  // w h _ _ -- w h
+  // w h childw childh -- w h
   ALIAS_ASH_EMIT(&ui->layout_program, ui->mcb, drop2);
 
   _end_scope(ui);
@@ -473,16 +473,56 @@ void alias_ui_override_size(alias_ui *ui, alias_R width, alias_R height) {
   _begin_child(ui);
   _begin_scope(ui, NULL, _override_size_end_child, NULL);
 
-  ALIAS_ASH_EMIT(&ui->layout_program,
-                 ui->mcb
+  ALIAS_ASH_EMIT(&ui->layout_program, ui->mcb,
                  // setup: minw minh maxw maxh -- w h
-                 ,
-                 f(width), f(height),
-                 fit
+                 f(width), f(height), fit,
 
                  // begin child: w h -- w h 0 0 w h
-                 ,
                  dup2, f(0), dup, swap2);
+}
+
+// ====================================================================================================================
+// override width
+// state: w
+static inline void _override_width_end_child(alias_ui *ui) {
+  // w childw childh -- w childh
+  ALIAS_ASH_EMIT(&ui->layout_program, ui->mcb, nip);
+
+  _end_scope(ui);
+  _end_child(ui);
+}
+
+void alias_ui_override_width(alias_ui *ui, alias_R width) {
+  _begin_child(ui);
+  _begin_scope(ui, NULL, _override_width_end_child, NULL);
+
+  ALIAS_ASH_EMIT(&ui->layout_program, ui->mcb,
+                 // setup: minw minh maxw maxh -- minh maxh w
+                 // begin child: minh maxh w -- w 0 minh w maxh
+                 // setup and begin child: minw minh maxw maxh -- w 0 minh w maxh
+                 (nip, f(0), swap, f(width), irot), dip2, nip, f(width), swap);
+}
+
+// ====================================================================================================================
+// override height
+// state: h
+static inline void _override_height_end_child(alias_ui *ui) {
+  // h childw childh -- childw h
+  ALIAS_ASH_EMIT(&ui->layout_program, ui->mcb, drop, swap);
+
+  _end_scope(ui);
+  _end_child(ui);
+}
+
+void alias_ui_override_height(alias_ui *ui, alias_R height) {
+  _begin_child(ui);
+  _begin_scope(ui, NULL, _override_height_end_child, NULL);
+
+  ALIAS_ASH_EMIT(&ui->layout_program, ui->mcb,
+                 // setup: minw minh maxw maxh -- minw maxw h
+                 // begin child: minw maxw h -- h minw 0 maxw h
+                 // setup and begin child: minw minh maxw maxh -- h minw 0 maxw h
+                 drop, (drop, f(height), swap, f(0)), dip, f(height));
 }
 
 // ====================================================================================================================
@@ -491,30 +531,19 @@ static inline void _vertical_begin_child(alias_ui *ui) {
   int shape = _alloc(ui, sizeof(struct shape));
   _scope(ui)->shape = shape;
 
-  ALIAS_ASH_EMIT(&ui->layout_program,
-                 ui->mcb
+  ALIAS_ASH_EMIT(&ui->layout_program, ui->mcb,
                  // minw minh maxw maxh w h -- minw minh maxw maxh w h minw minh maxw maxh-h
-                 ,
                  i(5), pick, i(5), pick, i(5), pick, i(5), pick, i(4), pick, f_sub);
 
-  ALIAS_ASH_EMIT(&ui->render_program,
-                 ui->mcb
+  ALIAS_ASH_EMIT(&ui->render_program, ui->mcb,
                  // x y w h -- x y w h (x+(w-cw)/2) (y+cy) cw ch
-                 ,
-                 i(3), pick // x y w h x
-                 ,
-                 f(_scope(ui)->alignment) // x y w h x 0.5
-                 ,
-                 i(3), pick // x y w h x 0.5 w
-                 ,
-                 i(shape), getw // x y w h x 0.5 w cw
-                 ,
-                 f_sub, f_mul, f_add // x y w h cx
-                 ,
-                 i(3), pick // x y w h cx y
-                 ,
-                 i(shape), gety // x y w h cx y cy
-                 ,
+                 i(3), pick,               // x y w h x
+                 f(_scope(ui)->alignment), // x y w h x 0.5
+                 i(3), pick,               // x y w h x 0.5 w
+                 i(shape), getw,           // x y w h x 0.5 w cw
+                 f_sub, f_mul, f_add,      // x y w h cx
+                 i(3), pick,               // x y w h cx y
+                 i(shape), gety,           // x y w h cx y cy
                  f_add, i(shape), getw, i(shape), geth);
 
   _scope(ui)->alignment = 0.5f;
@@ -523,37 +552,25 @@ static inline void _vertical_begin_child(alias_ui *ui) {
 static inline void _vertical_end_child(alias_ui *ui) {
   int shape = _scope(ui)->shape;
 
-  ALIAS_ASH_EMIT(&ui->layout_program,
-                 ui->mcb
+  ALIAS_ASH_EMIT(&ui->layout_program, ui->mcb,
                  // minw minh maxw maxh w h childw childh -- minw minh maxw maxh max(w childw) (h + childh)
-                 ,
-                 dup, i(shape), seth // a b maxw maxh w h childw childh
-                 ,
-                 swap, dup, i(shape), setw // a b maxw maxh w h childh childw
-                 ,
-                 r_push // a b maxw maxh w h childh
-                 ,
-                 over, i(shape), sety // a b maxw maxh w h childh (copy current h to y)
-                 ,
-                 f_add // a b maxw maxh w (h + childh)
-                 ,
-                 swap, r_pop // a b maxw maxh (h + childh) w childw
-                 ,
-                 f_max, swap // a b maxw maxh max(w childw) (h + childh)
+                 dup, i(shape), seth,       // a b maxw maxh w h childw childh
+                 swap, dup, i(shape), setw, // a b maxw maxh w h childh childw
+                 r_push,                    // a b maxw maxh w h childh
+                 over, i(shape), sety,      // a b maxw maxh w h childh (copy current h to y)
+                 f_add,                     // a b maxw maxh w (h + childh)
+                 swap, r_pop,               // a b maxw maxh (h + childh) w childw
+                 f_max, swap                // a b maxw maxh max(w childw) (h + childh)
   );
 }
 
 static inline void _vertical_end_scope(alias_ui *ui) {
-  ALIAS_ASH_EMIT(&ui->layout_program,
-                 ui->mcb
+  ALIAS_ASH_EMIT(&ui->layout_program, ui->mcb,
                  // minw minh maxw maxh max(childw) sum(childh) -- w h
-                 ,
                  fit);
 
-  ALIAS_ASH_EMIT(&ui->render_program,
-                 ui->mcb
+  ALIAS_ASH_EMIT(&ui->render_program, ui->mcb,
                  // x y w h --
-                 ,
                  drop2, drop2);
 
   _end_child(ui);
@@ -571,10 +588,8 @@ void alias_ui_begin_vertical(alias_ui *ui) {
   _scope(ui)->align = _vertical_align;
   _scope(ui)->alignment = 0.5f;
 
-  ALIAS_ASH_EMIT(&ui->layout_program,
-                 ui->mcb
+  ALIAS_ASH_EMIT(&ui->layout_program, ui->mcb,
                  // setup: minw minh maxw maxh -- minw minh maxw maxh 0 0 (current width, height)
-                 ,
                  i(0), dup);
 }
 
