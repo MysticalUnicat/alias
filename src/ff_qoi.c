@@ -177,7 +177,7 @@ static inline alias_image_Result decode_block(alias_image_QOI * qoi, const uint8
   }
   alias_image_RGBA out;
   uint_least8_t out_count;
-  alias_image_Result r;
+  alias_image_Result r = ~alias_image_Result_ok;
        if((input[0] & 0xFF) == 0xFE) r = decode_rgb(qoi, input, input_size, input_count, &out, &out_count);
   else if((input[0] & 0xFF) == 0xFF) r = decode_rgba(qoi, input, input_size, input_count, &out, &out_count);
   else if((input[0] & 0xC0) == 0x00) r = decode_index(qoi, input, input_size, input_count, &out, &out_count);

@@ -140,7 +140,9 @@ static inline void alias_ash_push(alias_ash * ash, uint32_t i) {
 }
 
 static inline void alias_ash_push_R(alias_ash * ash, float f) {
-  ash->ds[ash->dp++] = *(uint32_t *)&f;
+  union { float f; uint32_t i; } _;
+  _.f = f;
+  ash->ds[ash->dp++] = _.i;
 }
 
 static inline uint32_t alias_ash_pop(alias_ash * ash) {
@@ -148,7 +150,9 @@ static inline uint32_t alias_ash_pop(alias_ash * ash) {
 }
 
 static inline float alias_ash_pop_R(alias_ash * ash) {
-  return *(float *)&ash->ds[--ash->dp];
+  union { float f; uint32_t i; } _;
+  _.i = ash->ds[--ash->dp];
+  return _.f;
 }
 
 static inline void alias_ash_push_r(alias_ash * ash, uint32_t i) {
@@ -165,7 +169,7 @@ bool alias_ash_step(alias_ash * ash);
 
 #if defined(_ALIAS_CPP_H_)
 #define ALIAS_ASH_IS_OP(X) ALIAS_CPP_IS_PROBE(ALIAS_CPP_CAT(ALIAS_ASH_IS_OP_, X)())
-#define ALIAS_ASH_IS_OP_pick   ALIAS_CPP_PROBE 
+#define ALIAS_ASH_IS_OP_pick   ALIAS_CPP_PROBE
 #define ALIAS_ASH_IS_OP_roll   ALIAS_CPP_PROBE
 #define ALIAS_ASH_IS_OP_dup    ALIAS_CPP_PROBE
 #define ALIAS_ASH_IS_OP_q_dup  ALIAS_CPP_PROBE
