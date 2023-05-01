@@ -91,6 +91,7 @@ add_library(alias STATIC
   src/color.c
   src/memory.c
   src/random.c
+  src/str.c
 	src/string32.c
 
   # src/lexer.c
